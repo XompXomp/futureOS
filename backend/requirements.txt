@@ -1,0 +1,22 @@
+# Python dependencies 
+
+# backend/requirements.txt
+langchain>=0.1.0
+langchain-groq>=0.1.0
+langchain_community>=0.0.20
+openai>=1.0.0
+faiss-cpu>=1.7.4
+python-dotenv>=1.0.0
+db-sqlite3 #update in code sqlite3 -> db-sqlite3
+
+# For frontend (if using Flask)
+flask>=2.3.0
+flask-cors>=4.0.0
+
+# Optional: for more advanced features
+numpy>=1.24.0
+pandas>=2.0.0
+matplotlib>=3.7.0
+seaborn>=0.12.0
+google-api-python-client>=2.0.0
+langchain-ollama>=0.1.0

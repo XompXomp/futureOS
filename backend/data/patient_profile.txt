@@ -1,0 +1,64 @@
+{
+  "name": "Ankur",
+  "age": 52,
+  "diagnosis": {
+    "condition": "Obstructive Sleep Apnea",
+    "severity": "Moderate",
+    "AHI": 28,
+    "diagnosis_date": "2025-05-15"
+  },
+  "treatment": {
+    "sleep": {
+      "hours_per_night": 6.5,
+      "quality_rating": 2,
+      "CPAP_adherence_rate": 0.86
+    },
+    "PAP_therapy": {
+      "type": "CPAP",
+      "pressure_cmH2O": 10,
+      "usage_goal_hours": 4
+    },
+    "medications": [
+      {
+        "name": "Melatonin",
+        "dose": "3mg",
+        "schedule": "at bedtime",
+        "purpose": "to aid sleep onset",
+        "adherence": 0.95
+      },
+      {
+        "name": "Lisinopril",
+        "dose": "10mg",
+        "schedule": "once daily",
+        "purpose": "manage blood pressure",
+        "adherence": 0.88
+      }
+    ]
+  },
+  "goals": [
+    "Use CPAP ≥ 4 hours/night, ≥ 5 nights/week",
+    "Improve sleep quality to 4/5 or better",
+    "Lower blood pressure below 130/80",
+    "Reduce BMI below 30"
+  ],
+  "checklist": [
+    {
+      "task": "Use CPAP nightly",
+      "done": true
+    },
+    {
+      "task": "Take medications on time",
+      "done": true
+    },
+    {
+      "task": "Log sleep quality daily",
+      "done": false
+    }
+  ],
+  "recommendations": [
+    "Continue CPAP with humidifier set to medium",
+    "Avoid alcohol and heavy meals before sleep",
+    "Enroll in a sleep hygiene and weight-loss program",
+    "Schedule follow-up in 3 months with updated AHI reading"
+  ]
+}
