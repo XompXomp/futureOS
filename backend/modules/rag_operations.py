@@ -2,7 +2,7 @@
 
 import os
 from typing import Optional
-from langchain_community.document_loaders import DirectoryLoader
+from langchain_community.document_loaders import DirectoryLoader, TextLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_groq import ChatGroq
 from langchain_ollama import ChatOllama
@@ -31,7 +31,12 @@ class RAGOperations:
                 return
 
             # Load documents
-            loader = DirectoryLoader(settings.DOCS_FOLDER, glob="**/*.txt", show_progress=True)
+            loader = DirectoryLoader(
+                settings.DOCS_FOLDER,
+                glob="*.json",
+                loader_cls=TextLoader,
+                show_progress=True
+            )
             docs = loader.load()
             
             if not docs:

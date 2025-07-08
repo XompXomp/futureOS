@@ -7,13 +7,13 @@ from datetime import datetime
 
 def setup_logging():
     """Setup logging configuration for the application."""
-    # Ensure the logs directory exists
-    os.makedirs("backend/logs", exist_ok=True)
+    LOGS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "logs")
+    os.makedirs(LOGS_DIR, exist_ok=True)
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
         handlers=[
-            logging.FileHandler(f"backend/logs/agent_{datetime.now().strftime('%Y%m%d')}.log"),
+            logging.FileHandler(os.path.join(LOGS_DIR, f"agent_{datetime.now().strftime('%Y%m%d')}.log")),
             logging.StreamHandler(sys.stdout)
         ]
     )

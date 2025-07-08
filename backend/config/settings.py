@@ -15,22 +15,23 @@ class Settings:
     DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///data/database.db")
     
     # RAG Settings
-    DOCS_FOLDER = "data/docs/"
+    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    DOCS_FOLDER = os.path.join(BASE_DIR, "data", "docs")
     CHUNK_SIZE = 1000
     CHUNK_OVERLAP = 200
     RETRIEVAL_K = 3
     
     # File Paths
-    PATIENT_PROFILE_PATH = "data/patient_profile.txt"
+    PATIENT_PROFILE_PATH = os.path.join(DOCS_FOLDER, "patient_profile.json")
     
     # Model Settings
-    LLM_MODEL = "gemma-2-9b-it"  # Much less rate limited
+    LLM_MODEL = "llama-3.1-8b-instant"  # Much less rate limited
     EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
     
     # Ollama Settings (for local models)
-    OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
-    OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3.1:8b")
-    USE_OLLAMA = os.getenv("USE_OLLAMA", "false").lower() == "true"
+    OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "https://mac.futureos.xyz/")
+    OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3.3:70b")
+    USE_OLLAMA = True #os.getenv("USE_OLLAMA", "false").lower() == "true"
     
     # Retry Settings
     MAX_RETRIES = int(os.getenv("MAX_RETRIES", "3"))
@@ -40,7 +41,7 @@ class Settings:
     # Memory Settings
     MEMORY_WINDOW_SIZE = int(os.getenv("MEMORY_WINDOW_SIZE", "10"))
     PERSISTENT_MEMORY = os.getenv("PERSISTENT_MEMORY", "false").lower() == "true"
-    MEMORY_FILE_PATH = os.getenv("MEMORY_FILE_PATH", "data/conversation_memory.json")
+    MEMORY_FILE_PATH = os.getenv("MEMORY_FILE_PATH", os.path.join(BASE_DIR, "data", "conversation_memory.json"))
     
     # Agent Settings
     MAX_ITERATIONS = 5  # Reduced to prevent loops

@@ -34,9 +34,9 @@ class AIAgent:
                 temperature=0.3
             )
         self.memory = ConversationBufferWindowMemory(
-            memory_key="chat_history",
-            return_messages=True,
-            k=10
+           memory_key="chat_history",
+           return_messages=True,
+           k=10
         )
         self.agent = None
         self.setup_agent()
@@ -197,7 +197,8 @@ def main():
         # Create necessary directories
         os.makedirs("data", exist_ok=True)
         os.makedirs("data/docs", exist_ok=True)
-        os.makedirs("logs", exist_ok=True)
+        LOGS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "utils", "logs")
+        os.makedirs(LOGS_DIR, exist_ok=True)
         
         # Initialize and run agent
         agent = AIAgent()

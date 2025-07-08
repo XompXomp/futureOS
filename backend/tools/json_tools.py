@@ -4,10 +4,18 @@ from langchain.agents import Tool
 from modules.json_operations import JSONOperations
 from config.settings import settings
 from utils.logging_config import logger
+from tools.rag_tools import create_rag_tools
 
 def create_json_tools():
     """Create JSON operation tools for the agent."""
     
+    rag_tools = create_rag_tools()
+    ask_documents_tool = None
+    for tool in rag_tools:
+        if tool.name == "ask_documents":
+            ask_documents_tool = tool.func
+            break
+
     def update_patient_profile_tool(user_input: str) -> str:
         """Update patient profile based on natural language input."""
         try:
@@ -29,25 +37,19 @@ def create_json_tools():
             return f"Error updating patient profile: {str(e)}"
 
     def read_patient_profile_tool(query: str = "") -> str:
-        """Read patient profile information."""
+        """Read patient profile information. Uses RAG for search queries, JSON for full read."""
         try:
-            profile_data = JSONOperations.load_json_from_file(settings.PATIENT_PROFILE_PATH)
-            if profile_data is None:
-                return "Error: Could not read patient profile"
-            
             if query:
-                # Filter based on query
-                relevant_info = {}
-                query_lower = query.lower()
-                for key, value in profile_data.items():
-                    if query_lower in key.lower() or query_lower in str(value).lower():
-                        relevant_info[key] = value
-                
-                if relevant_info:
-                    return f"Found relevant information: {relevant_info}"
+                # Use RAG for any search/query
+                if ask_documents_tool is not None:
+                    return ask_documents_tool(query)
                 else:
-                    return f"No information found for query: {query}"
+                    return "Error: RAG search tool is not available."
             else:
+                # Full read (return the entire JSON)
+                profile_data = JSONOperations.load_json_from_file(settings.PATIENT_PROFILE_PATH)
+                if profile_data is None:
+                    return "Error: Could not read patient profile"
                 return f"Full patient profile: {profile_data}"
         except Exception as e:
             return f"Error reading patient profile: {str(e)}"
@@ -61,6 +63,6 @@ def create_json_tools():
         Tool(
             name="read_patient_profile",
             func=read_patient_profile_tool,
-            description="Read patient profile information. Use this when the user asks about their personal or medical information. After getting the information, provide a direct answer to the user. Optional input: specific field to query (e.g., 'age', 'medications')"
+            description="Read patient profile information. Uses RAG for search queries, JSON for full read. Optional input: specific field to query (e.g., 'age', 'medications')"
         )
     ]

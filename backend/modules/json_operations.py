@@ -118,4 +118,16 @@ class JSONOperations:
                         pass
                 updates[field] = value
         
+        # Add pattern for goals
+        goal_patterns = [
+            r"(?:add|my|new)?\s*goal(?: is|:)?\s*['\"]?(.+?)(?:['\"]|$|\.)",
+            r"goal to (.+?)(?:\\.|$)",
+            r"reach (\d+\s*steps?)\s*(?:every day|daily)"
+        ]
+        for pattern in goal_patterns:
+            match = re.search(pattern, text, re.IGNORECASE)
+            if match:
+                goal = match.group(1).strip()
+                updates.setdefault("goals", []).append(goal)
+        
         return updates
