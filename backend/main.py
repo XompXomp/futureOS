@@ -47,12 +47,12 @@ class AIAgent:
         try:
             # Collect all tools
             all_tools = []
-            all_tools.extend(create_file_tools())
-            all_tools.extend(create_json_tools())
-            all_tools.extend(create_text_tools())
-            all_tools.extend(create_database_tools())
-            all_tools.extend(create_rag_tools())
-            all_tools.extend(create_google_pse_tools())
+            all_tools.extend(create_file_tools()) # File operations
+            all_tools.extend(create_json_tools()) # JSON operations
+            all_tools.extend(create_text_tools()) # Text operations
+            all_tools.extend(create_database_tools()) # Database operations
+            all_tools.extend(create_rag_tools()) # RAG operations
+            all_tools.extend(create_google_pse_tools()) # Google PSE operations
             
             # Initialize agent
             self.agent = initialize_agent(
