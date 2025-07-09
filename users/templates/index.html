@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome - Patient Health Portal{% endblock %}
+
+{% block content %}
+<div class="main-container">
+    <div class="hero-section">
+        <h1><i class="fas fa-heartbeat me-3"></i>Care AI</h1>
+        <p class="mb-4">Personalized healthcare recommendations based on your health profile and medical records</p>
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <a href="{{ url_for('signup') }}" class="btn btn-primary btn-lg w-100">
+                            <i class="fas fa-user-plus me-2"></i>Get Started
+                        </a>
+                    </div>
+                    <div class="col-md-6">
+                        <a href="{{ url_for('login') }}" class="btn btn-outline-light btn-lg w-100">
+                            <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 text-center">
+                <div class="card-body">
+                    <i class="fas fa-clipboard-list fa-3x text-primary mb-3"></i>
+                    <h5 class="card-title">Health Assessment</h5>
+                    <p class="card-text">Complete our comprehensive health questionnaire to understand your current health status and goals.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 text-center">
+                <div class="card-body">
+                    <i class="fas fa-brain fa-3x text-primary mb-3"></i>
+                    <h5 class="card-title">Smart Clustering</h5>
+                    <p class="card-text">Our AI analyzes your responses and medical records to assign you to relevant health clusters.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 text-center">
+                <div class="card-body">
+                    <i class="fas fa-chart-line fa-3x text-primary mb-3"></i>
+                    <h5 class="card-title">Personalized Insights</h5>
+                    <p class="card-text">Receive tailored health recommendations and insights based on your assigned clusters.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title text-center mb-4">
+                        <i class="fas fa-users me-2"></i>Health Clusters We Support
+                    </h4>
+                    <div class="row">
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-brain text-primary me-3 fa-2x"></i>
+                                <div>
+                                    <h6 class="mb-1">Mental Health</h6>
+                                    <small class="text-muted">Depression, anxiety, stress management</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-dumbbell text-primary me-3 fa-2x"></i>
+                                <div>
+                                    <h6 class="mb-1">Fitness Centric</h6>
+                                    <small class="text-muted">Sports injuries, performance optimization</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-baby text-primary me-3 fa-2x"></i>
+                                <div>
+                                    <h6 class="mb-1">Maternal Health</h6>
+                                    <small class="text-muted">Pregnancy care and support</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-bed text-primary me-3 fa-2x"></i>
+                                <div>
+                                    <h6 class="mb-1">Sleep Health</h6>
+                                    <small class="text-muted">Sleep disorders and quality improvement</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-shield-alt text-primary me-3 fa-2x"></i>
+                                <div>
+                                    <h6 class="mb-1">Preventive Health</h6>
+                                    <small class="text-muted">Disease prevention and wellness</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-user-friends text-primary me-3 fa-2x"></i>
+                                <div>
+                                    <h6 class="mb-1">Senior Care</h6>
+                                    <small class="text-muted">Age-related health management</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block title %}Upload Medical Records - Patient Health Portal{% endblock %}
+
+{% block content %}
+<div class="main-container">
+    <div class="text-center mb-4">
+        <h2><i class="fas fa-upload me-2"></i>Upload Medical Records</h2>
+        <p class="text-muted">Upload your medical records to get more accurate health cluster assignments</p>
+    </div>
+
+    <div class="step-indicator">
+        <div class="step completed">1</div>
+        <div class="step completed">2</div>
+        <div class="step active">3</div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body p-4">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Important:</strong> Please upload your medical records in pickle (.pkl) format. 
+                        This helps us provide more accurate health recommendations.
+                    </div>
+
+                    <form method="POST" enctype="multipart/form-data" id="uploadForm">
+                        <div class="mb-4">
+                            <label for="medical_records" class="form-label">
+                                <i class="fas fa-file-medical me-2"></i>Select Medical Records File
+                            </label>
+                            <input type="file" class="form-control" id="medical_records" name="medical_records" accept=".pkl" required>
+                            <div class="form-text">
+                                Supported format: .pkl (pickle files containing medical data)
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <h6><i class="fas fa-shield-alt me-2"></i>Data Privacy & Security</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check text-success me-2"></i>Your data is encrypted and stored securely</li>
+                                <li><i class="fas fa-check text-success me-2"></i>We only use your data for cluster assignment</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Your information is never shared with third parties</li>
+                                <li><i class="fas fa-check text-success me-2"></i>You can delete your data at any time</li>
+                            </ul>
+                        </div>
+
+                        <div class="mb-4">
+                            <h6><i class="fas fa-question-circle me-2"></i>What Data Do We Look For?</h6>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="card bg-light">
+                                        <div class="card-body">
+                                            <h6 class="card-title"><i class="fas fa-stethoscope me-2"></i>Diagnoses</h6>
+                                            <small class="text-muted">Medical conditions and diagnoses</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card bg-light">
+                                        <div class="card-body">
+                                            <h6 class="card-title"><i class="fas fa-pills me-2"></i>Medications</h6>
+                                            <small class="text-muted">Current and past medications</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card bg-light">
+                                        <div class="card-body">
+                                            <h6 class="card-title"><i class="fas fa-baby me-2"></i>Maternal Health</h6>
+                                            <small class="text-muted">Pregnancy status and related data</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card bg-light">
+                                        <div class="card-body">
+                                            <h6 class="card-title"><i class="fas fa-user me-2"></i>Patient Info</h6>
+                                            <small class="text-muted">Age, demographics, and basic info</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary btn-lg me-md-2">
+                                <i class="fas fa-arrow-left me-2"></i>Skip for Now
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-upload me-2"></i>Upload & Analyze
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('uploadForm').addEventListener('submit', function(e) {
+    const fileInput = document.getElementById('medical_records');
+    const file = fileInput.files[0];
+    
+    if (!file) {
+        e.preventDefault();
+        alert('Please select a file to upload.');
+        return;
+    }
+    
+    if (!file.name.toLowerCase().endsWith('.pkl')) {
+        e.preventDefault();
+        alert('Please select a .pkl file.');
+        return;
+    }
+    
+    // Show loading state
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
+    submitBtn.disabled = true;
+    
+    // Re-enable after a delay (in case of error)
+    setTimeout(() => {
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+    }, 10000);
+});
+
+// File size validation
+document.getElementById('medical_records').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const maxSize = 16 * 1024 * 1024; // 16MB
+        if (file.size > maxSize) {
+            alert('File size must be less than 16MB.');
+            this.value = '';
+        }
+    }
+});
+</script>
+{% endblock %} 
