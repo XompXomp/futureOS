@@ -33,13 +33,17 @@
         "purpose": "manage blood pressure",
         "adherence": 0.88
       }
-    ]
+    ],
+    "exercise": {
+      "daily_step_goal": 10000
+    }
   },
   "goals": [
     "Use CPAP ≥ 4 hours/night, ≥ 5 nights/week",
     "Improve sleep quality to 4/5 or better",
     "Lower blood pressure below 130/80",
-    "Reduce BMI below 30"
+    "Reduce BMI below 30",
+    "Walk 10,000 steps daily"
   ],
   "checklist": [
     {
@@ -52,6 +56,10 @@
     },
     {
       "task": "Log sleep quality daily",
+      "done": false
+    },
+    {
+      "task": "Walk 10,000 steps daily",
       "done": false
     }
   ],

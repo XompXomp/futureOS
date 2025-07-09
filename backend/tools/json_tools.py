@@ -17,20 +17,20 @@ def create_json_tools():
             break
 
     def update_patient_profile_tool(user_input: str) -> str:
-        """Update patient profile based on natural language input."""
+        """Update patient profile based on natural language input using LLM extraction."""
         try:
-            # Extract updates from natural language
-            updates = JSONOperations.extract_json_updates_from_text(user_input)
-            
-            if not updates:
+            # Load current profile
+            current_profile = JSONOperations.load_json_from_file(settings.PATIENT_PROFILE_PATH)
+            if current_profile is None:
+                return "Error: Could not load current patient profile."
+            # Use LLM to get updated profile
+            updated_profile = JSONOperations.update_json_with_llm(current_profile, user_input)
+            if not updated_profile:
                 return "No recognizable updates found in your input. Please specify what you want to update (e.g., 'My age is 25', 'My name is John', etc.)"
-            
-            # Update the patient profile
-            success = JSONOperations.update_json_values(settings.PATIENT_PROFILE_PATH, updates)
-            
+            # Save updated profile
+            success = JSONOperations.save_json_to_file(settings.PATIENT_PROFILE_PATH, updated_profile)
             if success:
-                updated_fields = ", ".join(updates.keys())
-                return f"Successfully updated patient profile fields: {updated_fields}"
+                return f"Successfully updated patient profile."
             else:
                 return "Error: Could not update patient profile"
         except Exception as e:
