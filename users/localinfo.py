@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 # Patient records, goals, daily checklist, recommendations, appointments
+=======
+#THE METHODS THE AI WOULD NEED TO CALL TO EVENTUALLY STORE INFORMATION
+>>>>>>> 9b5febe8405f9af842c83cd8961263b1504ef3b2
 
 import sqlite3
 import json

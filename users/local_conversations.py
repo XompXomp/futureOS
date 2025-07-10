@@ -1,4 +1,5 @@
-# Local conversations with the AI
+# THE METHODS THE AI WOULD NEED TO CALL EVENTUALLY
+
 
 import sqlite3
 from datetime import datetime
