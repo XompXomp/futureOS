@@ -55,7 +55,8 @@ class RAGOperations:
 
             # Create embeddings and vector store
             embeddings = HuggingFaceEmbeddings(
-                model_name=settings.EMBEDDING_MODEL
+                model_name=settings.EMBEDDING_MODEL,
+                model_kwargs={'device': 'cpu'}
             )
             self.vectorstore = FAISS.from_documents(chunks, embeddings)
             logger.info(f"FAISS index created with {self.vectorstore.index.ntotal} vectors")
@@ -132,7 +133,8 @@ class RAGOperations:
             
             # Add to vector store
             embeddings = HuggingFaceEmbeddings(
-                model_name=settings.EMBEDDING_MODEL
+                model_name=settings.EMBEDDING_MODEL,
+                model_kwargs={'device': 'cpu'}
             )
             self.vectorstore.add_documents(chunks)
             

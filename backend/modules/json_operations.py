@@ -5,6 +5,11 @@ import re
 from typing import Dict, Any, Optional
 from modules.file_operations import FileOperations
 from utils.logging_config import logger
+import openai
+from langchain_groq import ChatGroq
+from langchain_ollama import ChatOllama
+from config.settings import settings
+import json
 
 class JSONOperations:
     @staticmethod
@@ -72,62 +77,55 @@ class JSONOperations:
                 original[key] = value
 
     @staticmethod
-    def extract_json_updates_from_text(text: str) -> Dict[str, Any]:
-        """Extract JSON updates from natural language text."""
-        updates = {}
-        
-        # Pattern matching for common update patterns
-        patterns = [
-            (r"(?:my )?age.*?(\d+)", "age"),
-            (r"(?:my )?name\s+(?:is\s+)?([A-Za-z\s]+?)(?:\s|$|\.|,)", "name"),
-            (r"(?:my )?weight.*?(\d+(?:\.\d+)?)", "weight"),
-            (r"(?:my )?height.*?(\d+(?:\.\d+)?)", "height"),
-            (r"(?:my )?phone.*?(\+?[\d\s\-\(\)]+)", "phone"),
-            (r"(?:my )?email.*?([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})", "email"),
-            # Medical patterns
-            (r"(?:my )?blood\s+type.*?([A-Za-z]+)", "blood_type"),
-            (r"(?:my )?allergies.*?([A-Za-z\s,]+?)(?:\s|$|\.|,)", "allergies"),
-            (r"(?:my )?medications.*?([A-Za-z0-9\s,]+?)(?:\s|$|\.|,)", "current_medications"),
-            (r"(?:my )?chronic\s+conditions.*?([A-Za-z\s,]+?)(?:\s|$|\.|,)", "chronic_conditions"),
-            # Medication specific patterns
-            (r"(?:taking|on|prescribed)\s+(\d+mg?\s+[A-Za-z]+)", "current_medications"),
-            (r"(\d+mg?\s+[A-Za-z]+)\s+(?:at|for|to)", "current_medications"),
-        ]
-        
-        for pattern, field in patterns:
-            match = re.search(pattern, text, re.IGNORECASE)
+    def update_json_with_llm(current_json: dict, user_request: str) -> dict:
+        """Use Ollama or Groq via LangChain to update the JSON based on a user request."""
+        if not isinstance(current_json, str):
+            current_json_str = json.dumps(current_json, indent=2)
+        else:
+            current_json_str = current_json
+        prompt = f"""
+                You are an assistant that updates JSON data based on natural language requests.
+                Here is the current JSON:
+                {current_json_str}
+
+                The user says: "{user_request}"
+
+                Return ONLY the updated JSON, with the user's request applied. Do not include any explanation or extra text.
+                """
+        # Select LLM based on settings
+        if settings.USE_OLLAMA:
+            llm = ChatOllama(
+                model=settings.OLLAMA_MODEL,
+                base_url=settings.OLLAMA_BASE_URL,
+                temperature=0
+            )
+        else:
+            llm = ChatGroq(
+                model=settings.LLM_MODEL,
+                temperature=0
+            )
+        response = llm.invoke(prompt)
+        # Handle response type: string, list, or object with 'content'
+        if hasattr(response, 'content'):
+            content = str(response.content)
+        elif isinstance(response, list):
+            # Join all string parts if it's a list
+            content = ''.join([str(part) for part in response])
+        else:
+            content = str(response)
+        content = content.strip()
+        try:
+            updated_json = json.loads(content)
+        except json.JSONDecodeError:
+            import re
+            match = re.search(r'({.*})', content, re.DOTALL)
             if match:
-                value = match.group(1).strip()
-                # Clean up the value
-                if field == "name":
-                    # Remove common words that shouldn't be part of the name
-                    value = re.sub(r'\b(is|am|are|the|a|an)\b', '', value, flags=re.IGNORECASE).strip()
-                    # Remove extra whitespace
-                    value = ' '.join(value.split())
-                elif field in ["allergies", "current_medications", "chronic_conditions"]:
-                    # Handle array fields - split by comma and clean up
-                    if isinstance(value, str):
-                        value = [item.strip() for item in value.split(',') if item.strip()]
-                    else:
-                        value = [str(value)]
-                # Convert to appropriate type (only for numeric fields)
-                elif field in ["age", "weight", "height"]:
-                    try:
-                        value = float(value) if '.' in value else int(value)
-                    except:
-                        pass
-                updates[field] = value
-        
-        # Add pattern for goals
-        goal_patterns = [
-            r"(?:add|my|new)?\s*goal(?: is|:)?\s*['\"]?(.+?)(?:['\"]|$|\.)",
-            r"goal to (.+?)(?:\\.|$)",
-            r"reach (\d+\s*steps?)\s*(?:every day|daily)"
-        ]
-        for pattern in goal_patterns:
-            match = re.search(pattern, text, re.IGNORECASE)
-            if match:
-                goal = match.group(1).strip()
-                updates.setdefault("goals", []).append(goal)
-        
-        return updates
+                updated_json = json.loads(match.group(1))
+            else:
+                raise ValueError("LLM did not return valid JSON:\n" + content)
+        return updated_json
+
+    @staticmethod
+    def extract_json_updates_from_text(text: str) -> dict:
+        """Deprecated: Use update_json_with_llm instead."""
+        raise NotImplementedError("Use update_json_with_llm instead.")

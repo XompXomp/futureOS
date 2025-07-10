@@ -32,7 +32,7 @@ class GooglePSESearch:
             for i in range(0, min(num_results, 100), 10):  # Max 100 results
                 start_index = i + 1
                 
-                search_results = self.service.list(
+                search_results = self.service.cse().list(
                     q=query,
                     cx=self.cx,
                     start=start_index,

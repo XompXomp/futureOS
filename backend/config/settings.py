@@ -29,7 +29,7 @@ class Settings:
     EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
     
     # Ollama Settings (for local models)
-    OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "https://mac.futureos.xyz/")
+    OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "https://mac.futureos.xyz/") # Using model from SLab
     OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3.3:70b")
     USE_OLLAMA = True #os.getenv("USE_OLLAMA", "false").lower() == "true"
     
