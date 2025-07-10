@@ -1,3 +1,5 @@
+#THE METHODS THE AI WOULD NEED TO CALL TO EVENTUALLY STORE INFORMATION
+
 import sqlite3
 import json
 from datetime import datetime
