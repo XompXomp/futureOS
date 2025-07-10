@@ -29,9 +29,9 @@ env/
 ENV/
 env.bak/
 venv.bak/
-**/benv/
-**/fenv/
-**/uenv/
+**/.benv/
+**/.fenv/
+**/.uenv/
 
 # Environment variables
 .env
