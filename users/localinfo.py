@@ -1,3 +1,5 @@
+# Patient records, goals, daily checklist, recommendations, appointments
+
 import sqlite3
 import json
 from datetime import datetime
