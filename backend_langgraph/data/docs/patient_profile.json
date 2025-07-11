@@ -1,0 +1,28 @@
+{
+  "personal_info": {
+    "name": "",
+    "age": 0,
+    "gender": "",
+    "phone": "",
+    "email": "",
+    "address": ""
+  },
+  "medical_info": {
+    "height": 0,
+    "weight": 0,
+    "blood_type": "",
+    "allergies": [],
+    "chronic_conditions": [],
+    "current_medications": []
+  },
+  "emergency_contact": {
+    "name": "",
+    "relationship": "",
+    "phone": ""
+  },
+  "insurance": {
+    "provider": "",
+    "policy_number": "",
+    "group_number": ""
+  }
+}
