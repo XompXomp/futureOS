@@ -1,396 +1,112 @@
 #!/usr/bin/env python3
-"""
-Test script specifically for the web search agent.
-Tests web search functionality, query extraction, and memory management.
-Shows memory contents after each operation to verify storage.
-"""
+"""Test script for web agent."""
 
-import sys
 import os
+import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from agents.web_agent import WebAgent
-from utils.logging_config import logger
-from langchain_core.messages import HumanMessage
-
-def show_memory_contents(agent, test_name):
-    """Show what's currently stored in the agent's semantic memory"""
-    print(f"\n🔍 MEMORY CONTENTS AFTER {test_name}:")
-    print("-" * 50)
-    
-    try:
-        # Get all namespaces
-        all_namespaces = agent.store.list_namespaces()
-        print(f"Total Namespaces: {len(all_namespaces)}")
-        for ns in all_namespaces:
-            print(f"  - {ns}")
-        
-        print("\n📋 Items in each namespace:")
-        
-        # Check web search namespace memory
-        try:
-            web_items = agent.store.search(agent.web_namespace, limit=1000)
-            print(f"\nWeb Search Memory Items ({agent.web_namespace}): {len(web_items)}")
-            for item in web_items:
-                print(f"  - Key: {item.key}")
-                print(f"    Content: {item.value}")
-                print(f"    Created: {item.created_at}")
-                print(f"    Updated: {item.updated_at}")
-                print()
-        except Exception as e:
-            print(f"Error accessing web search memory: {str(e)}")
-        
-        # Check episodic namespace memory
-        try:
-            episodic_items = agent.store.search(agent.episodic_namespace, limit=1000)
-            print(f"\nEpisodic Memory Items ({agent.episodic_namespace}): {len(episodic_items)}")
-            for item in episodic_items:
-                print(f"  - Key: {item.key}")
-                print(f"    Content: {item.value}")
-                print(f"    Created: {item.created_at}")
-                print(f"    Updated: {item.updated_at}")
-                print()
-        except Exception as e:
-            print(f"Error accessing episodic memory: {str(e)}")
-        
-        # Check procedural namespace memory
-        try:
-            procedural_items = agent.store.search(agent.procedural_namespace, limit=1000)
-            print(f"\nProcedural Memory Items ({agent.procedural_namespace}): {len(procedural_items)}")
-            for item in procedural_items:
-                print(f"  - Key: {item.key}")
-                print(f"    Content: {item.value}")
-                print(f"    Created: {item.created_at}")
-                print(f"    Updated: {item.updated_at}")
-                print()
-        except Exception as e:
-            print(f"Error accessing procedural memory: {str(e)}")
-            
-    except Exception as e:
-        print(f"Error accessing memory: {str(e)}")
+from langgraph.prebuilt import create_react_agent
+from langchain_ollama import ChatOllama
+from langchain_groq import ChatGroq
+from config.settings import settings
+from tools.web_search_tools import search_web
 
 def test_web_agent():
-    """Test the web search agent with various search queries and show memory contents."""
-    print("\n" + "="*60)
-    print("TESTING WEB SEARCH AGENT - DETAILED ANALYSIS WITH MEMORY INSPECTION")
-    print("="*60)
+    """Test the web agent directly."""
+    print("Testing web agent...")
     
-    agent = WebAgent()
+    # Initialize LLM
+    if settings.USE_OLLAMA:
+        model = ChatOllama(
+            model=settings.OLLAMA_MODEL,
+            base_url=settings.OLLAMA_BASE_URL,
+            temperature=0.3
+        )
+    else:
+        model = ChatGroq(
+            model=settings.LLM_MODEL,
+            temperature=0.3
+        )
     
-    # Test 1: Basic web search query
-    print("\n--- TEST 1: Search for current weather ---")
-    state = {
-        'user_input': "What's the current weather in New York?",
-        'messages': [HumanMessage(content="What's the current weather in New York?")],
-        'tool_results': [],
-        'current_tool': None,
-        'should_continue': True,
-        'iteration_count': 0,
-        'max_iterations': 5,
-        'error_message': None,
-        'has_error': False,
-        'final_response': None,
-        'response_generated': False
-    }
-    
-    try:
-        result = agent.handle(state)
-        print(f"Response: {result.get('final_response', 'No response')}")
-        if result.get('has_error'):
-            print(f"Error: {result.get('error_message')}")
-    except Exception as e:
-        print(f"Exception: {str(e)}")
-    
-    show_memory_contents(agent, "TEST 1")
-    
-    # Test 2: Search for recent news
-    print("\n--- TEST 2: Search for latest technology news ---")
-    state = {
-        'user_input': "What are the latest technology news today?",
-        'messages': [HumanMessage(content="What are the latest technology news today?")],
-        'tool_results': [],
-        'current_tool': None,
-        'should_continue': True,
-        'iteration_count': 0,
-        'max_iterations': 5,
-        'error_message': None,
-        'has_error': False,
-        'final_response': None,
-        'response_generated': False
-    }
-    
-    try:
-        result = agent.handle(state)
-        print(f"Response: {result.get('final_response', 'No response')}")
-        if result.get('has_error'):
-            print(f"Error: {result.get('error_message')}")
-    except Exception as e:
-        print(f"Exception: {str(e)}")
-    
-    show_memory_contents(agent, "TEST 2")
-    
-    # Test 3: Search for specific information
-    print("\n--- TEST 3: Search for Python programming tutorials ---")
-    state = {
-        'user_input': "Find Python programming tutorials for beginners",
-        'messages': [HumanMessage(content="Find Python programming tutorials for beginners")],
-        'tool_results': [],
-        'current_tool': None,
-        'should_continue': True,
-        'iteration_count': 0,
-        'max_iterations': 5,
-        'error_message': None,
-        'has_error': False,
-        'final_response': None,
-        'response_generated': False
-    }
-    
-    try:
-        result = agent.handle(state)
-        print(f"Response: {result.get('final_response', 'No response')}")
-        if result.get('has_error'):
-            print(f"Error: {result.get('error_message')}")
-    except Exception as e:
-        print(f"Exception: {str(e)}")
-    
-    show_memory_contents(agent, "TEST 3")
-    
-    # Test 4: Search for current events
-    print("\n--- TEST 4: Search for current world events ---")
-    state = {
-        'user_input': "What are the major world events happening right now?",
-        'messages': [HumanMessage(content="What are the major world events happening right now?")],
-        'tool_results': [],
-        'current_tool': None,
-        'should_continue': True,
-        'iteration_count': 0,
-        'max_iterations': 5,
-        'error_message': None,
-        'has_error': False,
-        'final_response': None,
-        'response_generated': False
-    }
-    
-    try:
-        result = agent.handle(state)
-        print(f"Response: {result.get('final_response', 'No response')}")
-        if result.get('has_error'):
-            print(f"Error: {result.get('error_message')}")
-    except Exception as e:
-        print(f"Exception: {str(e)}")
-    
-    show_memory_contents(agent, "TEST 4")
-    
-    # Test 5: Search for specific technical information
-    print("\n--- TEST 5: Search for machine learning resources ---")
-    state = {
-        'user_input': "Find the best machine learning courses and resources",
-        'messages': [HumanMessage(content="Find the best machine learning courses and resources")],
-        'tool_results': [],
-        'current_tool': None,
-        'should_continue': True,
-        'iteration_count': 0,
-        'max_iterations': 5,
-        'error_message': None,
-        'has_error': False,
-        'final_response': None,
-        'response_generated': False
-    }
-    
-    try:
-        result = agent.handle(state)
-        print(f"Response: {result.get('final_response', 'No response')}")
-        if result.get('has_error'):
-            print(f"Error: {result.get('error_message')}")
-    except Exception as e:
-        print(f"Exception: {str(e)}")
-    
-    show_memory_contents(agent, "TEST 5")
-    
-    # Test 6: Test error handling with invalid query
-    print("\n--- TEST 6: Test error handling with invalid query ---")
-    state = {
-        'user_input': "   ",  # Whitespace only
-        'messages': [HumanMessage(content="   ")],
-        'tool_results': [],
-        'current_tool': None,
-        'should_continue': True,
-        'iteration_count': 0,
-        'max_iterations': 5,
-        'error_message': None,
-        'has_error': False,
-        'final_response': None,
-        'response_generated': False
-    }
-    
-    try:
-        result = agent.handle(state)
-        print(f"Response: {result.get('final_response', 'No response')}")
-        if result.get('has_error'):
-            print(f"Error: {result.get('error_message')}")
-    except Exception as e:
-        print(f"Exception: {str(e)}")
-    
-    show_memory_contents(agent, "TEST 6")
-    
-    # Test 7: Test memory retrieval
-    print("\n--- TEST 7: Test memory retrieval capabilities ---")
-    state = {
-        'user_input': "What did we search for earlier about Python?",
-        'messages': [HumanMessage(content="What did we search for earlier about Python?")],
-        'tool_results': [],
-        'current_tool': None,
-        'should_continue': True,
-        'iteration_count': 0,
-        'max_iterations': 5,
-        'error_message': None,
-        'has_error': False,
-        'final_response': None,
-        'response_generated': False
-    }
-    
-    try:
-        result = agent.handle(state)
-        print(f"Response: {result.get('final_response', 'No response')}")
-        if result.get('has_error'):
-            print(f"Error: {result.get('error_message')}")
-    except Exception as e:
-        print(f"Exception: {str(e)}")
-    
-    show_memory_contents(agent, "TEST 7")
-    
-    print("\n" + "="*60)
-    print("WEB SEARCH AGENT TESTING COMPLETED")
-    print("="*60)
+    # Create web agent with only core tools (no memory)
+    web_agent = create_react_agent(
+        model=model,
+        tools=[search_web],
+        name="web_agent",
+        prompt="""You are a web search agent with web search capabilities.
 
-def test_web_agent_tools():
-    """Test the web search tools directly."""
-    print("\n" + "="*60)
-    print("TESTING WEB SEARCH TOOLS DIRECTLY")
-    print("="*60)
+AVAILABLE TOOLS:
+- search_web: Search the web for current information
+
+INSTRUCTIONS:
+1. ALWAYS provide a conversational response to the user's input
+2. When asked for current information, news, or facts → Use search_web tool and provide the results conversationally
+3. NEVER output tool call syntax like <|python_tag|>search_web(...) - instead EXECUTE the tool and return the conversational result
+4. Be conversational, helpful, and provide meaningful responses
+5. If the search doesn't find relevant information, say so conversationally
+
+RESPONSE STRUCTURE:
+- For factual questions: Provide a clear, direct answer with supporting details
+- For news/information requests: Summarize key findings and mention sources
+- For multiple results: Structure your response with bullet points or numbered lists
+- Always cite your sources when possible
+- Be concise but informative
+
+EXAMPLES:
+- User: "Who is the current US president?" → "According to my search, Donald J. Trump is the current US president, serving as the 47th President since January 20, 2025."
+- User: "What's the latest news about AI?" → "Based on my search, here are the key AI developments: [list main points with sources]"
+- User: "When did superman first appear?" → "Superman first appeared in Action Comics #1 on April 18, 1938, created by Jerry Siegel and Joe Shuster."
+
+IMPORTANT: Always execute tools and provide conversational responses, never output raw tool calls."""
+    )
     
-    try:
-        from tools.web_search_tools import search_web, extract_search_query_llm
+    print(f"Created web agent: {web_agent}")
+    
+    # Test cases
+    test_cases = [
+        "Who is the current US president?",
+        "When did superman first appear?",
+        "What is the weather like today?",
+        "Who won the last World Cup?",
+        "What is the latest news about AI?",
+        "What are the best programming languages to learn in 2024?",
+        "Tell me about the latest developments in renewable energy",
+        "What are the top tourist destinations in Europe?"
+    ]
+    
+    for i, test_input in enumerate(test_cases, 1):
+        print(f"\n--- Test Case {i}: {test_input} ---")
         
-        # Test query extraction
-        print("\n--- Testing query extraction ---")
-        test_queries = [
-            "What's the weather like today?",
-            "Find information about artificial intelligence",
-            "Search for the latest news about space exploration",
-            "What are the best restaurants in San Francisco?",
-            "Find tutorials for React.js development"
-        ]
+        # Create test state
+        test_state = {
+            "messages": [
+                {"role": "user", "content": test_input}
+            ]
+        }
         
-        for query in test_queries:
-            try:
-                extracted = extract_search_query_llm(query)
-                print(f"Original: '{query}'")
-                print(f"Extracted: '{extracted}'")
-                print("-" * 40)
-            except Exception as e:
-                print(f"Error extracting query from '{query}': {str(e)}")
-        
-        # Test web search tool
-        print("\n--- Testing web search tool ---")
-        test_search = "Python programming tutorials"
         try:
-            result = search_web({
-                'user_input': test_search,
-                'messages': [HumanMessage(content=test_search)]
-            })
-            print(f"Search result: {result}")
-        except Exception as e:
-            print(f"Error in web search: {str(e)}")
+            # Call the agent
+            result = web_agent.invoke(test_state)
+            print(f"Result: {result}")
             
-    except ImportError as e:
-        print(f"Could not import web search tools: {str(e)}")
-    except Exception as e:
-        print(f"Error testing web search tools: {str(e)}")
-
-def test_web_agent_memory_management():
-    """Test the web agent's memory management capabilities."""
-    print("\n" + "="*60)
-    print("TESTING WEB AGENT MEMORY MANAGEMENT")
-    print("="*60)
-    
-    agent = WebAgent()
-    
-    # Test storing and retrieving information
-    print("\n--- Testing memory storage and retrieval ---")
-    
-    # Store some search results in memory
-    test_searches = [
-        "machine learning algorithms",
-        "data science best practices", 
-        "artificial intelligence trends",
-        "Python web development frameworks"
-    ]
-    
-    for search_query in test_searches:
-        state = {
-            'user_input': search_query,
-            'messages': [HumanMessage(content=search_query)],
-            'tool_results': [],
-            'current_tool': None,
-            'should_continue': True,
-            'iteration_count': 0,
-            'max_iterations': 5,
-            'error_message': None,
-            'has_error': False,
-            'final_response': None,
-            'response_generated': False
-        }
-        
-        try:
-            result = agent.handle(state)
-            print(f"Stored search for: '{search_query}'")
-            if result.get('has_error'):
-                print(f"Error: {result.get('error_message')}")
+            # Extract the response
+            messages = result.get("messages", [])
+            if messages:
+                last_message = messages[-1]
+                if hasattr(last_message, 'content'):
+                    response = last_message.content
+                elif isinstance(last_message, dict):
+                    response = last_message.get("content", "No content")
+                else:
+                    response = str(last_message)
+                print(f"Response: {response}")
+            else:
+                print("No messages in result")
+                
         except Exception as e:
-            print(f"Exception storing search '{search_query}': {str(e)}")
-    
-    # Test memory retrieval
-    print("\n--- Testing memory retrieval ---")
-    retrieval_queries = [
-        "What did we search for about machine learning?",
-        "Recall our searches about Python",
-        "What information do we have about AI?"
-    ]
-    
-    for query in retrieval_queries:
-        state = {
-            'user_input': query,
-            'messages': [HumanMessage(content=query)],
-            'tool_results': [],
-            'current_tool': None,
-            'should_continue': True,
-            'iteration_count': 0,
-            'max_iterations': 5,
-            'error_message': None,
-            'has_error': False,
-            'final_response': None,
-            'response_generated': False
-        }
-        
-        try:
-            result = agent.handle(state)
-            print(f"Query: '{query}'")
-            print(f"Response: {result.get('final_response', 'No response')}")
-            if result.get('has_error'):
-                print(f"Error: {result.get('error_message')}")
-            print("-" * 40)
-        except Exception as e:
-            print(f"Exception retrieving memory for '{query}': {str(e)}")
-    
-    show_memory_contents(agent, "MEMORY MANAGEMENT TEST")
+            print(f"Error: {str(e)}")
+            import traceback
+            traceback.print_exc()
 
 if __name__ == "__main__":
-    print("Starting Web Agent Tests...")
-    
-    # Run all tests
-    test_web_agent()
-    test_web_agent_tools()
-    test_web_agent_memory_management()
-    
-    print("\n🎉 All web agent tests completed!") 
+    test_web_agent() 

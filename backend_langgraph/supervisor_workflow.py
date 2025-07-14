@@ -46,38 +46,69 @@ class SupervisorWorkflow:
         self.file_memory_tools = create_memory_tools("file_agent")
         self.json_memory_tools = create_memory_tools("json_agent")
         
-        # Create specialized agents using LangGraph's create_react_agent
+        # Create specialized agents using create_react_agent
         self.patient_agent = create_react_agent(
             model=self.model,
             tools=[read_patient_profile, update_patient_profile] + self.patient_memory_tools,
-            name="patient_agent"
+            name="patient_agent",
+            prompt="""You are a patient profile management agent with access to memory tools and patient data operations.
+
+AVAILABLE TOOLS:
+- read_patient_profile: Read current patient profile from JSON
+- update_patient_profile: Update patient profile in JSON
+- update_semantic_memory: Store new information in semantic memory
+- search_semantic_memory: Retrieve information from semantic memory
+- store_episodic_memory: Store successful interactions
+- search_episodic_memory: Retrieve past interactions
+- update_procedural_memory: Update behavior rules
+- get_procedural_memory: Retrieve behavior rules
+- optimize_prompt: Optimize prompts using procedural memory
+- get_memory_summary: Get comprehensive memory summary
+
+INSTRUCTIONS:
+1. Always provide a conversational response to the user's input
+2. When asked about patient info → Use read_patient_profile and provide the information conversationally
+3. When given new patient info → Use update_patient_profile and confirm the update
+4. Be conversational, helpful, and provide meaningful responses
+
+EXAMPLES:
+- User: "What is my name?" → Check patient profile and respond: "Your name is [name]"
+- User: "Update my age to 35" → Update profile and respond: "I've updated your age to 35"
+- User: "I am allergic to penicillin" → Update profile and respond: "I've recorded your penicillin allergy"
+- User: "What are my chronic conditions?" → Check profile and list conditions conversationally"""
         )
         
         self.web_agent = create_react_agent(
             model=self.model,
             tools=[search_web] + self.web_memory_tools,
-            name="web_agent"
+            name="web_agent",
+            prompt="""You are a web search agent with access to memory tools and web search capabilities.
+
+AVAILABLE TOOLS:
+- search_web: Search the web for current information
+- update_semantic_memory: Store new information in semantic memory
+- search_semantic_memory: Retrieve information from semantic memory
+- store_episodic_memory: Store successful interactions
+- search_episodic_memory: Retrieve past interactions
+- update_procedural_memory: Update behavior rules
+- get_procedural_memory: Retrieve behavior rules
+- optimize_prompt: Optimize prompts using procedural memory
+- get_memory_summary: Get comprehensive memory summary
+
+INSTRUCTIONS:
+1. ALWAYS provide a conversational response to the user's input
+2. When asked for current information, news, or facts → Use search_web tool and provide the results conversationally
+3. NEVER output tool call syntax like <|python_tag|>search_web(...) - instead EXECUTE the tool and return the conversational result
+4. Be conversational, helpful, and provide meaningful responses
+5. If the search doesn't find relevant information, say so conversationally
+
+EXAMPLES:
+- User: "Who is the current US president?" → Search web and respond: "According to my search, [current president] is the current US president..."
+- User: "What's the weather like?" → Search web and provide: "Based on current information, the weather is..."
+- User: "When did superman release?" → Search web and respond: "Superman first appeared in Action Comics #1 on April 18, 1938..."
+
+IMPORTANT: Always execute tools and provide conversational responses, never output raw tool calls."""
         )
-        
-        self.text_agent = create_react_agent(
-            model=self.model,
-            tools=[summarize_text, query_database, extract_keywords] + self.text_memory_tools,
-            name="text_agent"
-        )
-        
-        self.file_agent = create_react_agent(
-            model=self.model,
-            tools=[read_file, write_file] + self.file_memory_tools,
-            name="file_agent"
-        )
-        
-        self.json_agent = create_react_agent(
-            model=self.model,
-            tools=[read_json_file, write_json_file, list_json_files] + self.json_memory_tools,
-            name="json_agent"
-        )
-        
-        # All agents created using create_react_agent
         
         self.text_agent = create_react_agent(
             model=self.model,
@@ -173,6 +204,13 @@ EXAMPLES:
 - User: "Write data to config.json" → Use write_json_file tool"""
         )
         
+        # Debug: Print agent types
+        logger.info(f"Patient agent type: {type(self.patient_agent)}")
+        logger.info(f"Text agent type: {type(self.text_agent)}")
+        logger.info(f"Web agent type: {type(self.web_agent)}")
+        logger.info(f"File agent type: {type(self.file_agent)}")
+        logger.info(f"JSON agent type: {type(self.json_agent)}")
+        
         # Create supervisor workflow
         self.workflow = create_supervisor(
             [self.patient_agent, self.web_agent, self.text_agent, self.file_agent, self.json_agent],
@@ -235,61 +273,50 @@ ROUTING INSTRUCTIONS:
                 logger.error("Supervisor workflow returned None as result.")
                 return "I apologize, but I encountered an internal error (no result)."
             
-            # Extract final response from messages
-            messages = result.get("messages", [])
-            final_response = "No response generated"
-            agent_names = {"web_agent", "text_agent", "patient_agent", "file_agent", "json_agent"}
-            handoff_phrases = {"Successfully transferred back to supervisor", "Transferred back to supervisor", "Agent handoff complete"}
-            
             # Debug: Print the result structure
             logger.info(f"Result keys: {list(result.keys())}")
-            logger.info(f"Messages count: {len(messages)}")
+            logger.info(f"Result type: {type(result)}")
             
-            if messages:
-                # Get the last assistant message that is NOT just an agent name or a handoff phrase
-                for i in range(len(messages)-1, -1, -1):
-                    message = messages[i]
-                    content = None
-                    if hasattr(message, 'content') and message.content:
-                        content = str(message.content).strip()
-                    elif isinstance(message, dict) and message.get("role") == "assistant" and message.get("content"):
-                        content = str(message.get("content")).strip()
-                    if content and content not in agent_names and content not in handoff_phrases:
-                        final_response = content
-                        logger.info(f"Found substantive assistant message: {final_response[:100]}...")
-                        break
-                else:
-                    # If only handoff phrase is present, show the previous assistant message with content
-                    for i in range(len(messages)-2, -1, -1):
-                        message = messages[i]
-                        content = None
-                        if hasattr(message, 'content') and message.content:
-                            content = str(message.content).strip()
-                        elif isinstance(message, dict) and message.get("role") == "assistant" and message.get("content"):
-                            content = str(message.get("content")).strip()
-                        if content and content not in agent_names and content not in handoff_phrases:
+            # Extract final response from messages
+            messages = result.get("messages", [])
+            logger.info(f"Messages count: {len(messages)}")
+            logger.info(f"Messages: {messages}")
+            
+            final_response = None
+
+            # Find the last assistant message with real content (not just agent/tool name)
+            for message in reversed(messages):
+                # Handle both dict format and AIMessage objects
+                if isinstance(message, dict):
+                    if (message.get("role") == "assistant" and message.get("content")):
+                        content = message["content"].strip()
+                        # Skip if content is just an agent/tool name
+                        if not (content.endswith("_agent") and content.replace('_agent', '').isidentifier()):
                             final_response = content
-                            logger.info(f"Found previous substantive assistant message: {final_response[:100]}...")
+                            logger.info(f"Found assistant message: {final_response[:100]}...")
                             break
-                    else:
-                        # If no substantive assistant message found, check for other possible response fields
-                        if "final_response" in result:
-                            final_response = str(result["final_response"])
-                        elif "next" in result:
-                            final_response = str(result["next"])
-                        else:
-                            final_response = "No response generated"
-            else:
-                # Check for other possible response fields
+                elif hasattr(message, 'content') and hasattr(message, 'name'):
+                    # Handle AIMessage objects
+                    content = str(message.content).strip()
+                    # Skip if content is just an agent/tool name or transfer messages
+                    if (not content.endswith("_agent") and 
+                        not content.startswith("Transferring") and
+                        not content.startswith("Successfully") and
+                        content):
+                        final_response = content
+                        logger.info(f"Found assistant message from {message.name}: {final_response[:100]}...")
+                        break
+            if not final_response:
+                # Fallbacks
                 if "final_response" in result:
                     final_response = str(result["final_response"])
                 elif "next" in result:
                     final_response = str(result["next"])
                 else:
                     final_response = "No response generated"
-            
+
             logger.info(f"Supervisor workflow completed for input: {user_input[:50]}...")
-            
+
             return final_response
             
         except Exception as e:

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Test script for patient agent."""
+"""Test script for file agent."""
 
 import os
 import sys
@@ -9,11 +9,11 @@ from langgraph.prebuilt import create_react_agent
 from langchain_ollama import ChatOllama
 from langchain_groq import ChatGroq
 from config.settings import settings
-from tools.patient_tools import read_patient_profile, update_patient_profile
+from tools.file_tools import read_file, write_file
 
-def test_patient_agent():
-    """Test the patient agent directly."""
-    print("Testing patient agent...")
+def test_file_agent():
+    """Test the file agent directly."""
+    print("Testing file agent...")
     
     # Initialize LLM
     if settings.USE_OLLAMA:
@@ -28,39 +28,37 @@ def test_patient_agent():
             temperature=0.3
         )
     
-    # Create patient agent with only core tools (no memory)
-    patient_agent = create_react_agent(
+    # Create file agent with only core tools (no memory)
+    file_agent = create_react_agent(
         model=model,
-        tools=[read_patient_profile, update_patient_profile],
-        name="patient_agent",
-        prompt="""You are a patient profile management agent.
+        tools=[read_file, write_file],
+        name="file_agent",
+        prompt="""You are a file management agent with access to file operations.
 
 AVAILABLE TOOLS:
-- read_patient_profile: Read current patient profile from JSON
-- update_patient_profile: Update patient profile in JSON
+- read_file: Read files from the data/docs directory
+- write_file: Write content to files in the data/docs directory
 
 INSTRUCTIONS:
-1. Always provide a conversational response to the user's input
-2. When asked about patient info → Use read_patient_profile and provide the information conversationally
-3. When given new patient info → Use update_patient_profile and confirm the update
-4. Be conversational, helpful, and provide meaningful responses
+1. When asked to read files → Use read_file tool
+2. When asked to write files → Use write_file tool
+3. The default directory for file operations is data/docs
+4. Be conversational and helpful with file-related queries
 
 EXAMPLES:
-- User: "What is my name?" → Check patient profile and respond: "Your name is [name]"
-- User: "Update my age to 35" → Update profile and respond: "I've updated your age to 35"
-- User: "I am allergic to penicillin" → Update profile and respond: "I've recorded your penicillin allergy"
-- User: "What are my chronic conditions?" → Check profile and list conditions conversationally"""
+- User: "Read example.txt" → Use read_file tool
+- User: "Write 'Hello World' to test.txt" → Use write_file tool"""
     )
     
-    print(f"Created patient agent: {patient_agent}")
+    print(f"Created file agent: {file_agent}")
     
     # Test cases
     test_cases = [
-        "What is my name?",
-        "What are my medical conditions?",
-        "Update my age to 30",
-        "I am allergic to peanuts",
-        "What is my current medication?"
+        "Read example.txt",
+        "Write 'Hello World' to test.txt",
+        "What files are available?",
+        "Read test.txt",
+        "Write 'This is a test file' to sample.txt"
     ]
     
     for i, test_input in enumerate(test_cases, 1):
@@ -75,7 +73,7 @@ EXAMPLES:
         
         try:
             # Call the agent
-            result = patient_agent.invoke(test_state)
+            result = file_agent.invoke(test_state)
             print(f"Result: {result}")
             
             # Extract the response
@@ -98,4 +96,4 @@ EXAMPLES:
             traceback.print_exc()
 
 if __name__ == "__main__":
-    test_patient_agent() 
+    test_file_agent() 

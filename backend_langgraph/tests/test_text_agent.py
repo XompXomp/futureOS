@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Test script for patient agent."""
+"""Test script for text agent."""
 
 import os
 import sys
@@ -9,11 +9,11 @@ from langgraph.prebuilt import create_react_agent
 from langchain_ollama import ChatOllama
 from langchain_groq import ChatGroq
 from config.settings import settings
-from tools.patient_tools import read_patient_profile, update_patient_profile
+from tools.text_tools import summarize_text, query_database, extract_keywords
 
-def test_patient_agent():
-    """Test the patient agent directly."""
-    print("Testing patient agent...")
+def test_text_agent():
+    """Test the text agent directly."""
+    print("Testing text agent...")
     
     # Initialize LLM
     if settings.USE_OLLAMA:
@@ -28,39 +28,42 @@ def test_patient_agent():
             temperature=0.3
         )
     
-    # Create patient agent with only core tools (no memory)
-    patient_agent = create_react_agent(
+    # Create text agent with only core tools (no memory)
+    text_agent = create_react_agent(
         model=model,
-        tools=[read_patient_profile, update_patient_profile],
-        name="patient_agent",
-        prompt="""You are a patient profile management agent.
+        tools=[summarize_text, query_database, extract_keywords],
+        name="text_agent",
+        prompt="""You are a text processing agent with access to various tools for text analysis.
 
 AVAILABLE TOOLS:
-- read_patient_profile: Read current patient profile from JSON
-- update_patient_profile: Update patient profile in JSON
+- summarize_text: Summarize long text content
+- query_database: Query the database for information  
+- extract_keywords: Extract key terms from text
 
 INSTRUCTIONS:
 1. Always provide a conversational response to the user's input
-2. When asked about patient info → Use read_patient_profile and provide the information conversationally
-3. When given new patient info → Use update_patient_profile and confirm the update
-4. Be conversational, helpful, and provide meaningful responses
+2. If the user asks about available agents, list all 5 agents: patient_agent, web_agent, text_agent, file_agent, json_agent
+3. For greetings like 'Hello', 'Hi', respond warmly and ask how you can help
+4. If the user asks for text analysis, use summarize_text or extract_keywords
+5. If the user asks for database queries, use query_database
+6. Be conversational, helpful, and provide meaningful responses
 
 EXAMPLES:
-- User: "What is my name?" → Check patient profile and respond: "Your name is [name]"
-- User: "Update my age to 35" → Update profile and respond: "I've updated your age to 35"
-- User: "I am allergic to penicillin" → Update profile and respond: "I've recorded your penicillin allergy"
-- User: "What are my chronic conditions?" → Check profile and list conditions conversationally"""
+- User: 'Hello' → 'Hello! How can I help you today?'
+- User: 'What agents do you have?' → 'I have 5 agents: patient_agent, web_agent, text_agent, file_agent, json_agent'
+- User: 'How are you?' → 'I'm doing well, thank you for asking! How can I assist you?'"""
     )
     
-    print(f"Created patient agent: {patient_agent}")
+    print(f"Created text agent: {text_agent}")
     
     # Test cases
     test_cases = [
-        "What is my name?",
-        "What are my medical conditions?",
-        "Update my age to 30",
-        "I am allergic to peanuts",
-        "What is my current medication?"
+        "Hello",
+        "What agents do you have?",
+        "How are you?",
+        "Can you summarize this text: The quick brown fox jumps over the lazy dog.",
+        "What tools can you use?",
+        "Extract keywords from: artificial intelligence machine learning deep learning"
     ]
     
     for i, test_input in enumerate(test_cases, 1):
@@ -75,7 +78,7 @@ EXAMPLES:
         
         try:
             # Call the agent
-            result = patient_agent.invoke(test_state)
+            result = text_agent.invoke(test_state)
             print(f"Result: {result}")
             
             # Extract the response
@@ -98,4 +101,4 @@ EXAMPLES:
             traceback.print_exc()
 
 if __name__ == "__main__":
-    test_patient_agent() 
+    test_text_agent() 
