@@ -30,7 +30,7 @@ class Settings:
     
     # Ollama Settings (for local models)
     USE_OLLAMA = True #os.getenv("USE_OLLAMA", "true").lower() == "true"
-    USE_LOCAL = True
+    USE_LOCAL = False
     if (USE_LOCAL):
         OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434") # Using model from local machine
         OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3.2:3b")

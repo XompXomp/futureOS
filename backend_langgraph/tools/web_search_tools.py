@@ -262,7 +262,29 @@ def search_web(state: Dict[str, Any]) -> Dict[str, Any]:
     """Search the web for information using Google PSE with LLM-driven query extraction."""
     
     try:
-        user_input = state.get("user_input", "")
+        # Handle different input formats
+        user_input = ""
+        if isinstance(state, dict):
+            # Try different possible keys for user input
+            user_input = (state.get("user_input") or 
+                         state.get("question") or 
+                         state.get("query") or 
+                         state.get("text") or 
+                         "")
+            
+            # If we have a question or query, use it directly
+            if not user_input and "question" in state:
+                user_input = state["question"]
+            elif not user_input and "query" in state:
+                user_input = state["query"]
+        
+        # If still no user input, try to extract from the entire state
+        if not user_input:
+            # Look for any string value that might be the query
+            for key, value in state.items():
+                if isinstance(value, str) and value.strip():
+                    user_input = value
+                    break
         
         if not google_pse_available:
             state["error_message"] = "Google PSE search is not available. Please check your configuration."
@@ -295,20 +317,25 @@ def search_web(state: Dict[str, Any]) -> Dict[str, Any]:
         # Perform semantic search on results
         semantic_results = semantic_search_documents(search_query, results, top_k=3)
         
-        # Format results
-        results_text = f"Web search results (semantic search) for '{search_query}':\n\n"
+        # Format results with better structure
+        results_text = f"Web search results for '{search_query}':\n\n"
         for i, result in enumerate(semantic_results, 1):
             if 'content' in result:
                 # Semantic search result
-                results_text += f"{i}. {result['metadata'].get('title', 'No title')}\n"
-                results_text += f"   URL: {result['metadata'].get('url', 'No URL')}\n"
-                results_text += f"   Content: {result['content'][:200]}...\n"
-                results_text += f"   Similarity Score: {result['similarity_score']:.3f}\n\n"
+                title = result['metadata'].get('title', 'No title')
+                url = result['metadata'].get('url', 'No URL')
+                content = result['content'][:300]  # Increased content length
+                score = result['similarity_score']
+                
+                results_text += f"{i}. {title}\n"
+                results_text += f"   Source: {url}\n"
+                results_text += f"   Summary: {content}\n"
+                results_text += f"   Relevance: {score:.3f}\n\n"
             else:
                 # Regular search result
                 results_text += f"{i}. {result['title']}\n"
-                results_text += f"   URL: {result['link']}\n"
-                results_text += f"   Snippet: {result['snippet']}\n\n"
+                results_text += f"   Source: {result['link']}\n"
+                results_text += f"   Summary: {result['snippet']}\n\n"
         
         # Add tool result to state
         tool_results = state.get("tool_results", [])
@@ -335,7 +362,29 @@ def search_documents(state: Dict[str, Any]) -> Dict[str, Any]:
     """Search and return documents using Google PSE with semantic search."""
     
     try:
-        user_input = state.get("user_input", "")
+        # Handle different input formats
+        user_input = ""
+        if isinstance(state, dict):
+            # Try different possible keys for user input
+            user_input = (state.get("user_input") or 
+                         state.get("question") or 
+                         state.get("query") or 
+                         state.get("text") or 
+                         "")
+            
+            # If we have a question or query, use it directly
+            if not user_input and "question" in state:
+                user_input = state["question"]
+            elif not user_input and "query" in state:
+                user_input = state["query"]
+        
+        # If still no user input, try to extract from the entire state
+        if not user_input:
+            # Look for any string value that might be the query
+            for key, value in state.items():
+                if isinstance(value, str) and value.strip():
+                    user_input = value
+                    break
         
         if not google_pse_available:
             state["error_message"] = "Google PSE search is not available. Please check your configuration."
@@ -368,11 +417,14 @@ def search_documents(state: Dict[str, Any]) -> Dict[str, Any]:
         # Perform semantic search on documents
         semantic_results = semantic_search_documents(search_query, documents, top_k=3)
         
-        # Format documents
-        documents_text = f"Documents found (semantic search) for '{search_query}':\n\n"
+        # Format documents with better structure
+        documents_text = f"Documents found for '{search_query}':\n\n"
         for i, result in enumerate(semantic_results, 1):
-            documents_text += f"Document {i} (Similarity: {result['similarity_score']:.3f}):\n"
-            documents_text += f"{result['content']}\n\n"
+            content = result['content'][:400]  # Increased content length
+            score = result['similarity_score']
+            
+            documents_text += f"Document {i} (Relevance: {score:.3f}):\n"
+            documents_text += f"{content}\n\n"
         
         # Add tool result to state
         tool_results = state.get("tool_results", [])
