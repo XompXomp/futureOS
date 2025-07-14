@@ -1,100 +1,106 @@
-# LangGraph Backend
+# LangGraph Multi-Agent Backend
 
-A patient management AI backend built with LangGraph and LangMem for advanced stateful workflows and memory management.
+## Overview
 
-## Features
+This backend implements a fully LLM-driven, multi-agent architecture using LangGraph. Each agent (Patient, File, Web, Text, Orchestrator) uses advanced memory (procedural, episodic, semantic) and prompt optimization. All routing and tool selection is LLM-driven, and all agents use vector semantic search for memory and context.
 
-- **LangGraph Workflows**: Stateful, directed graph-based workflows
-- **LangMem Integration**: Semantic and episodic memory for context retention
-- **Modular Tools**: Patient profile management, file operations, web search, text processing
-- **LLM Integration**: Support for Groq and Ollama models
-- **Error Handling**: Robust error handling and logging
+---
 
-## Structure
+## Directory Structure (Key Files)
 
 ```
 backend_langgraph/
-├── config/           # Configuration settings
-├── graph/           # LangGraph workflow definitions
-├── nodes/           # Graph nodes (input processing, routing, response generation)
-├── state/           # State schema definitions
-├── tools/           # Tool implementations as graph nodes
-├── utils/           # Utilities (logging, etc.)
-├── main.py          # Main entry point
-└── requirements.txt # Dependencies
+├── agents/
+│   ├── orchestrator_agent.py      # LLM-driven router, advanced memory, routes to specialized agents
+│   ├── patient_agent.py          # Patient profile agent (ReAct, advanced memory)
+│   ├── file_agent.py             # File operations agent (ReAct, advanced memory)
+│   ├── web_agent.py              # Web search agent (ReAct, advanced memory)
+│   └── text_agent.py             # Text processing agent (ReAct, advanced memory)
+├── tools/
+│   ├── patient_tools.py          # Patient profile read/update tools (semantic extraction)
+│   ├── file_tools.py             # File read/write tools (semantic extraction)
+│   ├── web_search_tools.py       # Web search/weather tools (semantic extraction)
+│   └── text_tools.py             # Summarization, database, keyword tools (semantic extraction)
+├── graph/
+│   └── multi_agent_graph.py      # Defines the workflow graph (entry, agent executor)
+├── nodes/
+│   └── input_processor.py        # Preprocesses user input, manages state
+├── state/
+│   └── schema.py                 # State schema for workflow
+├── config/
+│   └── settings.py               # Configuration (paths, constants)
+├── utils/
+│   └── logging_config.py         # Logging setup
+├── data/
+│   └── docs/
+│       └── patient_profile.json  # Example patient profile data
+├── main.py                       # Main entry point (CLI chat loop)
+├── requirements.txt              # Python dependencies
+├── README.md                     # Project overview and usage
+└── MIGRATION_GUIDE.md            # Migration guide
 ```
 
-## Key Components
+---
 
-### State Management
-- `PatientState`: TypedDict defining the workflow state
-- Includes conversation history, patient profile, tool results, and memory
+## Agent Design
 
-### Graph Nodes
-- **Input Processor**: Processes user input and initializes state
-- **Memory Retriever**: Retrieves relevant context from LangMem
-- **LLM Router**: Routes to appropriate tools based on user input
-- **Response Generator**: Creates final responses using LLM
+- **OrchestratorAgent**: LLM-driven router, advanced memory, routes to specialized agents
+- **PatientAgent**: Handles patient profile tasks, uses procedural, episodic, and semantic memory
+- **FileAgent**: Handles file operations, uses procedural, episodic, and semantic memory
+- **WebAgent**: Handles web search, uses procedural, episodic, and semantic memory
+- **TextAgent**: Handles text processing, uses procedural, episodic, and semantic memory
 
-### Tools (as Graph Nodes)
-- **Patient Tools**: Read/update patient profiles
-- **File Tools**: Read/write files
-- **Web Search**: Google PSE integration
-- **Text Tools**: Summarization and database queries
+All agents use:
+- **ReAct pattern** for LLM-driven reasoning and tool selection
+- **Prompt optimization** for better LLM performance
+- **Vector semantic search** for memory/context retrieval
 
-### Memory System
-- **Semantic Memory**: Stores and retrieves semantic information
-- **Episodic Memory**: Stores conversation history and events
-- **Configurable**: Similarity thresholds and retrieval parameters
+---
 
-## Usage
+## Memory Types
 
-1. Install dependencies:
-```bash
-pip install -r requirements.txt
-```
+- **Procedural Memory**: Stores workflows, procedures, and how-tos
+- **Episodic Memory**: Stores past experiences, conversations, and events
+- **Semantic Memory**: Stores domain-specific knowledge and facts
+- **Prompt Optimization**: Improves LLM prompt quality for each agent
 
-2. Set up environment variables:
-```bash
-# .env file
-OPENAI_API_KEY=your_key
-GOOGLE_PSE_API_KEY=your_key
-GOOGLE_PSE_CX=your_cx
-```
+Each agent has its own memory namespaces for these types.
 
-3. Run the agent:
-```bash
-python main.py
-```
+---
 
-## Migration from LangChain
+## How to Run
 
-This backend represents a migration from the original LangChain implementation:
+1. **Install dependencies:**
+   ```bash
+   pip install -r backend_langgraph/requirements.txt
+   ```
+2. **Configure settings:**
+   - Edit `backend_langgraph/config/settings.py` for paths, LLM keys, etc.
+3. **Run the main app:**
+   ```bash
+   python backend_langgraph/main.py
+   ```
+4. **Interact via CLI:**
+   - Type your queries and the orchestrator will route them to the appropriate agent.
 
-### Key Differences
-- **Stateful Workflows**: LangGraph provides explicit state management
-- **Advanced Memory**: LangMem offers semantic and episodic memory
-- **Modular Design**: Tools are implemented as graph nodes
-- **Better Control Flow**: Conditional routing and explicit state transitions
+---
 
-### Benefits
-- **Better Memory**: Semantic search and episodic recall
-- **Stateful Operations**: Maintains context across interactions
-- **Explicit Workflows**: Clear data flow and decision points
-- **Scalability**: Easier to extend and modify workflows
+## Extending the System
 
-## Configuration
+- **Add new tools:** Implement a new function in the appropriate `tools/` file and register it with the relevant agent.
+- **Add new agents:** Create a new agent class in `agents/`, add memory tools, and register it in the orchestrator.
+- **Customize memory:** Adjust namespaces or add new memory types as needed.
 
-Key settings in `config/settings.py`:
-- Memory retrieval parameters
-- LLM model selection
-- Tool routing thresholds
-- Error handling settings
+---
 
-## Development
+## Key Features
 
-The modular structure makes it easy to:
-- Add new tools as graph nodes
-- Modify routing logic
-- Extend memory capabilities
-- Customize state schema 
+- LLM-driven multi-agent orchestration
+- Advanced memory (procedural, episodic, semantic) for each agent
+- Prompt optimization for all LLM calls
+- Vector semantic search for memory/context
+- Modular, extensible, and fully state-driven
+
+---
+
+For migration details, see `MIGRATION_GUIDE.md`. 

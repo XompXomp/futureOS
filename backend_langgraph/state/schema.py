@@ -2,7 +2,6 @@
 
 from typing import TypedDict, List, Dict, Any, Optional
 from langchain_core.messages import BaseMessage, HumanMessage, AIMessage
-from langmem.knowledge.extraction import Memory
 
 class PatientState(TypedDict):
     """State schema for the patient management LangGraph."""
@@ -20,7 +19,7 @@ class PatientState(TypedDict):
     current_tool: Optional[str]
     
     # Memory and context
-    memory: Memory
+    memory: Dict[str, Any]
     retrieved_context: List[Dict[str, Any]]
     
     # Workflow control

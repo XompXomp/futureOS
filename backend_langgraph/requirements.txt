@@ -1,7 +1,6 @@
 # LangGraph Backend Requirements
-# Core LangGraph and LangMem
+# Core LangGraph (LangMem removed)
 langgraph>=0.3.23
-langmem>=0.0.28
 langchain==0.3.26
 langchain-community==0.3.27
 langchain-core==0.3.68
@@ -9,10 +8,13 @@ langchain-core==0.3.68
 # LLM Providers
 langchain-groq==0.3.5
 langchain-ollama==0.3.3
+langchain-openai==0.3.1
 
 # Vector Search and Embeddings
 faiss-cpu==1.11.0
 sentence-transformers==5.0.0
+numpy==1.26.4
+scikit-learn==1.5.2
 
 # Database and File Operations
 SQLAlchemy==2.0.41
@@ -30,6 +32,9 @@ google-api-python-client==2.175.0
 nltk==3.9.1
 beautifulsoup4==4.13.4
 pypdf==5.7.0
+
+# YAML Support for Memory System
+PyYAML==6.0.1
 
 # Utilities
 pydantic==2.11.4
