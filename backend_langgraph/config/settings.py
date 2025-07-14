@@ -59,4 +59,7 @@ class Settings:
     MEMORY_RETRIEVAL_K = 5
     MEMORY_SIMILARITY_THRESHOLD = 0.7
 
+    # Memory base path for CurorMemorySystem
+    MEMORY_BASE_PATH = os.path.join(DOCS_FOLDER, "memory")
+
 settings = Settings() 

@@ -1,3 +1,5 @@
+appointment_preferences:
+  appointment_time: evening
 communication_style:
   preferred_analogies: true
   response_length: detailed
@@ -11,10 +13,3 @@ medical_preferences:
   family_involvement: true
   information_sharing: detailed
   treatment_approach: conservative
-web_search_procedure:
-  last_used: '2024-01-15 10:30:00'
-  steps:
-  - extract_query
-  - search_web
-  - format_results
-  success_rate: 0.95

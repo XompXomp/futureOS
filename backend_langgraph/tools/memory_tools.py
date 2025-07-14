@@ -1,6 +1,7 @@
 from typing import Dict, Any, List
 from utils.memory_system import CurorMemorySystem
 from utils.logging_config import logger
+from config.settings import settings
 
 def create_memory_tools(patient_id: str = "default_patient"):
     """
@@ -12,7 +13,7 @@ def create_memory_tools(patient_id: str = "default_patient"):
     Returns:
         List of memory tools
     """
-    memory_system = CurorMemorySystem(patient_id)
+    memory_system = CurorMemorySystem(patient_id, base_path=settings.MEMORY_BASE_PATH)
     
     def update_semantic_memory_tool(state: Dict[str, Any]) -> Dict[str, Any]:
         """Tool to update semantic memory with new information."""
@@ -150,7 +151,7 @@ def create_memory_tools(patient_id: str = "default_patient"):
             }
     
     def update_procedural_memory_tool(state: Dict[str, Any]) -> Dict[str, Any]:
-        """Tool to update procedural memory."""
+        """Tool to update procedural memory. If rule_type is 'prompt_rules', use LLM to optimize the prompt before storing."""
         try:
             rule_type = state.get("rule_type", "")
             rule_data = state.get("rule_data", {})
@@ -160,9 +161,36 @@ def create_memory_tools(patient_id: str = "default_patient"):
                     "error": "Rule type and rule data are required for procedural memory update",
                     "valid_fields": ["rule_type", "rule_data"]
                 }
-            
+            # If updating prompt_rules, optimize the prompt with LLM first
+            if rule_type == "prompt_rules":
+                from langchain_ollama import ChatOllama
+                from langchain_groq import ChatGroq
+                from config.settings import settings
+                # Assume rule_data is a dict of {rule_name: base_prompt}
+                optimized_rules = {}
+                for rule_name, base_prompt in rule_data.items():
+                    if settings.USE_OLLAMA:
+                        llm = ChatOllama(
+                            model=settings.OLLAMA_MODEL,
+                            base_url=settings.OLLAMA_BASE_URL,
+                            temperature=0.3
+                        )
+                    else:
+                        llm = ChatGroq(
+                            model=settings.LLM_MODEL,
+                            temperature=0.3
+                        )
+                    prompt = f"You are an expert prompt engineer. Optimize the following prompt for clarity, effectiveness, and helpfulness. Return only the improved prompt.\n\nBase prompt:\n{base_prompt}"
+                    response = llm.invoke(prompt)
+                    if hasattr(response, "content") and isinstance(response.content, str):
+                        optimized = response.content.strip()
+                    elif isinstance(response, str):
+                        optimized = response.strip()
+                    else:
+                        optimized = base_prompt
+                    optimized_rules[rule_name] = optimized
+                rule_data = optimized_rules
             memory_system.update_procedural_memory(rule_type, rule_data)
-            
             return {
                 "status": "success",
                 "action": "procedural_memory_updated",
@@ -170,7 +198,6 @@ def create_memory_tools(patient_id: str = "default_patient"):
                 "rule_data": rule_data,
                 "patient_id": patient_id
             }
-            
         except Exception as e:
             logger.error(f"Error in update_procedural_memory_tool: {e}")
             return {
@@ -200,36 +227,6 @@ def create_memory_tools(patient_id: str = "default_patient"):
                 "rule_type": state.get("rule_type")
             }
     
-    def optimize_prompt_tool(state: Dict[str, Any]) -> Dict[str, Any]:
-        """Tool to optimize prompts using procedural memory."""
-        try:
-            base_prompt = state.get("base_prompt", "")
-            context = state.get("context", {})
-            
-            if not base_prompt:
-                return {
-                    "error": "Base prompt is required for optimization",
-                    "valid_fields": ["base_prompt", "context"]
-                }
-            
-            optimized_prompt = memory_system.optimize_prompt(base_prompt, context)
-            
-            return {
-                "status": "success",
-                "action": "prompt_optimized",
-                "base_prompt": base_prompt,
-                "optimized_prompt": optimized_prompt,
-                "context": context,
-                "patient_id": patient_id
-            }
-            
-        except Exception as e:
-            logger.error(f"Error in optimize_prompt_tool: {e}")
-            return {
-                "error": f"Prompt optimization failed: {str(e)}",
-                "base_prompt": state.get("base_prompt", "")
-            }
-    
     def get_memory_summary_tool(state: Dict[str, Any]) -> Dict[str, Any]:
         """Tool to get a comprehensive memory summary."""
         try:
@@ -255,7 +252,6 @@ def create_memory_tools(patient_id: str = "default_patient"):
     search_episodic_memory_tool.__name__ = "search_episodic_memory"
     update_procedural_memory_tool.__name__ = "update_procedural_memory"
     get_procedural_memory_tool.__name__ = "get_procedural_memory"
-    optimize_prompt_tool.__name__ = "optimize_prompt"
     get_memory_summary_tool.__name__ = "get_memory_summary"
     
     return [
@@ -265,6 +261,5 @@ def create_memory_tools(patient_id: str = "default_patient"):
         search_episodic_memory_tool,
         update_procedural_memory_tool,
         get_procedural_memory_tool,
-        optimize_prompt_tool,
         get_memory_summary_tool
     ] 

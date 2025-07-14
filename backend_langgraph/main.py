@@ -2,10 +2,10 @@
 
 import os
 from utils.logging_config import logger
-from supervisor_workflow import SupervisorWorkflow
+from supervisor_workflow import EnhancedSupervisorWorkflow
 
 def main():
-    """Main function to run the LangGraph Supervisor workflow."""
+    """Main function to run the Enhanced LangGraph Supervisor workflow."""
     try:
         # Create necessary directories
         os.makedirs("data", exist_ok=True)
@@ -14,12 +14,12 @@ def main():
         os.makedirs(logs_dir, exist_ok=True)
         
         # Initialize and run supervisor workflow
-        workflow = SupervisorWorkflow()
+        workflow = EnhancedSupervisorWorkflow()
         workflow.chat()
         
     except Exception as e:
         logger.error(f"Error in main: {str(e)}")
-        print(f"Failed to start supervisor workflow: {str(e)}")
+        print(f"Failed to start enhanced supervisor workflow: {str(e)}")
 
 if __name__ == "__main__":
     main() 

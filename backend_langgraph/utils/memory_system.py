@@ -338,18 +338,68 @@ class CurorMemorySystem:
     def update_procedural_memory(self, rule_type: str, rule_data: Dict[str, Any]):
         """
         Update procedural memory with new behavior rules.
-        
+        Adds conflict resolution: if a preference exists in multiple categories (e.g., 'preference' and 'appointment_preferences'), remove the redundant/older entry and keep only the most specific or most recent. Also normalizes generic categories like 'preference' to canonical ones if possible.
+        Additionally, if a key (e.g., appointment_preferences) is present both as a top-level key and as a nested key under another category (e.g., interaction_patterns), remove the nested/less-specific occurrence and keep only the canonical top-level entry.
         Args:
             rule_type: Type of rule (e.g., 'communication_style', 'interaction_patterns')
             rule_data: The rule data to update
         """
         try:
-            if rule_type not in self.prompt_rules:
-                self.prompt_rules[rule_type] = {}
-            
-            self.prompt_rules[rule_type].update(rule_data)
+            # Canonical mapping for normalization
+            canonical_map = {
+                'preference': {
+                    'appointment_time': 'appointment_preferences',
+                    'tone': 'communication_style',
+                }
+            }
+            # Normalize rule_type if possible
+            if rule_type == 'preference':
+                for k, v in rule_data.items():
+                    if k in canonical_map['preference']:
+                        # Move to canonical category
+                        canonical_type = canonical_map['preference'][k]
+                        if canonical_type not in self.prompt_rules:
+                            self.prompt_rules[canonical_type] = {}
+                        self.prompt_rules[canonical_type][k] = v
+                        # Remove from 'preference' if exists
+                        if 'preference' in self.prompt_rules and k in self.prompt_rules['preference']:
+                            del self.prompt_rules['preference'][k]
+                        logger.info(f"Normalized '{k}' from 'preference' to '{canonical_type}'")
+                    else:
+                        # Keep in 'preference' if no canonical mapping
+                        if 'preference' not in self.prompt_rules:
+                            self.prompt_rules['preference'] = {}
+                        self.prompt_rules['preference'][k] = v
+                # Clean up empty 'preference' dict
+                if 'preference' in self.prompt_rules and not self.prompt_rules['preference']:
+                    del self.prompt_rules['preference']
+            else:
+                # For specific rule_types, update and remove redundant entries from 'preference'
+                if rule_type not in self.prompt_rules:
+                    self.prompt_rules[rule_type] = {}
+                for k, v in rule_data.items():
+                    self.prompt_rules[rule_type][k] = v
+                    # Remove from 'preference' if redundant
+                    if 'preference' in self.prompt_rules and k in self.prompt_rules['preference']:
+                        del self.prompt_rules['preference'][k]
+                        logger.info(f"Removed redundant '{k}' from 'preference' after updating '{rule_type}'")
+                # Clean up empty 'preference' dict
+                if 'preference' in self.prompt_rules and not self.prompt_rules['preference']:
+                    del self.prompt_rules['preference']
+            # --- Enhanced conflict resolution for nested keys ---
+            # If a key (e.g., appointment_preferences) is present both as a top-level key and as a nested key under another category, remove the nested occurrence
+            for top_key in list(self.prompt_rules.keys()):
+                if top_key in self.prompt_rules:
+                    for nested_key in list(self.prompt_rules[top_key].keys()):
+                        # If the nested_key is also a top-level key and not the same as the parent
+                        if nested_key in self.prompt_rules and top_key != nested_key:
+                            # Remove the nested occurrence
+                            del self.prompt_rules[top_key][nested_key]
+                            logger.info(f"Removed nested occurrence of '{nested_key}' from '{top_key}' to resolve conflict with top-level entry.")
+                    # Clean up empty dicts
+                    if isinstance(self.prompt_rules[top_key], dict) and not self.prompt_rules[top_key]:
+                        del self.prompt_rules[top_key]
             self._save_prompt_rules(self.prompt_rules)
-            
             logger.info(f"Procedural memory updated: {rule_type}")
         except Exception as e:
             logger.error(f"Error updating procedural memory: {e}")
