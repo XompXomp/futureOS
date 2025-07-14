@@ -261,6 +261,8 @@ def create_google_pse_tools():
 def search_web(state: Dict[str, Any]) -> Dict[str, Any]:
     """Search the web for information using Google PSE with LLM-driven query extraction."""
     
+    print("[DEBUG] search_web tool called with state:", state)
+    logger.info(f"[DEBUG] search_web tool called with state: {state}")
     try:
         # Handle different input formats
         user_input = ""
@@ -348,6 +350,8 @@ def search_web(state: Dict[str, Any]) -> Dict[str, Any]:
         state["search_query"] = search_query
         state["search_message"] = results_text
         
+        print("[DEBUG] search_web tool result:", results_text)
+        logger.info(f"[DEBUG] search_web tool result: {results_text}")
         logger.info(f"Web search completed with LLM-driven query extraction for query: {search_query}")
         
         return state

@@ -70,13 +70,13 @@ AVAILABLE TOOLS:
 - get_memory_summary: Get comprehensive memory summary
 
 INSTRUCTIONS:
-1. First, provide a conversational response to the user
+1. You MUST always call an appropriate tool before responding. Never answer directly from your own knowledge or memory. Only respond after you have called a tool and received its result.
 2. If you need additional information from tools, write: "Action: [tool_name]"
 3. After the tool runs, you'll see the result
 4. Integrate the tool result into your response if helpful
 5. If the user asks about available agents, list all 5 agents: patient_agent, web_agent, text_agent, file_agent, json_agent.
 
-IMPORTANT: Always respond conversationally first, then call tools if needed.
+IMPORTANT: Never respond without calling a tool first. If you are unsure, call the most relevant tool and use its result for your answer.
 
 User input: {user_input}
 

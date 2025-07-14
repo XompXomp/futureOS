@@ -1,0 +1,13 @@
+{
+  "id": "9224faf0-59e4-44a5-97f2-d017c3c4a402",
+  "interaction_type": "web_search",
+  "content": "User asked about weather conditions",
+  "reasoning_context": "Used web search to find current weather information",
+  "outcome": "Provided detailed weather forecast for multiple locations",
+  "timestamp": "2025-07-14T10:37:20.057283",
+  "metadata": {
+    "search_query": "weather today",
+    "results_count": 3
+  },
+  "patient_id": "test_patient_001"
+}

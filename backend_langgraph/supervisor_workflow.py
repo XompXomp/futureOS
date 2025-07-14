@@ -284,33 +284,36 @@ ROUTING INSTRUCTIONS:
             
             final_response = None
 
-            # Find the last assistant message with real content (not just agent/tool name)
-            for message in reversed(messages):
-                # Handle both dict format and AIMessage objects
-                if isinstance(message, dict):
-                    if (message.get("role") == "assistant" and message.get("content")):
-                        content = message["content"].strip()
-                        # Skip if content is just an agent/tool name
-                        if not (content.endswith("_agent") and content.replace('_agent', '').isidentifier()):
+            # Prefer explicit final_response from result if present and non-empty
+            if result.get("final_response"):
+                final_response = str(result["final_response"])
+                logger.info(f"Using explicit final_response: {final_response[:100]}...")
+            else:
+                # Find the last assistant message with real content (not just agent/tool name)
+                for message in reversed(messages):
+                    # Handle both dict format and AIMessage objects
+                    if isinstance(message, dict):
+                        if (message.get("role") == "assistant" and message.get("content")):
+                            content = message["content"].strip()
+                            # Skip if content is just an agent/tool name
+                            if not (content.endswith("_agent") and content.replace('_agent', '').isidentifier()):
+                                final_response = content
+                                logger.info(f"Found assistant message: {final_response[:100]}...")
+                                break
+                    elif hasattr(message, 'content') and hasattr(message, 'name'):
+                        # Handle AIMessage objects
+                        content = str(message.content).strip()
+                        # Skip if content is just an agent/tool name or transfer messages
+                        if (not content.endswith("_agent") and 
+                            not content.startswith("Transferring") and
+                            not content.startswith("Successfully") and
+                            content):
                             final_response = content
-                            logger.info(f"Found assistant message: {final_response[:100]}...")
+                            logger.info(f"Found assistant message from {message.name}: {final_response[:100]}...")
                             break
-                elif hasattr(message, 'content') and hasattr(message, 'name'):
-                    # Handle AIMessage objects
-                    content = str(message.content).strip()
-                    # Skip if content is just an agent/tool name or transfer messages
-                    if (not content.endswith("_agent") and 
-                        not content.startswith("Transferring") and
-                        not content.startswith("Successfully") and
-                        content):
-                        final_response = content
-                        logger.info(f"Found assistant message from {message.name}: {final_response[:100]}...")
-                        break
             if not final_response:
                 # Fallbacks
-                if "final_response" in result:
-                    final_response = str(result["final_response"])
-                elif "next" in result:
+                if "next" in result:
                     final_response = str(result["next"])
                 else:
                     final_response = "No response generated"
@@ -345,9 +348,28 @@ ROUTING INSTRUCTIONS:
                 if not user_input:
                     continue
                 
-                response = self.run(user_input)
-                print(f"\nAgent: {response}")
-                
+                # Get the full result dict (not just the final response)
+                config = {
+                    "configurable": {
+                        "thread_id": "default_thread",
+                        "checkpoint_ns": "supervisor_workflow"
+                    }
+                }
+                result = self.app.invoke({"messages": [{"role": "user", "content": user_input}]}, config=config)
+                messages = result.get("messages", [])
+                print("\n--- Conversation Trace ---")
+                for i, msg in enumerate(messages):
+                    if isinstance(msg, dict):
+                        role = msg.get("role", "unknown")
+                        content = msg.get("content", "")
+                        print(f"{i+1}. {role}: {content}")
+                    else:
+                        print(f"{i+1}. {msg}")
+                print("--- End Trace ---\n")
+                # Optionally, still print the final response for convenience
+                final_response = result.get("final_response")
+                if final_response:
+                    print(f"Agent (final response): {final_response}\n")
             except KeyboardInterrupt:
                 print("\nGoodbye!")
                 break

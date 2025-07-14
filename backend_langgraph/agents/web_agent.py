@@ -68,12 +68,12 @@ AVAILABLE TOOLS:
 - get_memory_summary: Get comprehensive memory summary
 
 INSTRUCTIONS:
-1. First, provide a conversational response to the user
+1. You MUST always call an appropriate tool before responding. Never answer directly from your own knowledge or memory. Only respond after you have called a tool and received its result.
 2. If you need to search the web, write: "Action: search_web"
 3. After the tool runs, you'll see the result
 4. Integrate the search result into your response if helpful
 
-IMPORTANT: Always respond conversationally first, then call tools if needed.
+IMPORTANT: Never respond without calling a tool first. If you are unsure, call the most relevant tool and use its result for your answer.
 
 User input: {user_input}
 
@@ -125,6 +125,12 @@ Let's start:"""
                             # Add tool result to response
                             response_text += f"\n\nTool Result: {tool_result}"
                             break
+            # Fallback: If no tool was called, always call search_web with user input
+            if not tool_called:
+                logger.info("No tool call detected in LLM response. Forcing search_web tool call.")
+                tool_result = self._call_tool("search_web", state)
+                tool_called = True
+                response_text += f"\n\nTool Result: {tool_result}"
             
             # Add the interaction to messages
             state["messages"].append({"role": "user", "content": user_input})

@@ -75,7 +75,7 @@ class PatientAgent:
         instructions = """
 You are a patient profile management agent using the Curor Memory System.
 
-CRITICAL: You MUST use the memory tools to store and retrieve information. Do NOT just respond with text - you MUST call the tools.
+CRITICAL: You MUST always call an appropriate tool before responding. Never answer directly from your own knowledge or memory. Only respond after you have called a tool and received its result.
 
 AVAILABLE TOOLS:
 - update_semantic_memory: Store new patient information in semantic memory
@@ -110,7 +110,7 @@ EXAMPLES:
   → Call search_semantic_memory with query "chronic conditions"
   → Respond with the result
 
-IMPORTANT: Never respond with patient information without first calling search_semantic_memory. Never store information without calling update_semantic_memory."""
+IMPORTANT: Never respond with patient information or any answer without first calling a tool. If you are unsure, call the most relevant tool and use its result for your answer."""
         
         # Create system message
         system_message = SystemMessage(content=instructions)
@@ -161,7 +161,7 @@ IMPORTANT: Never respond with patient information without first calling search_s
                 return state
             
             # Create a system prompt that describes the agent's capabilities
-            system_prompt = f"""You are a patient profile management agent with access to memory tools and patient data management capabilities.\n\nAVAILABLE TOOLS:\n- read_patient_profile: Read current patient profile from JSON\n- update_patient_profile: Update patient profile in JSON\n- update_semantic_memory: Store new patient information in semantic memory\n- search_semantic_memory: Retrieve patient information from semantic memory\n- store_episodic_memory: Store successful interactions and their outcomes\n- search_episodic_memory: Retrieve past interactions\n- update_procedural_memory: Update behavior rules and preferences\n- get_procedural_memory: Retrieve behavior rules and preferences\n- optimize_prompt: Optimize prompts using procedural memory\n- get_memory_summary: Get comprehensive memory summary\n\nINSTRUCTIONS:\n1. When asked about patient info → ALWAYS mention that you can search semantic memory\n2. When given new patient info → ALWAYS mention that you can update semantic memory\n3. When successful interactions occur → ALWAYS mention that you can store episodic memory\n4. When behavior preferences change → ALWAYS mention that you can update procedural memory\n5. Be conversational and helpful with patient-related queries\n\nEXAMPLES:\n- User: \"What is my name?\" → Mention search_semantic_memory tool\n- User: \"Update my age to 35\" → Mention update_semantic_memory tool\n- User: \"I am allergic to penicillin\" → Mention update_semantic_memory tool\n- User: \"What are my chronic conditions?\" → Mention search_semantic_memory tool\n\nUser input: {user_input}\n\nPlease provide a helpful response:"""
+            system_prompt = f"""You are a patient profile management agent with access to memory tools and patient data management capabilities.\n\nAVAILABLE TOOLS:\n- read_patient_profile: Read current patient profile from JSON\n- update_patient_profile: Update patient profile in JSON\n- update_semantic_memory: Store new patient information in semantic memory\n- search_semantic_memory: Retrieve patient information from semantic memory\n- store_episodic_memory: Store successful interactions and their outcomes\n- search_episodic_memory: Retrieve past interactions\n- update_procedural_memory: Update behavior rules and preferences\n- get_procedural_memory: Retrieve behavior rules and preferences\n- optimize_prompt: Optimize prompts using procedural memory\n- get_memory_summary: Get comprehensive memory summary\n\nINSTRUCTIONS:\n1. You MUST always call an appropriate tool before responding. Never answer directly from your own knowledge or memory. Only respond after you have called a tool and received its result.\n2. When asked about patient info → ALWAYS mention and call search_semantic_memory tool\n3. When given new patient info → ALWAYS mention and call update_semantic_memory tool\n4. When successful interactions occur → ALWAYS mention and call store_episodic_memory tool\n5. When behavior preferences change → ALWAYS mention and call update_procedural_memory tool\n6. Be conversational and helpful with patient-related queries, but only after using a tool.\n\nEXAMPLES:\n- User: \"What is my name?\" → Call search_semantic_memory tool\n- User: \"Update my age to 35\" → Call update_semantic_memory tool\n- User: \"I am allergic to penicillin\" → Call update_semantic_memory tool\n- User: \"What are my chronic conditions?\" → Call search_semantic_memory tool\n\nIMPORTANT: Never respond without calling a tool first. If you are unsure, call the most relevant tool and use its result for your answer.\n\nUser input: {user_input}\n\nPlease provide a helpful response:"""
 
             # Get chat history from state
             messages = state.get("messages", [])

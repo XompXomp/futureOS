@@ -9,6 +9,7 @@ from sentence_transformers import SentenceTransformer
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 import logging
+from config.settings import settings
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +40,7 @@ class CurorMemorySystem:
             self.embedding_model = None
         
         # Load patient profile
-        self.patient_profile_path = Path("data/docs/patient_profile.json")
+        self.patient_profile_path = Path(settings.PATIENT_PROFILE_PATH)
         self.patient_profile = self._load_patient_profile()
         
         # Initialize procedural memory
@@ -369,55 +370,49 @@ class CurorMemorySystem:
     
     def optimize_prompt(self, base_prompt: str, context: Dict[str, Any] = None) -> str:
         """
-        Optimize prompt using procedural memory and context.
-        
-        Args:
-            base_prompt: The base prompt to optimize
-            context: Additional context for optimization
-            
-        Returns:
-            Optimized prompt
+        Use an LLM to optimize and personalize the prompt for the agent.
         """
         try:
-            # Get relevant procedural rules
-            communication_style = self.prompt_rules.get("communication_style", {})
-            interaction_patterns = self.prompt_rules.get("interaction_patterns", {})
-            medical_preferences = self.prompt_rules.get("medical_preferences", {})
-            
-            # Build optimization instructions
-            optimization_instructions = []
-            
-            if communication_style.get("tone") == "professional_empathetic":
-                optimization_instructions.append("Maintain a professional yet empathetic tone")
-            
-            if communication_style.get("preferred_analogies"):
-                optimization_instructions.append("Use analogies and metaphors when explaining complex medical concepts")
-            
-            if communication_style.get("technical_level") == "moderate":
-                optimization_instructions.append("Use moderate technical language - explain medical terms when used")
-            
-            if medical_preferences.get("treatment_approach") == "conservative":
-                optimization_instructions.append("Prefer conservative treatment approaches when multiple options exist")
-            
-            if medical_preferences.get("information_sharing") == "detailed":
-                optimization_instructions.append("Provide detailed explanations and information")
-            
-            # Apply optimizations
-            optimized_prompt = base_prompt
-            
-            if optimization_instructions:
-                optimization_text = "\n".join([f"- {instruction}" for instruction in optimization_instructions])
-                optimized_prompt += f"\n\nOptimization Instructions:\n{optimization_text}"
-            
-            # Add context if provided
+            from langchain_ollama import ChatOllama
+            from langchain_groq import ChatGroq
+            from config.settings import settings
+
+            if settings.USE_OLLAMA:
+                llm = ChatOllama(
+                    model=settings.OLLAMA_MODEL,
+                    base_url=settings.OLLAMA_BASE_URL,
+                    temperature=0.3
+                )
+            else:
+                llm = ChatGroq(
+                    model=settings.LLM_MODEL,
+                    temperature=0.3
+                )
+
+            context_str = ""
             if context:
-                context_text = "\n".join([f"{key}: {value}" for key, value in context.items()])
-                optimized_prompt += f"\n\nContext:\n{context_text}"
-            
-            return optimized_prompt
-            
+                context_str = "\n".join(f"{k}: {v}" for k, v in context.items())
+
+            # Fixed the string formatting issue
+            prompt = f"""You are an expert prompt engineer. Given the following base prompt for an agent, and some context, rewrite or enhance the prompt to make it more effective, specific, and helpful for the agent's task.
+
+                    Base prompt:
+                    {base_prompt}
+
+                    Context:
+                    {context_str}
+
+                    Return only the improved prompt, nothing else.
+                    """
+
+            response = llm.invoke(prompt)
+            if hasattr(response, "content") and isinstance(response.content, str):
+                return response.content.strip()
+            elif isinstance(response, str):
+                return response.strip()
+            return base_prompt
         except Exception as e:
-            logger.error(f"Error optimizing prompt: {e}")
+            logger.error(f"Error optimizing prompt with LLM: {e}")
             return base_prompt
     
     def get_memory_summary(self) -> Dict[str, Any]:

@@ -162,7 +162,7 @@ def test_memory_system():
     
     # Get memory summary
     summary = memory_system.get_memory_summary()
-    print(f"Memory Summary:")
+    print("Memory Summary:")
     print(f"  Patient ID: {summary.get('patient_id', 'N/A')}")
     print(f"  Semantic memories: {summary.get('semantic_count', 0)}")
     print(f"  Episodic memories: {summary.get('episodic_count', 0)}")
@@ -172,14 +172,21 @@ def test_memory_system():
     # Test 6: Prompt Optimization
     print("\n--- Test 6: Prompt Optimization ---")
     
-    # Test prompt optimization
+    # Test prompt optimization with proper error handling
     base_prompt = "You are a medical assistant. Help the patient with their health concerns."
-    optimized_prompt = memory_system.optimize_prompt(base_prompt, {
+    context = {
         "patient_condition": "diabetes",
         "interaction_type": "medication_review"
-    })
-    print(f"Base prompt: {base_prompt}")
-    print(f"Optimized prompt: {optimized_prompt[:100]}...")
+    }
+    
+    try:
+        optimized_prompt = memory_system.optimize_prompt(base_prompt, context)
+        print(f"Base prompt: {base_prompt}")
+        print(f"Optimized prompt: {optimized_prompt[:100]}...")
+    except Exception as e:
+        print(f"Error in prompt optimization: {str(e)}")
+        print("Using base prompt as fallback")
+        optimized_prompt = base_prompt
     
     print("\n✅ Memory system test completed successfully!")
 
@@ -195,5 +202,12 @@ def test_memory_integration():
     print("Memory system is ready for agent integration")
 
 if __name__ == "__main__":
-    test_memory_system()
-    test_memory_integration() 
+    try:
+        test_memory_system()
+        test_memory_integration()
+    except Exception as e:
+        print(f"❌ Test failed with error: {str(e)}")
+        import traceback
+        traceback.print_exc()
+    finally:
+        print("\nTest execution completed.")

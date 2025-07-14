@@ -1,0 +1,15 @@
+{
+  "id": "b049e39a-737d-4b71-bc92-2289d667f7ca",
+  "interaction_type": "medication_review",
+  "content": "Reviewed current medications and identified potential interactions",
+  "reasoning_context": "Cross-referenced with drug interaction database",
+  "outcome": "Adjusted metformin dosage and added monitoring schedule",
+  "timestamp": "2025-07-14T10:37:20.055281",
+  "metadata": {
+    "medications_reviewed": [
+      "metformin",
+      "lisinopril"
+    ]
+  },
+  "patient_id": "test_patient_001"
+}
