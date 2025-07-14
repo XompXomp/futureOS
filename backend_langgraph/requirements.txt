@@ -1,0 +1,47 @@
+# LangGraph Backend Requirements
+# Core LangGraph (LangMem removed)
+langgraph>=0.3.23
+langchain==0.3.26
+langchain-community==0.3.27
+langchain-core==0.3.68
+
+# LLM Providers
+langchain-groq==0.3.5
+langchain-ollama==0.3.3
+langchain-openai==0.3.1
+
+# Vector Search and Embeddings
+faiss-cpu==1.11.0
+sentence-transformers==5.0.0
+numpy==1.26.4
+scikit-learn==1.5.2
+
+# Database and File Operations
+SQLAlchemy==2.0.41
+aiofiles==24.1.0
+python-dotenv==1.1.0
+
+# Web Framework
+Flask==3.1.0
+flask-cors==6.0.0
+
+# Google PSE
+google-api-python-client==2.175.0
+
+# Text Processing
+nltk==3.9.1
+beautifulsoup4==4.13.4
+pypdf==5.7.0
+
+# YAML Support for Memory System
+PyYAML==6.0.1
+
+# Utilities
+pydantic==2.11.4
+pydantic-settings==2.10.1
+rich==14.0.0
+tqdm==4.67.1
+
+# Development
+python-magic==0.4.27
+python-magic-bin==0.4.14 

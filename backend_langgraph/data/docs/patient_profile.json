@@ -1,0 +1,37 @@
+{
+  "personal_info": {
+    "name": "Jesus",
+    "age": 22,
+    "gender": "male",
+    "phone": "1234567890",
+    "email": "jesus@gmail.com",
+    "address": "123 Main St, Anytown, USA"
+  },
+  "medical_info": {
+    "height": 180,
+    "weight": 70,
+    "blood_type": "A+",
+    "allergies": [
+      "penicillin",
+      "Patient is allergic to penicillin"
+    ],
+    "chronic_conditions": [
+      "hypertension",
+      "Patient has Type 2 Diabetes and prefers morning appointments"
+    ],
+    "current_medications": [
+      "lisinopril",
+      "atenolol"
+    ]
+  },
+  "emergency_contact": {
+    "name": "John Doe",
+    "relationship": "father",
+    "phone": "1234567890"
+  },
+  "insurance": {
+    "provider": "Blue Cross Blue Shield",
+    "policy_number": "1234567890",
+    "group_number": "1234567890"
+  }
+}
