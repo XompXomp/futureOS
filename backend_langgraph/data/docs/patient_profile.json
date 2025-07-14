@@ -13,11 +13,15 @@
     "blood_type": "A+",
     "allergies": [
       "penicillin",
-      "Patient is allergic to penicillin"
+      "Patient is allergic to penicillin",
+      "Patient is allergic to Peanuts",
+      "Patient is allergic to Shellfish"
     ],
     "chronic_conditions": [
       "hypertension",
-      "Patient has Type 2 Diabetes and prefers morning appointments"
+      "Patient has Type 2 Diabetes and prefers morning appointments",
+      "Patient has Type 2 Diabetes",
+      "Patient has Hypertension"
     ],
     "current_medications": [
       "lisinopril",
