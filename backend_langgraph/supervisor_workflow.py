@@ -182,11 +182,13 @@ class EnhancedSupervisorWorkflow:
                 base_url=settings.OLLAMA_BASE_URL,
                 temperature=0.3
             )
-        else:
+        elif settings.USE_GROQ:
             self.model = ChatGroq(
                 model=settings.LLM_MODEL,
                 temperature=0.3
             )
+        else:
+            raise ValueError("Invalid LLM_PROVIDER. Set LLM_PROVIDER to 'ollama' or 'groq'.")
         
         # Create memory tools for each agent
         self.patient_memory_tools = create_memory_tools("patient_agent")
