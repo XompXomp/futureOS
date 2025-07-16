@@ -486,7 +486,8 @@ Remember: Be strict and explicit in your routing. If in doubt, prefer web_agent 
                 if isinstance(message, dict):
                     if message.get('tool_processed', False):
                         processed_messages.append(message)
-                        print(f"[DEBUG] Skipping already processed message: {message}")
+                        if settings.DEBUG:
+                            print(f"[DEBUG] Skipping already processed message: {message}")
                         continue
                     if message.get("role") == "assistant" and message.get("content"):
                         # Try to determine which agent sent this message
@@ -497,7 +498,8 @@ Remember: Be strict and explicit in your routing. If in doubt, prefer web_agent 
                             # For dicts, skip processing to avoid type errors
                             # Mark as processed to avoid re-processing
                             message['tool_processed'] = True  # Mark as processed
-                            print(f"[DEBUG] Marked dict message as processed for agent: {agent_name}")
+                            if settings.DEBUG:
+                                print(f"[DEBUG] Marked dict message as processed for agent: {agent_name}")
                     processed_messages.append(message)
             else:
                 processed_messages.append(message)
@@ -565,7 +567,7 @@ You are a memory categorization assistant. Given a user input, decide if any inf
             # --- PROGRAMMATIC FILTER: Remove updates that are just the user query or a question ---
             filtered_updates = []
             for update in updates:
-                content = update.get('content', '').strip().lower()
+                content = str(update.get('content', '')).strip().lower()
                 # Skip if content is empty
                 if not content:
                     continue
@@ -625,6 +627,12 @@ You are a memory categorization assistant. Given a user input, decide if any inf
         """Use the LLM to generate a conversational answer from the tool output and user input."""
         try:
             from langchain_core.prompts import ChatPromptTemplate
+            # ------------------Changed this at 9:10 16 july 2025---------------------------
+            # Check if this is a patient profile update to avoid duplicate processing
+            if "patient profile updated" in str(tool_output).lower() or "medications" in str(tool_output).lower():
+                # For patient profile updates, return the tool output directly to avoid re-reading
+                return str(tool_output)
+            # ---------------------------------------------
             prompt = ChatPromptTemplate.from_messages([
                 ("system", "You are a helpful assistant. Given the following tool result and the user's question, answer as helpfully and conversationally as possible. If the tool result contains web search results, use only the most recent and explicit information from the top 5 results to answer fact-based questions (such as 'Who is the current US president?'). If there is any ambiguity or the answer is not explicit, say 'I cannot determine with certainty.' Always prefer the most recent, date-stamped, and explicit answer."),
                 ("human", "Tool result: {tool_output}\n\nUser question: {user_input}\n\nAnswer:")
@@ -643,7 +651,7 @@ You are a memory categorization assistant. Given a user input, decide if any inf
         try:
             # --- NEW: Semantic memory pre-check step with perfect match threshold ---
             search_tool = next((t for t in self.memory_tools if t.name == 'search_semantic_memory'), None)
-            perfect_match_threshold = 0.95
+            perfect_match_threshold = settings.MEMORY_SIMILARITY_THRESHOLD
             perfect_match = None
             if search_tool:
                 search_result = search_tool({
@@ -651,14 +659,30 @@ You are a memory categorization assistant. Given a user input, decide if any inf
                     'limit': 3
                 })
                 results = search_result.get('results', [])
+                if settings.DEBUG:
+                    logger.info(f"[DEBUG] Semantic search results for '{user_input}': {results}")
+                if results:
+                    all_contents = "\n- ".join(r.get('content', '') for r in results)
+                    memory_response = f"I found these in your memory:\n- {all_contents}"
+                    # Use LLM to check if the memory is relevant to the user query
+                    relevance_prompt = (
+                        "You are an AI assistant. Given the user's question and the following retrieved memories, "
+                        "determine if any of the memories directly answer or are relevant to the user's question. "
+                        "If yes, respond with 'true'. If not, respond with 'false'.\n"
+                        "User question: {user_input}\n"
+                        "Retrieved memories: {all_contents}\n"
+                        "Answer:"
+                    )
+                    from langchain_core.prompts import ChatPromptTemplate
+                    prompt = ChatPromptTemplate.from_template(relevance_prompt)
+                    chain = prompt | self.model
+                    relevance_result = chain.invoke({"user_input": user_input, "all_contents": all_contents})
+                    relevance = str(relevance_result.content).strip().lower() if hasattr(relevance_result, 'content') else str(relevance_result).strip().lower()
+                    if relevance == 'true':
+                        return str(self.llm_postprocess_response(memory_response, user_input))
+                    # If not relevant, fall through to run the workflow as usual
                 # Check for a perfect match (assume 'similarity' key is present, else skip)
-                for r in results:
-                    if r.get('similarity', 0) >= perfect_match_threshold:
-                        perfect_match = r
-                        break
-                if perfect_match:
-                    response = f"I found an exact match in my memory:\n- {perfect_match.get('content', '')}"
-                    return str(self.llm_postprocess_response(response, user_input))
+                # (This block is now redundant and can be removed)
                 # Otherwise, proceed as normal
                 if not results:
                     preface = "I didn't know this, I will add it to my memory."
@@ -748,28 +772,36 @@ You are a memory categorization assistant. Given a user input, decide if any inf
     def chat(self, debug: bool = False):
         """Start interactive chat session."""
         self.debug_mode = debug
-        print("Enhanced LangGraph Supervisor AI Agent is ready! Type 'quit' to exit.")
-        if debug:
+        if settings.DEBUG:
             print("DEBUG MODE: Detailed logging enabled")
-        print("You can:")
-        print("- Ask questions about your patient profile")
-        print("- Update your patient information")
-        print("- Read/write files")
-        print("- Search the web")
-        print("- Summarize text")
-        print("- Query the database")
-        print()
+        if settings.DEBUG:
+            print("Enhanced LangGraph Supervisor AI Agent is ready! Type 'quit' to exit.")
+        if settings.DEBUG:
+            print("You can:")
+            print("- Ask questions about your patient profile")
+            print("- Update your patient information")
+            print("- Read/write files")
+            print("- Search the web")
+            print("- Summarize text")
+            print("- Query the database")
+            print()
         
         while True:
             try:
                 user_input = input("\nYou: ").strip()
                 if user_input.lower() in ['quit', 'exit', 'bye']:
-                    print("Goodbye!")
+                    if settings.DEBUG:
+                        print("Goodbye!")
+                    else:
+                        pass
                     break
                 
                 if user_input.lower() == 'debug':
                     self.debug_mode = not self.debug_mode
-                    print(f"Debug mode: {'ON' if self.debug_mode else 'OFF'}")
+                    if settings.DEBUG:
+                        print(f"Debug mode: {'ON' if self.debug_mode else 'OFF'}")
+                    else:
+                        pass
                     continue
                 
                 if not user_input:
@@ -779,13 +811,18 @@ You are a memory categorization assistant. Given a user input, decide if any inf
                 print(f"Agent: {response}")
                 
             except KeyboardInterrupt:
-                print("\nGoodbye!")
+                if settings.DEBUG:
+                    print("\nGoodbye!")
+                else:
+                    pass
                 break
             except Exception as e:
                 print(f"Error: {str(e)}")
-                if debug:
+                if settings.DEBUG:
                     import traceback
                     print(f"Full traceback:\n{traceback.format_exc()}")
+                else:
+                    pass
 
 def main():
     """Main function to run the enhanced supervisor workflow."""
@@ -806,7 +843,7 @@ def main():
     except Exception as e:
         logger.error(f"Error in main: {str(e)}")
         print(f"Failed to start enhanced supervisor workflow: {str(e)}")
-        if "--debug" in sys.argv or "-d" in sys.argv:
+        if settings.DEBUG:
             import traceback
             print(f"Full traceback:\n{traceback.format_exc()}")
 

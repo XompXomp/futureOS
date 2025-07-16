@@ -3,6 +3,7 @@
 import os
 from utils.logging_config import logger
 from supervisor_workflow import EnhancedSupervisorWorkflow
+from config.settings import settings
 
 def main():
     """Main function to run the Enhanced LangGraph Supervisor workflow."""
@@ -19,7 +20,8 @@ def main():
         
     except Exception as e:
         logger.error(f"Error in main: {str(e)}")
-        print(f"Failed to start enhanced supervisor workflow: {str(e)}")
+        if settings.DEBUG:
+            print(f"Failed to start enhanced supervisor workflow: {str(e)}")
 
 if __name__ == "__main__":
     main() 

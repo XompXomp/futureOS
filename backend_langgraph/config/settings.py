@@ -30,6 +30,7 @@ class Settings:
     
     # Ollama Settings (for local models)
     USE_OLLAMA = True #os.getenv("USE_OLLAMA", "true").lower() == "true"
+    USE_GROQ = os.getenv("USE_GROQ", "False") == "True"
     USE_LOCAL = False
     if (USE_LOCAL):
         OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434") # Using model from local machine
@@ -47,6 +48,10 @@ class Settings:
     MAX_ITERATIONS = 5  # Reduced to prevent loops
     VERBOSE = True
     
+    # Debug Settings
+    DEBUG = os.getenv("DEBUG", "False") == "True"
+    LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
+    
     # Memory Configuration (Curor Memory System)
     MEMORY_WINDOW_SIZE = int(os.getenv("MEMORY_WINDOW_SIZE", "10"))
     PERSISTENT_MEMORY = os.getenv("PERSISTENT_MEMORY", "false").lower() == "true"
@@ -57,7 +62,7 @@ class Settings:
     EPISODIC_MEMORY_ENABLED = True
     PROCEDURAL_MEMORY_ENABLED = True
     MEMORY_RETRIEVAL_K = 5
-    MEMORY_SIMILARITY_THRESHOLD = 0.7
+    MEMORY_SIMILARITY_THRESHOLD = 0.5
 
     # Memory base path for CurorMemorySystem
     MEMORY_BASE_PATH = os.path.join(DOCS_FOLDER, "memory")

@@ -7,7 +7,7 @@ from config.settings import settings
 from langchain_ollama import ChatOllama
 from langchain_groq import ChatGroq
 from langchain_community.vectorstores import FAISS
-from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_huggingface import HuggingFaceEmbeddings
 import numpy as np
 
 # Import the Google PSE search module
@@ -261,7 +261,7 @@ def create_google_pse_tools():
 def search_web(state: Dict[str, Any]) -> Dict[str, Any]:
     """Search the web for information using Google PSE with LLM-driven query extraction."""
     
-    print("[DEBUG] search_web tool called with state:", state)
+    #print("[DEBUG] search_web tool called with state:", state)
     logger.info(f"[DEBUG] search_web tool called with state: {state}")
     try:
         # Handle different input formats
@@ -317,7 +317,7 @@ def search_web(state: Dict[str, Any]) -> Dict[str, Any]:
             return state
         
         # Perform semantic search on results
-        semantic_results = semantic_search_documents(search_query, results, top_k=3)
+        semantic_results = semantic_search_documents(search_query, results, top_k=5)
         
         # Format results with better structure
         results_text = f"Web search results for '{search_query}':\n\n"
@@ -350,7 +350,7 @@ def search_web(state: Dict[str, Any]) -> Dict[str, Any]:
         state["search_query"] = search_query
         state["search_message"] = results_text
         
-        print("[DEBUG] search_web tool result:", results_text)
+        #print("[DEBUG] search_web tool result:", results_text)
         logger.info(f"[DEBUG] search_web tool result: {results_text}")
         logger.info(f"Web search completed with LLM-driven query extraction for query: {search_query}")
         

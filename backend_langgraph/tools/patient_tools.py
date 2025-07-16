@@ -95,53 +95,79 @@ def update_patient_profile(state: Dict[str, Any]) -> Dict[str, Any]:
 
         # Prompt for the LLM
         prompt = ChatPromptTemplate.from_messages([
-            ("system", "You are an expert medical assistant. Given a user request and the current patient profile (as JSON), extract only the fields that should be updated and return a JSON object with only those fields. Do not return the full profile, only the fields to update. If nothing should be updated, return an empty JSON object.\n\nExample:\nUser: Update my age to 35\nProfile: {\"personal_info\": {\"name\": \"John\", \"age\": 30}}\nOutput: {\"personal_info\": {\"age\": 35}}\n\nUser: My name is Alice and my phone is 123-456-7890\nProfile: {\"personal_info\": {\"name\": \"\", \"phone\": \"\"}}\nOutput: {\"personal_info\": {\"name\": \"Alice\", \"phone\": \"123-456-7890\"}}"),
+            ("system", (
+                "You are a precise assistant for updating patient records in JSON format. Your job is to take the full patient profile JSON below, update ONLY the field(s) relevant to the user's request, and return the ENTIRE JSON in the exact same structure and format as provided. Do not change, add, or remove any other fields or values. Do not invent or hallucinate new information. If the request is ambiguous, make no changes and return the original JSON.\n\n"
+                "Current patient profile JSON:"
+                "{profile}\n\n"
+                "User request: {user_input}\n\n"
+                "Return ONLY the full, updated JSON. Do not include any explanation, comments, or extra text. Do not change the structure or formatting of the JSON except for the requested update. ENSURE that the JSON format text returned has all property names enclosed in double quotes."
+            )),
             ("human", "User: {user_input}\nProfile: {profile}\nOutput:")
         ])
         chain = prompt | llm
-        # Run the LLM to get the patch
-        patch_json = chain.invoke({
+        # Run the LLM to get the updated profile
+        llm_output = chain.invoke({
             "user_input": user_input,
             "profile": json.dumps(current_profile)
         })
-        # Try to parse the LLM output as JSON
+        print("--------------------------------")
+        print(f"LLM Output: {llm_output}")
+        print("--------------------------------")
+
+        llm_json_str = str(llm_output.content)
+
+        # def parse_keyed_json_string(s):
+        #     # Find all key={...} pairs
+        #     matches = re.findall(r'(\w+)=({.*?})(?=\s+\w+=|$)', s)
+        #     result = {}
+        #     for key, json_str in matches:
+        #         print(f"Key: {key}")
+        #         print(f"JSON String: {json_str}")
+        #         result[key] = json.loads(json_str)
+        #     return result
+
+        # # Example usage:
+        # s = llm_json_str
+        # parsed = parse_keyed_json_string(s)
+
+        # print("--------------------------------")
+        # print(f"LLM JSON String: {parsed}")
+        # print("--------------------------------")
+
         import re
         import ast
-        patch_str = str(patch_json)
-        # Extract JSON from the LLM output
-        match = re.search(r'\{.*\}', patch_str, re.DOTALL)
+        match = re.search(r'\{.*\}', llm_json_str, re.DOTALL)
         if match:
-            patch_obj = match.group(0)
             try:
-                patch = json.loads(patch_obj)
+                updated_profile = json.loads(match.group(0))
             except Exception:
                 try:
-                    patch = ast.literal_eval(patch_obj)
+                    updated_profile = ast.literal_eval(match.group(0))
                 except Exception:
-                    patch = {}
+                    updated_profile = current_profile  # fallback
         else:
-            patch = {}
-        # Merge the patch into the current profile
-        def deep_update(d, u):
-            for k, v in u.items():
-                if isinstance(v, dict) and isinstance(d.get(k), dict):
-                    deep_update(d[k], v)
-                else:
-                    d[k] = v
-        updated_profile = json.loads(json.dumps(current_profile))  # deep copy
-        deep_update(updated_profile, patch)
-        # Save updated profile
+            updated_profile = current_profile  # fallback
+
+        print(f"Updated profile: {updated_profile}")
+        # Save updated profile directly
         profile_path = settings.PATIENT_PROFILE_PATH
         with open(profile_path, 'w') as f:
             json.dump(updated_profile, f, indent=2)
+        # Debug: Read back the file to confirm update
+        try:
+            with open(profile_path, 'r') as f:
+                file_contents = f.read()
+            logger.info(f"[DEBUG] Profile after update (from disk): {file_contents}")
+        except Exception as e:
+            logger.error(f"[DEBUG] Could not read profile after update: {e}")
         tool_results = state.get("tool_results", [])
         tool_results.append({
             "tool": "update_patient_profile",
-            "output": f"Patient profile updated using LLM extraction. Changes: {patch if patch else 'No changes'}"
+            "output": f"Patient profile updated using LLM extraction."
         })
         state["tool_results"] = tool_results
         state["patient_profile"] = updated_profile
-        state["profile_updated"] = bool(patch)
+        state["profile_updated"] = True
         logger.info("Patient profile updated using LLM extraction")
         return state
     except Exception as e:

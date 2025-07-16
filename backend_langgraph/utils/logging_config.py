@@ -3,6 +3,7 @@
 import logging
 import os
 from datetime import datetime
+from config.settings import settings
 
 def setup_logging():
     """Setup logging configuration for the LangGraph backend."""
@@ -13,7 +14,7 @@ def setup_logging():
     
     # Configure logging
     logging.basicConfig(
-        level=logging.INFO,
+        level=getattr(logging, settings.LOG_LEVEL, logging.WARNING),
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
         handlers=[
             logging.FileHandler(os.path.join(logs_dir, f"langgraph_{datetime.now().strftime('%Y%m%d')}.log")),
@@ -23,7 +24,7 @@ def setup_logging():
     
     # Create logger
     logger = logging.getLogger("langgraph_backend")
-    logger.setLevel(logging.INFO)
+    logger.setLevel(getattr(logging, settings.LOG_LEVEL, logging.WARNING))
     
     return logger
 

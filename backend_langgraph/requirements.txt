@@ -27,6 +27,7 @@ flask-cors==6.0.0
 
 # Google PSE
 google-api-python-client==2.175.0
+oauth2client<4.0.0
 
 # Text Processing
 nltk==3.9.1
