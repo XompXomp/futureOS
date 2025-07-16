@@ -11,12 +11,17 @@ from main import AIAgent
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
 
+# Debug setting
+DEBUG = os.getenv("DEBUG", "false").lower() == "true"
+
 # Initialize the AI agent
 try:
     agent = AIAgent()
-    print("AI Agent initialized successfully")
+    if DEBUG:
+        print("AI Agent initialized successfully")
 except Exception as e:
-    print(f"Error initializing AI Agent: {e}")
+    if DEBUG:
+        print(f"Error initializing AI Agent: {e}")
     agent = None
 
 @app.route('/api/chat', methods=['POST'])

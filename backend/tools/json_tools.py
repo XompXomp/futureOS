@@ -21,14 +21,20 @@ def create_json_tools():
         try:
             # Load current profile
             current_profile = JSONOperations.load_json_from_file(settings.PATIENT_PROFILE_PATH)
+            if settings.VERBOSE:
+                print(f"[DEBUG] Loaded current profile: {current_profile}")
             if current_profile is None:
                 return "Error: Could not load current patient profile."
             # Use LLM to get updated profile
             updated_profile = JSONOperations.update_json_with_llm(current_profile, user_input)
+            if settings.VERBOSE:
+                print(f"[DEBUG] Updated profile from LLM: {updated_profile}")
             if not updated_profile:
                 return "No recognizable updates found in your input. Please specify what you want to update (e.g., 'My age is 25', 'My name is John', etc.)"
             # Save updated profile
             success = JSONOperations.save_json_to_file(settings.PATIENT_PROFILE_PATH, updated_profile)
+            if settings.VERBOSE:
+                print(f"[DEBUG] Save result: {success}")
             if success:
                 return f"Successfully updated patient profile."
             else:

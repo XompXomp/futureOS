@@ -10,18 +10,33 @@ from langchain_groq import ChatGroq
 from langchain_ollama import ChatOllama
 from config.settings import settings
 import json
+import os
 
 class JSONOperations:
     @staticmethod
+    def _validate_docs_path(file_path: str) -> bool:
+        """Ensure the file path is within the allowed docs directory."""
+        abs_docs = os.path.abspath(settings.DOCS_FOLDER)
+        abs_file = os.path.abspath(file_path)
+        return abs_file.startswith(abs_docs)
+
+    @staticmethod
     def load_json_from_file(file_path: str) -> Optional[Dict[str, Any]]:
-        """Load JSON data from a file."""
+        """Load JSON data from a file (restricted to docs folder)."""
+        if not JSONOperations._validate_docs_path(file_path):
+            logger.error(f"Access denied: {file_path} is outside the allowed docs directory.")
+            return None
         try:
+            if settings.VERBOSE:
+                print(f"[DEBUG] Loading JSON from file: {file_path}")
             content = FileOperations.read_file(file_path)
             if content is None:
                 return None
             
             # Parse JSON
             json_data = json.loads(content)
+            if settings.VERBOSE:
+                print(f"[DEBUG] Loaded JSON data: {json_data}")
             logger.info(f"Successfully loaded JSON from: {file_path}")
             return json_data
         except json.JSONDecodeError as e:
@@ -33,17 +48,29 @@ class JSONOperations:
 
     @staticmethod
     def save_json_to_file(file_path: str, data: Dict[str, Any]) -> bool:
-        """Save JSON data to a file."""
+        """Save JSON data to a file (restricted to docs folder)."""
+        if not JSONOperations._validate_docs_path(file_path):
+            logger.error(f"Access denied: {file_path} is outside the allowed docs directory.")
+            return False
         try:
+            if settings.VERBOSE:
+                print(f"[DEBUG] Saving JSON to file: {file_path}")
+                print(f"[DEBUG] Data to save: {data}")
             json_content = json.dumps(data, indent=2, ensure_ascii=False)
-            return FileOperations.write_file(file_path, json_content)
+            result = FileOperations.write_file(file_path, json_content)
+            if settings.VERBOSE:
+                print(f"[DEBUG] Write file result: {result}")
+            return result
         except Exception as e:
             logger.error(f"Error saving JSON to file {file_path}: {str(e)}")
             return False
 
     @staticmethod
     def update_json_values(file_path: str, updates: Dict[str, Any]) -> bool:
-        """Update specific values in a JSON file while preserving structure."""
+        """Update specific values in a JSON file while preserving structure (restricted to docs folder)."""
+        if not JSONOperations._validate_docs_path(file_path):
+            logger.error(f"Access denied: {file_path} is outside the allowed docs directory.")
+            return False
         try:
             # Load existing JSON
             json_data = JSONOperations.load_json_from_file(file_path)
@@ -84,14 +111,17 @@ class JSONOperations:
         else:
             current_json_str = current_json
         prompt = f"""
-                You are an assistant that updates JSON data based on natural language requests.
-                Here is the current JSON:
-                {current_json_str}
+You are a precise assistant for updating JSON data. Your job is to take the full JSON object below, update ONLY the field(s) relevant to the user's request, and return the ENTIRE JSON in the exact same structure and format as provided. Do not change, add, or remove any other fields or values. Do not invent or hallucinate new information. If the request is ambiguous, make no changes and return the original JSON.
 
-                The user says: "{user_request}"
+Current JSON:
+{current_json_str}
 
-                Return ONLY the updated JSON, with the user's request applied. Do not include any explanation or extra text.
-                """
+User request: "{user_request}"
+
+Return ONLY the full, updated JSON. Do not include any explanation, comments, or extra text. Do not change the structure or formatting of the JSON except for the requested update.
+"""
+        if settings.VERBOSE:
+            print(f"[DEBUG] update_json_with_llm prompt:\n{prompt}")
         # Select LLM based on settings
         if settings.USE_OLLAMA:
             llm = ChatOllama(
@@ -105,6 +135,8 @@ class JSONOperations:
                 temperature=0
             )
         response = llm.invoke(prompt)
+        if settings.VERBOSE:
+            print(f"[DEBUG] LLM raw response: {response}")
         # Handle response type: string, list, or object with 'content'
         if hasattr(response, 'content'):
             content = str(response.content)
@@ -114,6 +146,8 @@ class JSONOperations:
         else:
             content = str(response)
         content = content.strip()
+        if settings.VERBOSE:
+            print(f"[DEBUG] LLM content to parse as JSON: {content}")
         try:
             updated_json = json.loads(content)
         except json.JSONDecodeError:
