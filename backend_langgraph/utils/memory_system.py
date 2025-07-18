@@ -133,8 +133,8 @@ class CurorMemorySystem:
                 json.dump(memory_entry, f, indent=2)
             
             # Update patient profile if it's profile-related information
-            if category in ["preference", "medical_condition", "medication", "allergy"]:
-                self._update_patient_profile(content, category, metadata)
+            #if category in ["preference", "medical_condition", "medication", "allergy"]:
+            #    self._update_patient_profile(content, category, metadata or {})
             
             logger.info(f"Semantic memory updated: {memory_id}")
             return memory_id
@@ -418,7 +418,7 @@ class CurorMemorySystem:
             return self.prompt_rules.get(rule_type, {})
         return self.prompt_rules
     
-    def optimize_prompt(self, base_prompt: str, context: Dict[str, Any] = None) -> str:
+    def optimize_prompt(self, base_prompt: str, context: Optional[Dict[str, Any]] = None) -> str:
         """
         Use an LLM to optimize and personalize the prompt for the agent.
         """

@@ -70,9 +70,12 @@ class ToolExecutor:
         
     def extract_and_execute_tool_calls(self, text: str) -> str:
         """Extract tool calls from text and execute them."""
+
+        if settings.DEBUG:
+            print(f"[DEBUG] extract_and_execute_tool_calls: {text}")
         # Multiple patterns to catch different tool call formats
         patterns = [
-            r'<\|python_tag\|>(\w+)\((.*?)\)',  # <|python_tag|>tool_name("args")
+            #r'<\|python_tag\|>(\w+)\((.*?)\)',  # <|python_tag|>tool_name("args")
             r'(\w+)\((.*?)\)',  # tool_name("args")
             r'Action:\s*(\w+)\s*Action Input:\s*(.*)',  # ReAct format
         ]
@@ -101,14 +104,20 @@ class ToolExecutor:
                             tool_result = self.tools[tool_name]({"user_input": parsed_args})
                         
                         # Replace the tool call with the result
+                        # Determine tool call name
                         if pattern.startswith('<\\|python_tag\\|>'):
                             tool_call = f'<|python_tag|>{tool_name}({args})'
                         elif 'Action:' in pattern:
                             tool_call = f'Action: {tool_name}\nAction Input: {args}'
                         else:
                             tool_call = f'{tool_name}({args})'
-                            
-                        result = result.replace(tool_call, str(tool_result))
+
+                        # Extract only useful information from tool_result
+                        if tool_name == "search_web":
+                            temp = tool_result['search_message']
+                            result = result.replace(tool_call, str(temp))
+                        else:
+                            result = result.replace(tool_call, str(tool_result))
                         
                     except Exception as e:
                         logger.error(f"Error executing tool {tool_name}: {str(e)}")
@@ -166,6 +175,9 @@ class MessageProcessor:
     
     def execute_tool_calls(self, text: str) -> str:
         """Execute tool calls found in text."""
+        if settings.DEBUG:
+            print(f"[DEBUG] Executing tool calls: {text}")
+
         if not isinstance(text, str):
             text = str(text)
         executor = ToolExecutor(list(self.tools.values()))
@@ -463,13 +475,20 @@ Remember: Be strict and explicit in your routing. If in doubt, prefer web_agent 
 
     def process_workflow_messages(self, messages: List) -> List:
         """Process only the latest user/assistant message pair for tool calls, with debug logging."""
+        if settings.DEBUG:
+            print(f"[DEBUG] Processing workflow messages: {messages}")
+        
         processed_messages = []
         
         # Find the latest user message and its following assistant message
         latest_user_idx = None
         for i in range(len(messages) - 1, -1, -1):
             msg = messages[i]
-            if (isinstance(msg, dict) and msg.get("role") == "user") or (hasattr(msg, "role") and getattr(msg, "role", None) == "user"):
+            if (
+                (isinstance(msg, dict) and msg.get("role") == "user")
+                or isinstance(msg, HumanMessage)
+                or (hasattr(msg, "role") and getattr(msg, "role", None) == "user")
+            ):
                 latest_user_idx = i
                 break
         
@@ -483,59 +502,90 @@ Remember: Be strict and explicit in your routing. If in doubt, prefer web_agent 
             # Only process tool calls for the latest user/assistant pair
             if message in to_process:
                 # Only process tool calls if not already processed
+                already_processed = False
                 if isinstance(message, dict):
-                    if message.get('tool_processed', False):
-                        processed_messages.append(message)
-                        if settings.DEBUG:
-                            print(f"[DEBUG] Skipping already processed message: {message}")
-                        continue
-                    if message.get("role") == "assistant" and message.get("content"):
-                        # Try to determine which agent sent this message
-                        agent_name = self.determine_agent_from_message(message)
-                        if agent_name in self.agent_processors:
-                            processor = self.agent_processors[agent_name]
-                            # Only call process_message if message is AIMessage or str
-                            # For dicts, skip processing to avoid type errors
-                            # Mark as processed to avoid re-processing
-                            message['tool_processed'] = True  # Mark as processed
-                            if settings.DEBUG:
-                                print(f"[DEBUG] Marked dict message as processed for agent: {agent_name}")
+                    already_processed = message.get('tool_processed', False)
+                else:
+                    already_processed = getattr(message, 'tool_processed', False)
+                if already_processed:
+                    processed_messages.append(message)
+                    if settings.DEBUG:
+                        print(f"[DEBUG] Skipping already processed message: {message}")
+                    continue
+                # Try to determine which agent sent this message
+                agent_name = self.determine_agent_from_message(message)
+                if agent_name in self.agent_processors:
+                    processor = self.agent_processors[agent_name]
+                    # Only call process_message if message is AIMessage or str
+                    # For dicts, skip processing to avoid type errors
+                    # Mark as processed to avoid re-processing
+                    if isinstance(message, dict):
+                        message['tool_processed'] = True  # Mark as processed
+                    else:
+                        setattr(message, 'tool_processed', True)
                     processed_messages.append(message)
             else:
                 processed_messages.append(message)
         return processed_messages
     
-    def determine_agent_from_message(self, message: dict) -> str:
-        """Determine which agent sent a message."""
-        # Simple heuristic - you might need to enhance this
-        content = message.get("content", "")
-        if "patient" in content.lower():
+    def determine_agent_from_message(self, message) -> str:
+        """Determine which agent sent a message, supporting both dict and object messages."""
+        # Get content for both dict and object
+        if isinstance(message, dict):
+            content = message.get("content", "")
+        else:
+            content = getattr(message, "content", "")
+        if not isinstance(content, str):
+            content = str(content)
+        content_lower = content.lower()
+        if "patient" in content_lower:
             return "patient_agent"
-        elif "search" in content.lower() or "web" in content.lower():
+        elif "search" in content_lower or "web" in content_lower:
             return "web_agent"
-        elif "file" in content.lower():
+        elif "file" in content_lower:
             return "file_agent"
-        elif "json" in content.lower():
+        elif "json" in content_lower:
             return "json_agent"
         else:
             return "text_agent"
 
     def post_process_agent_response(self, response: str, agent_name: str) -> str:
         """Post-process agent response to execute any tool calls."""
+        if settings.DEBUG:
+            print(f"[DEBUG] Post-processing agent response: {response} for agent: {agent_name}")
+
         if agent_name in self.agent_processors:
             processor = self.agent_processors[agent_name]
             return processor.execute_tool_calls(response)
         return response
 
     def llm_memory_categorizer(self, user_input: str) -> list:
-        """Use the LLM to decide if/what to store in memory, and how to categorize it."""
+        """Use the LLM to decide if/what to store in memory, and how to categorize it, excluding patient profile fields."""
         from langchain_core.prompts import ChatPromptTemplate
         import json
+        # Load patient profile fields
+        try:
+            with open(settings.PATIENT_PROFILE_PATH, 'r') as f:
+                profile = json.load(f)
+            def flatten_keys(d, prefix=""):
+                keys = []
+                for k, v in d.items():
+                    full_key = f"{prefix}.{k}" if prefix else k
+                    keys.append(full_key)
+                    if isinstance(v, dict):
+                        keys.extend(flatten_keys(v, full_key))
+                return keys
+            profile_keys = flatten_keys(profile)
+        except Exception as e:
+            profile_keys = []
+        profile_keys_str = ', '.join(profile_keys)
         prompt = ChatPromptTemplate.from_messages([
-            ("system", """
-You are a memory categorization assistant. Given a user input, decide if any information should be stored in memory. 
+            ("system", f"""
+You are a memory categorization assistant. Given a user input, decide if any information should be stored in memory.
 - ONLY store information if it is a fact, preference, or something about the user or patient (e.g., 'I am allergic to penicillin', 'My favorite color is blue', 'I prefer polite conversation').
 - DO NOT store questions, requests for information, or queries (e.g., 'Who is the current US president?', 'What is the weather?', 'When is the next holiday?').
+- If the user input is related to any of the following patient profile fields, DO NOT add it to memory (patient info updating is handled separately, so ignore these):
+{profile_keys_str}
 - For each relevant memory type (semantic, episodic, procedural), output a JSON object with the following fields as appropriate:
   - type: one of 'semantic', 'episodic', 'procedural'
   - content: what to store (string or dict)
@@ -625,14 +675,10 @@ You are a memory categorization assistant. Given a user input, decide if any inf
 
     def llm_postprocess_response(self, tool_output, user_input):
         """Use the LLM to generate a conversational answer from the tool output and user input."""
+        if settings.DEBUG:
+            print(f"[DEBUG] LLM post-processing response: {tool_output} for user input: {user_input}")
         try:
             from langchain_core.prompts import ChatPromptTemplate
-            # ------------------Changed this at 9:10 16 july 2025---------------------------
-            # Check if this is a patient profile update to avoid duplicate processing
-            if "patient profile updated" in str(tool_output).lower() or "medications" in str(tool_output).lower():
-                # For patient profile updates, return the tool output directly to avoid re-reading
-                return str(tool_output)
-            # ---------------------------------------------
             prompt = ChatPromptTemplate.from_messages([
                 ("system", "You are a helpful assistant. Given the following tool result and the user's question, answer as helpfully and conversationally as possible. If the tool result contains web search results, use only the most recent and explicit information from the top 5 results to answer fact-based questions (such as 'Who is the current US president?'). If there is any ambiguity or the answer is not explicit, say 'I cannot determine with certainty.' Always prefer the most recent, date-stamped, and explicit answer."),
                 ("human", "Tool result: {tool_output}\n\nUser question: {user_input}\n\nAnswer:")
@@ -668,7 +714,9 @@ You are a memory categorization assistant. Given a user input, decide if any inf
                     relevance_prompt = (
                         "You are an AI assistant. Given the user's question and the following retrieved memories, "
                         "determine if any of the memories directly answer or are relevant to the user's question. "
-                        "If yes, respond with 'true'. If not, respond with 'false'.\n"
+                        "If yes, respond with 'true'. If not, respond with 'false'."
+                        "Make sure you provide an explantion for your answer."
+                        "Example response: 'true, because the user's question is about the weather, and the retrieved memories are about the weather.'"
                         "User question: {user_input}\n"
                         "Retrieved memories: {all_contents}\n"
                         "Answer:"
@@ -678,26 +726,40 @@ You are a memory categorization assistant. Given a user input, decide if any inf
                     chain = prompt | self.model
                     relevance_result = chain.invoke({"user_input": user_input, "all_contents": all_contents})
                     relevance = str(relevance_result.content).strip().lower() if hasattr(relevance_result, 'content') else str(relevance_result).strip().lower()
-                    if relevance == 'true':
+                    if settings.DEBUG:
+                        print(f"[DEBUG] Relevance result: {relevance}")
+                    if 'true' in relevance:
                         return str(self.llm_postprocess_response(memory_response, user_input))
                     # If not relevant, fall through to run the workflow as usual
                 # Check for a perfect match (assume 'similarity' key is present, else skip)
                 # (This block is now redundant and can be removed)
                 # Otherwise, proceed as normal
                 if not results:
-                    preface = "I didn't know this, I will add it to my memory."
+                    # LLM call to check if user_input is a valid fact
+                    from langchain_core.prompts import ChatPromptTemplate
+                    fact_check_prompt = ChatPromptTemplate.from_messages([
+                        ("system", "You are a fact-checking assistant. Given a user input, determine if it is a valid, concrete fact (not a question, request, or vague statement). Respond with 'yes' or 'no' only."),
+                        ("human", "User input: {user_input}\n\nAnswer:")
+                    ])
+                    fact_chain = fact_check_prompt | self.model
+                    fact_result = fact_chain.invoke({"user_input": user_input})
+                    is_fact = str(fact_result.content).strip().lower() == 'yes'
+                    if is_fact:
+                        # LLM-powered memory categorization and update step
+                        memory_updates = self.llm_memory_categorizer(user_input)
+                        logger.info(f"[DEBUG] Memory categorizer updates: {memory_updates}")
+                        if memory_updates:
+                            memory_results = self.update_memory_from_categorizer(memory_updates)
+                            logger.info(f"[DEBUG] Memory update results: {memory_results}")
+                            preface = "Added to memory."
+                    else:
+                        preface = None
                 else:
                     preface = None
             else:
                 preface = None
             # --- END NEW ---
 
-            # LLM-powered memory categorization and update step
-            memory_updates = self.llm_memory_categorizer(user_input)
-            logger.info(f"[DEBUG] Memory categorizer updates: {memory_updates}")
-            if memory_updates:
-                memory_results = self.update_memory_from_categorizer(memory_updates)
-                logger.info(f"[DEBUG] Memory update results: {memory_results}")
             # Create initial state
             initial_state = {
                 "messages": [
@@ -706,7 +768,8 @@ You are a memory categorization assistant. Given a user input, decide if any inf
             }
             
             # Create config
-            config = {
+            from langchain_core.runnables import RunnableConfig
+            config: RunnableConfig = {
                 "configurable": {
                     "thread_id": "default_thread",
                     "checkpoint_ns": "supervisor_workflow"
@@ -715,6 +778,9 @@ You are a memory categorization assistant. Given a user input, decide if any inf
             
             # Run the workflow
             result = self.app.invoke(initial_state, config=config)
+            # results has 7 messages, 1 user, 6 assistant for first run
+            # results has 14 message, 2 user, 12 assistant for second run
+            # results must increase on third run
             
             if result is None:
                 logger.error("Supervisor workflow returned None as result.")
@@ -722,6 +788,10 @@ You are a memory categorization assistant. Given a user input, decide if any inf
             
             # Extract messages and process them
             messages = result.get("messages", [])
+            # messages has 7 messages, 1 user, 6 assistant
+
+            if settings.DEBUG:
+                print(f"[DEBUG] Messages: {messages}")
             
             # Process all messages to execute any tool calls
             processed_messages = self.process_workflow_messages(messages)
@@ -729,6 +799,7 @@ You are a memory categorization assistant. Given a user input, decide if any inf
             final_response = None
             last_agent = None
             
+            #--------------------------CULPRINT----------------------------
             # Prefer final_response if present
             if result.get("final_response"):
                 logger.info(f"[DEBUG] Supervisor: Using result['final_response']: {result['final_response']}")
@@ -751,15 +822,23 @@ You are a memory categorization assistant. Given a user input, decide if any inf
                             final_response = content
                             last_agent = message.name
                             break
+            #--------------------------CULPRINT----------------------------
+
                 # Additional post-processing if needed
                 if final_response and last_agent:
+                    if settings.DEBUG:
+                        print("\n\nRunning post-processing for final_response: \n\n")
+                    #--------------------------CULPRIT----------------------------
                     final_response = self.post_process_agent_response(final_response, last_agent)
+                    #--------------------------CULPRIT----------------------------
                 if not final_response:
                     logger.info("[DEBUG] Supervisor: No final_response found in messages, using fallback.")
                     final_response = result.get("final_response", "No response generated")
             # LLM post-processing for user-friendly answer
             logger.info(f"[DEBUG] Supervisor: Pre-LLM postprocess final_response: {final_response}")
+            #------SPED UP HERE-1-----
             conversational_response = self.llm_postprocess_response(final_response, user_input)
+            #------SPED UP HERE-1-----
             logger.info(f"[DEBUG] Supervisor: Post-LLM postprocess conversational_response: {conversational_response}")
             logger.info(f"[EXPLICIT DEBUG] Supervisor about to return: type={type(conversational_response)}, value={conversational_response}")
             if 'preface' in locals() and preface:
@@ -811,10 +890,7 @@ You are a memory categorization assistant. Given a user input, decide if any inf
                 print(f"Agent: {response}")
                 
             except KeyboardInterrupt:
-                if settings.DEBUG:
-                    print("\nGoodbye!")
-                else:
-                    pass
+                print("\nGoodbye!")
                 break
             except Exception as e:
                 print(f"Error: {str(e)}")

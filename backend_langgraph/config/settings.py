@@ -37,7 +37,7 @@ class Settings:
         OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3.1:8b")
     else:  
         OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "https://mac.futureos.xyz/") # Using model from SLab
-        OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3.3:70b")
+        OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3.3:70b") #llama3.3:70b
     
     # Retry Settings
     MAX_RETRIES = int(os.getenv("MAX_RETRIES", "3"))
@@ -46,7 +46,7 @@ class Settings:
     
     # LangGraph Settings
     MAX_ITERATIONS = 5  # Reduced to prevent loops
-    VERBOSE = True
+    VERBOSE = False
     
     # Debug Settings
     DEBUG = os.getenv("DEBUG", "False") == "True"

@@ -182,9 +182,13 @@ def create_google_pse_tools():
             if not query or query.strip() == "":
                 return "Error: Please provide a search query"
             
+            #--------------------------CULPRIT----------------------------
             # Use LLM to extract and refine the search query
-            refined_query = extract_search_query_llm(query)
-            
+            #refined_query = extract_search_query_llm(query)
+            # Use raw query instead
+            refined_query = query
+            #--------------------------CULPRIT----------------------------
+
             # Validate refined query before making API call
             if not refined_query or refined_query.strip() == "":
                 return "Error: Could not extract a valid search query. Please provide a more specific search term."
@@ -221,8 +225,12 @@ def create_google_pse_tools():
             if not query or query.strip() == "":
                 return "Error: Please provide a search query"
             
+            #--------------------------CULPRIT----------------------------
             # Use LLM to extract and refine the search query
-            refined_query = extract_search_query_llm(query)
+            #refined_query = extract_search_query_llm(query)
+            # Use raw query instead
+            refined_query = query
+            #--------------------------CULPRIT----------------------------
             
             # Validate refined query before making API call
             if not refined_query or refined_query.strip() == "":
@@ -293,8 +301,12 @@ def search_web(state: Dict[str, Any]) -> Dict[str, Any]:
             state["has_error"] = True
             return state
         
-        # Use LLM to extract search query from user input
-        search_query = extract_search_query_llm(user_input)
+        #--------------------------CULPRIT----------------------------
+        # Use LLM to extract and refine the search query
+        #refined_query = extract_search_query_llm(query)
+        # Use raw query instead
+        search_query = user_input
+        #--------------------------CULPRIT----------------------------
         
         # Validate search query before making API call
         if not search_query or search_query.strip() == "":
@@ -395,8 +407,12 @@ def search_documents(state: Dict[str, Any]) -> Dict[str, Any]:
             state["has_error"] = True
             return state
         
-        # Use LLM to extract search query from user input
-        search_query = extract_search_query_llm(user_input)
+        #--------------------------CULPRIT----------------------------
+        # Use LLM to extract and refine the search query
+        #refined_query = extract_search_query_llm(query)
+        # Use raw query instead
+        search_query = user_input
+        #--------------------------CULPRIT----------------------------
         
         # Validate search query before making API call
         if not search_query or search_query.strip() == "":

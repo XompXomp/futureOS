@@ -11,6 +11,9 @@ from langchain_groq import ChatGroq
 from langchain_ollama import ChatOllama
 from langchain_core.prompts import ChatPromptTemplate
 
+import re
+import ast
+
 
 def read_patient_profile(state: Dict[str, Any]) -> Dict[str, Any]:
     """Read patient profile from JSON file."""
@@ -110,32 +113,14 @@ def update_patient_profile(state: Dict[str, Any]) -> Dict[str, Any]:
             "user_input": user_input,
             "profile": json.dumps(current_profile)
         })
-        print("--------------------------------")
-        print(f"LLM Output: {llm_output}")
-        print("--------------------------------")
+
+        if (settings.DEBUG):
+            print("--------------------------------")
+            print(f"LLM Output: {llm_output}")
+            print("--------------------------------")
 
         llm_json_str = str(llm_output.content)
 
-        # def parse_keyed_json_string(s):
-        #     # Find all key={...} pairs
-        #     matches = re.findall(r'(\w+)=({.*?})(?=\s+\w+=|$)', s)
-        #     result = {}
-        #     for key, json_str in matches:
-        #         print(f"Key: {key}")
-        #         print(f"JSON String: {json_str}")
-        #         result[key] = json.loads(json_str)
-        #     return result
-
-        # # Example usage:
-        # s = llm_json_str
-        # parsed = parse_keyed_json_string(s)
-
-        # print("--------------------------------")
-        # print(f"LLM JSON String: {parsed}")
-        # print("--------------------------------")
-
-        import re
-        import ast
         match = re.search(r'\{.*\}', llm_json_str, re.DOTALL)
         if match:
             try:
@@ -148,7 +133,11 @@ def update_patient_profile(state: Dict[str, Any]) -> Dict[str, Any]:
         else:
             updated_profile = current_profile  # fallback
 
-        print(f"Updated profile: {updated_profile}")
+        if (settings.DEBUG):
+            print("--------------------------------")
+            print(f"Updated profile: {updated_profile}")
+            print("--------------------------------")
+            
         # Save updated profile directly
         profile_path = settings.PATIENT_PROFILE_PATH
         with open(profile_path, 'w') as f:
