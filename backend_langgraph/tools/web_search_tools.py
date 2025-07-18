@@ -296,6 +296,9 @@ def search_web(state: Dict[str, Any]) -> Dict[str, Any]:
                     user_input = value
                     break
         
+        # Processing user_input
+        user_input = user_input.lstrip('query="').rstrip('"')
+
         if not google_pse_available:
             state["error_message"] = "Google PSE search is not available. Please check your configuration."
             state["has_error"] = True
