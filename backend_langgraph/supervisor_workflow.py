@@ -204,17 +204,17 @@ class EnhancedSupervisorWorkflow:
         
         # Create memory tools for each agent
         self.patient_memory_tools = create_memory_tools("patient_agent")
-        self.web_memory_tools = create_memory_tools("web_agent")
-        self.text_memory_tools = create_memory_tools("text_agent")
-        self.file_memory_tools = create_memory_tools("file_agent")
-        self.json_memory_tools = create_memory_tools("json_agent")
+        # self.web_memory_tools = create_memory_tools("web_agent")
+        # self.text_memory_tools = create_memory_tools("text_agent")
+        # self.file_memory_tools = create_memory_tools("file_agent")
+        # self.json_memory_tools = create_memory_tools("json_agent")
         
         # Create tool executors for each agent, ensuring .name attribute
         self.patient_tools = ensure_tool_names([read_patient_profile, update_patient_profile] + self.patient_memory_tools)
-        self.web_tools = ensure_tool_names([search_web] + self.web_memory_tools)
-        self.text_tools = ensure_tool_names([summarize_text, query_database, extract_keywords] + self.text_memory_tools)
-        self.file_tools = ensure_tool_names([read_file, write_file] + self.file_memory_tools)
-        self.json_tools = ensure_tool_names([read_json_file, write_json_file, list_json_files] + self.json_memory_tools)
+        self.web_tools = ensure_tool_names([search_web])# + self.web_memory_tools)
+        self.text_tools = ensure_tool_names([summarize_text, query_database, extract_keywords])# + self.text_memory_tools)
+        self.file_tools = ensure_tool_names([read_file, write_file])# + self.file_memory_tools)
+        self.json_tools = ensure_tool_names([read_json_file, write_json_file, list_json_files])# + self.json_memory_tools)
         
         self.patient_executor = ToolExecutor(self.patient_tools)
         self.web_executor = ToolExecutor(self.web_tools)
