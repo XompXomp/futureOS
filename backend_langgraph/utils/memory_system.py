@@ -176,61 +176,53 @@ class CurorMemorySystem:
         except Exception as e:
             logger.error(f"Error updating patient profile: {e}")
     
-    def search_semantic_memory(self, query: str, category: Optional[str] = None, 
-                              limit: int = 5) -> List[Dict[str, Any]]:
+    def search_semantic_memory(self, query: str, memory: dict, category: Optional[str] = None, limit: int = 5) -> List[Dict[str, Any]]:
         """
-        Search semantic memory using vector similarity.
-        
+        Search semantic memory using vector similarity from the provided memory dict.
         Args:
             query: Search query
+            memory: Dict containing at least a 'semantic' key (list of memory dicts)
             category: Filter by category
             limit: Maximum number of results
-            
         Returns:
             List of relevant memory entries
         """
         if not self.embedding_model:
             return self._fallback_semantic_search(query, category, limit)
-        
+
         try:
             # Get query embedding
             query_embedding = self.embedding_model.encode([query])[0]
-            
-            # Load all semantic memories
-            memories = []
-            for memory_file in self.semantic_path.glob("*.json"):
-                try:
-                    with open(memory_file, 'r') as f:
-                        memory = json.load(f)
-                    
-                    # Filter by category if specified
-                    if category and memory.get("category") != category:
-                        continue
-                    
-                    memories.append(memory)
-                except Exception as e:
-                    logger.warning(f"Error reading memory file {memory_file}: {e}")
-            
-            if not memories:
+
+            # Use semantic memories from the passed memory dict
+            semantic_memories = memory.get("semantic", []) if memory else []
+            if not semantic_memories:
                 return []
-            
+
+            # Filter by category if specified
+            filtered_memories = [
+                m for m in semantic_memories
+                if not category or m.get("category") == category
+            ]
+
             # Calculate similarities
             similarities = []
-            for memory in memories:
+            for mem in filtered_memories:
                 try:
-                    memory_embedding = self.embedding_model.encode([memory["content"]])[0]
+                    mem_content = mem.get("content", "")
+                    memory_embedding = self.embedding_model.encode([mem_content])[0]
                     similarity = cosine_similarity([query_embedding], [memory_embedding])[0][0]
-                    similarities.append((similarity, memory))
+                    similarities.append((similarity, mem))
                 except Exception as e:
-                    logger.warning(f"Error calculating similarity for memory {memory.get('id')}: {e}")
-            
+                    logger.warning(f"Error calculating similarity for memory {mem.get('id')}: {e}")
+
             # Sort by similarity and return top results
             similarities.sort(key=lambda x: x[0], reverse=True)
-            return [memory for _, memory in similarities[:limit]]
-            
+            return [mem for _, mem in similarities[:limit]]
+
         except Exception as e:
             logger.error(f"Error in semantic memory search: {e}")
-            return self._fallback_semantic_search(query, category, limit)
+            return []
     
     def _fallback_semantic_search(self, query: str, category: Optional[str] = None, 
                                  limit: int = 5) -> List[Dict[str, Any]]:

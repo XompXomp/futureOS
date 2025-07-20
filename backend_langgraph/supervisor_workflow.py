@@ -4,6 +4,7 @@
 import os
 import sys
 import re
+import json
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from typing import Dict, Any, List, Union, Callable
@@ -559,7 +560,7 @@ Remember: Be strict and explicit in your routing. If in doubt, prefer web_agent 
             return processor.execute_tool_calls(response)
         return response
 
-    def llm_memory_categorizer(self, user_input: str) -> list:
+    def llm_memory_categorizer(self, user_input: str, memory: dict) -> list:
         """Use the LLM to decide if/what to store in memory, and how to categorize it, excluding patient profile fields."""
         from langchain_core.prompts import ChatPromptTemplate
         import json
@@ -638,9 +639,10 @@ You are a memory categorization assistant. Given a user input, decide if any inf
             logger.error(f"Error parsing LLM memory categorizer output: {e}, raw: {summary}")
             return []
 
-    def update_memory_from_categorizer(self, memory_updates: list):
-        """Call the appropriate memory tool for each update object."""
+    def update_memory_from_categorizer(self, memory_updates: list, memory: dict):
+        """Call the appropriate memory tool for each update object, updating memory in-place."""
         results = []
+        current_memory = memory
         for update in memory_updates:
             mtype = update.get('type')
             if mtype == 'semantic':
@@ -649,8 +651,10 @@ You are a memory categorization assistant. Given a user input, decide if any inf
                     result = tool({
                         'content': update.get('content', ''),
                         'category': update.get('category', 'general'),
-                        'metadata': update.get('metadata', {})
+                        'metadata': update.get('metadata', {}),
+                        'memory': current_memory
                     })
+                    current_memory = result.get('memory', current_memory)
                     results.append(result)
             elif mtype == 'episodic':
                 tool = next((t for t in self.memory_tools if t.name == 'store_episodic_memory'), None)
@@ -660,18 +664,22 @@ You are a memory categorization assistant. Given a user input, decide if any inf
                         'content': update.get('content', ''),
                         'reasoning_context': update.get('reasoning_context', ''),
                         'outcome': update.get('outcome', ''),
-                        'metadata': update.get('metadata', {})
+                        'metadata': update.get('metadata', {}),
+                        'memory': current_memory
                     })
+                    current_memory = result.get('memory', current_memory)
                     results.append(result)
             elif mtype == 'procedural':
                 tool = next((t for t in self.memory_tools if t.name == 'update_procedural_memory'), None)
                 if tool:
                     result = tool({
                         'rule_type': update.get('category', ''),
-                        'rule_data': update.get('content', {})
+                        'rule_data': update.get('content', {}),
+                        'memory': current_memory
                     })
+                    current_memory = result.get('memory', current_memory)
                     results.append(result)
-        return results
+        return results, current_memory
 
     def llm_postprocess_response(self, tool_output, user_input):
         """Use the LLM to generate a conversational answer from the tool output and user input."""
@@ -692,17 +700,18 @@ You are a memory categorization assistant. Given a user input, decide if any inf
             logger.error(f"Error in LLM post-processing: {str(e)}")
             return str(tool_output)
 
-    def run(self, user_input: str) -> str:
+    def run(self, user_input: str, memory: dict) -> dict:
         """Run the supervisor workflow with user input."""
         try:
-            # --- NEW: Semantic memory pre-check step with perfect match threshold ---
+            # --- Semantic memory pre-check step with perfect match threshold ---
             search_tool = next((t for t in self.memory_tools if t.name == 'search_semantic_memory'), None)
-            perfect_match_threshold = settings.MEMORY_SIMILARITY_THRESHOLD
-            perfect_match = None
+            preface = None
             if search_tool:
+                # Pass the memory dict to the search tool if it supports it
                 search_result = search_tool({
                     'query': user_input,
-                    'limit': 3
+                    'limit': 3,
+                    'memory': memory  # Pass memory explicitly if tool supports it
                 })
                 results = search_result.get('results', [])
                 if settings.DEBUG:
@@ -729,10 +738,8 @@ You are a memory categorization assistant. Given a user input, decide if any inf
                     if settings.DEBUG:
                         print(f"[DEBUG] Relevance result: {relevance}")
                     if 'true' in relevance:
-                        return str(self.llm_postprocess_response(memory_response, user_input))
+                        return {"memory": memory}
                     # If not relevant, fall through to run the workflow as usual
-                # Check for a perfect match (assume 'similarity' key is present, else skip)
-                # (This block is now redundant and can be removed)
                 # Otherwise, proceed as normal
                 if not results:
                     # LLM call to check if user_input is a valid fact
@@ -743,28 +750,27 @@ You are a memory categorization assistant. Given a user input, decide if any inf
                     ])
                     fact_chain = fact_check_prompt | self.model
                     fact_result = fact_chain.invoke({"user_input": user_input})
-                    is_fact = str(fact_result.content).strip().lower() == 'yes'
+                    is_fact = True #str(fact_result.content).strip().lower() == 'yes'
                     if is_fact:
                         # LLM-powered memory categorization and update step
-                        memory_updates = self.llm_memory_categorizer(user_input)
+                        memory_updates = self.llm_memory_categorizer(user_input, memory)
                         logger.info(f"[DEBUG] Memory categorizer updates: {memory_updates}")
                         if memory_updates:
-                            memory_results = self.update_memory_from_categorizer(memory_updates)
+                            memory_results, memory = self.update_memory_from_categorizer(memory_updates, memory)
                             logger.info(f"[DEBUG] Memory update results: {memory_results}")
                             preface = "Added to memory."
                     else:
                         preface = None
-                else:
-                    preface = None
             else:
                 preface = None
-            # --- END NEW ---
+            # --- END semantic memory pre-check ---
 
             # Create initial state
             initial_state = {
                 "messages": [
                     {"role": "user", "content": user_input}
-                ]
+                ],
+                "memory": memory
             }
             
             # Create config
@@ -778,18 +784,11 @@ You are a memory categorization assistant. Given a user input, decide if any inf
             
             # Run the workflow
             result = self.app.invoke(initial_state, config=config)
-            # results has 7 messages, 1 user, 6 assistant for first run
-            # results has 14 message, 2 user, 12 assistant for second run
-            # results must increase on third run
             
             if result is None:
                 logger.error("Supervisor workflow returned None as result.")
-                return "I apologize, but I encountered an internal error (no result)."
-            
-            # Extract messages and process them
+                return {"memory": memory, "error": "I apologize, but I encountered an internal error (no result)."}
             messages = result.get("messages", [])
-            # messages has 7 messages, 1 user, 6 assistant
-
             if settings.DEBUG:
                 print(f"[DEBUG] Messages: {messages}")
             
@@ -799,7 +798,6 @@ You are a memory categorization assistant. Given a user input, decide if any inf
             final_response = None
             last_agent = None
             
-            #--------------------------CULPRINT----------------------------
             # Prefer final_response if present
             if result.get("final_response"):
                 logger.info(f"[DEBUG] Supervisor: Using result['final_response']: {result['final_response']}")
@@ -822,15 +820,12 @@ You are a memory categorization assistant. Given a user input, decide if any inf
                             final_response = content
                             last_agent = message.name
                             break
-            #--------------------------CULPRINT----------------------------
 
                 # Additional post-processing if needed
                 if final_response and last_agent:
                     if settings.DEBUG:
                         print("\n\nRunning post-processing for final_response: \n\n")
-                    #--------------------------CULPRIT----------------------------
                     final_response = self.post_process_agent_response(final_response, last_agent)
-                    #--------------------------CULPRIT----------------------------
                 if not final_response:
                     logger.info("[DEBUG] Supervisor: No final_response found in messages, using fallback.")
                     final_response = result.get("final_response", "No response generated")
@@ -841,21 +836,20 @@ You are a memory categorization assistant. Given a user input, decide if any inf
             #------SPED UP HERE-1-----
             logger.info(f"[DEBUG] Supervisor: Post-LLM postprocess conversational_response: {conversational_response}")
             logger.info(f"[EXPLICIT DEBUG] Supervisor about to return: type={type(conversational_response)}, value={conversational_response}")
+            updated_memory = result.get("memory", memory)
             if 'preface' in locals() and preface:
-                return f"{preface}\n{str(conversational_response)}"
-            return str(conversational_response)
+                return {"memory": updated_memory, "response": f"{preface}\n{str(conversational_response)}"}
+            return {"memory": updated_memory, "response": str(conversational_response)}
         except Exception as e:
             logger.error(f"Error running supervisor workflow: {str(e)}")
-            return f"I apologize, but I encountered an error: {str(e)}"
+            return {"memory": memory, "error": f"I apologize, but I encountered an error: {str(e)}"}
 
     def chat(self, debug: bool = False):
-        """Start interactive chat session."""
+        """Start interactive chat session with in-memory memory dict."""
         self.debug_mode = debug
         if settings.DEBUG:
             print("DEBUG MODE: Detailed logging enabled")
-        if settings.DEBUG:
             print("Enhanced LangGraph Supervisor AI Agent is ready! Type 'quit' to exit.")
-        if settings.DEBUG:
             print("You can:")
             print("- Ask questions about your patient profile")
             print("- Update your patient information")
@@ -864,31 +858,30 @@ You are a memory categorization assistant. Given a user input, decide if any inf
             print("- Summarize text")
             print("- Query the database")
             print()
-        
+        memory = {"semantic": [], "episodes": [], "procedural": {}}
         while True:
             try:
                 user_input = input("\nYou: ").strip()
                 if user_input.lower() in ['quit', 'exit', 'bye']:
                     if settings.DEBUG:
                         print("Goodbye!")
-                    else:
-                        pass
                     break
-                
                 if user_input.lower() == 'debug':
                     self.debug_mode = not self.debug_mode
                     if settings.DEBUG:
                         print(f"Debug mode: {'ON' if self.debug_mode else 'OFF'}")
-                    else:
-                        pass
                     continue
-                
                 if not user_input:
                     continue
-                
-                response = self.run(user_input)
-                print(f"Agent: {response}")
-                
+                result = self.run(user_input, memory)
+                # Update memory with the latest returned value
+                memory = result.get("memory", memory)
+                if "response" in result:
+                    print(f"Agent: {result['response']}")
+                elif "error" in result:
+                    print(f"Agent (error): {result['error']}")
+                else:
+                    print(f"Agent: (no response)")
             except KeyboardInterrupt:
                 print("\nGoodbye!")
                 break
@@ -897,8 +890,6 @@ You are a memory categorization assistant. Given a user input, decide if any inf
                 if settings.DEBUG:
                     import traceback
                     print(f"Full traceback:\n{traceback.format_exc()}")
-                else:
-                    pass
 
 def main():
     """Main function to run the enhanced supervisor workflow."""
