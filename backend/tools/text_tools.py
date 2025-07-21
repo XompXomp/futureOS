@@ -2,52 +2,27 @@
 
 from langchain.agents import Tool
 from modules.text_operations import TextOperations
-from utils.logging_config import logger
 
 def create_text_tools():
-    """Create text processing tools for the agent."""
-    
-    text_ops = TextOperations()
-    
-    def summarize_text_tool(text: str) -> str:
-        """Summarize the provided text."""
-        try:
-            if not text or text.strip() == "":
-                return "Error: Please provide text to summarize"
-            
-            summary = text_ops.summarize_text(text)
-            if summary:
-                return f"Summary: {summary}"
-            else:
-                return "Error: Could not summarize the text"
-        except Exception as e:
-            return f"Error summarizing text: {str(e)}"
+    def summarize_text_tool(state: dict) -> dict:
+        result = TextOperations.summarize_text(state)
+        state['summary'] = result.get('summary', result.get('error', 'Error'))
+        return state
 
-    def answer_question_from_text_tool(input_str: str) -> str:
-        """Answer a question based on provided text. Format: 'text|question'"""
-        try:
-            parts = input_str.split('|', 1)
-            if len(parts) != 2:
-                return "Error: Please provide input in format 'text|question'"
-            
-            text, question = parts
-            answer = text_ops.answer_question_from_text(text.strip(), question.strip())
-            if answer:
-                return f"Answer: {answer}"
-            else:
-                return "Error: Could not answer the question"
-        except Exception as e:
-            return f"Error answering question: {str(e)}"
+    def extract_keywords_tool(state: dict) -> dict:
+        result = TextOperations.extract_keywords(state)
+        state['keywords'] = result.get('keywords', result.get('error', 'Error'))
+        return state
 
     return [
         Tool(
             name="summarize_text",
             func=summarize_text_tool,
-            description="Summarize provided text into key points. Input: text to summarize"
+            description="Summarize provided text into key points. Input: state dict."
         ),
         Tool(
-            name="answer_question_from_text",
-            func=answer_question_from_text_tool,
-            description="Answer a question based on provided text. Input: 'text|question'"
+            name="extract_keywords",
+            func=extract_keywords_tool,
+            description="Extract key terms from provided text. Input: state dict."
         )
     ]

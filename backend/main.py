@@ -6,14 +6,11 @@ from langchain_groq import ChatGroq
 from langchain_ollama import ChatOllama
 from langchain.memory import ConversationBufferWindowMemory
 from config.settings import settings
-from tools.file_tools import create_file_tools
-from tools.json_tools import create_json_tools
+from tools.patient_tools import create_patient_tools
 from tools.text_tools import create_text_tools
-from tools.database_tools import create_database_tools
-from tools.rag_tools import create_rag_tools
-from tools.google_pse_tools import create_google_pse_tools
+from tools.web_tools import create_web_tools
+from tools.memory_tools import create_memory_tools
 from utils.logging_config import logger
-from modules.file_operations import FileOperations
 import json
 from typing import Optional, Any
 from dotenv import load_dotenv
@@ -28,11 +25,13 @@ class AIAgent:
                 base_url=settings.OLLAMA_BASE_URL,
                 temperature=0.3
             )
-        else:
+        elif settings.USE_GROQ:
             self.llm = ChatGroq(
                 model=settings.LLM_MODEL,
                 temperature=0.3
             )
+        else:
+            raise ValueError("Invalid LLM_PROVIDER. Set LLM_PROVIDER to 'ollama' or 'groq'.")
         self.memory = ConversationBufferWindowMemory(
            memory_key="chat_history",
            return_messages=True,
@@ -40,19 +39,17 @@ class AIAgent:
         )
         self.agent = None
         self.setup_agent()
-        self.initialize_patient_profile()
+        # No patient profile file initialization
 
     def setup_agent(self):
         """Setup the AI agent with all tools."""
         try:
             # Collect all tools
             all_tools = []
-            all_tools.extend(create_file_tools()) # File operations
-            all_tools.extend(create_json_tools()) # JSON operations
-            all_tools.extend(create_text_tools()) # Text operations
-            all_tools.extend(create_database_tools()) # Database operations
-            all_tools.extend(create_rag_tools()) # RAG operations
-            all_tools.extend(create_google_pse_tools()) # Google PSE operations
+            all_tools.extend(create_patient_tools())
+            all_tools.extend(create_text_tools())
+            all_tools.extend(create_web_tools())
+            all_tools.extend(create_memory_tools())
             
             # Initialize agent
             self.agent = initialize_agent(
@@ -67,9 +64,9 @@ class AIAgent:
                     "system_message": """You are a helpful AI assistant for a patient management system. 
                     
                     IMPORTANT CONTEXT:
-                    - When the user says "I", "me", "my", "myself" - they are referring to THEMSELVES as the PATIENT
-                    - When the user asks about "my name", "my age", "my medical info" - they want information about THEMSELVES (the patient)
-                    - You should treat "I" and "patient" as the same person
+                    - When the user says \"I\", \"me\", \"my\", \"myself\" - they are referring to THEMSELVES as the PATIENT
+                    - When the user asks about \"my name\", \"my age\", \"my medical info\" - they want information about THEMSELVES (the patient)
+                    - You should treat \"I\" and \"patient\" as the same person
                     - Always check the patient profile when users ask about themselves
                     - Use the read_patient_profile tool when users ask about their information
                     - Use the update_patient_profile tool when users want to update their information
@@ -89,102 +86,72 @@ class AIAgent:
             logger.error(f"Error setting up agent: {str(e)}")
             raise
 
-    def initialize_patient_profile(self):
-        """Initialize patient profile with default structure if it doesn't exist."""
-        try:
-            default_profile = {
-                "personal_info": {
-                    "name": "",
-                    "age": 0,
-                    "gender": "",
-                    "phone": "",
-                    "email": "",
-                    "address": ""
-                },
-                "medical_info": {
-                    "height": 0,
-                    "weight": 0,
-                    "blood_type": "",
-                    "allergies": [],
-                    "chronic_conditions": [],
-                    "current_medications": []
-                },
-                "emergency_contact": {
-                    "name": "",
-                    "relationship": "",
-                    "phone": ""
-                },
-                "insurance": {
-                    "provider": "",
-                    "policy_number": "",
-                    "group_number": ""
-                }
-            }
-            
-            # Create the profile file if it doesn't exist
-            if not FileOperations.file_exists(settings.PATIENT_PROFILE_PATH):
-                profile_content = json.dumps(default_profile, indent=2)
-                success = FileOperations.write_file(settings.PATIENT_PROFILE_PATH, profile_content)
-                if success:
-                    logger.info("Default patient profile created")
-                else:
-                    logger.error("Could not create default patient profile")
-            
-        except Exception as e:
-            logger.error(f"Error initializing patient profile: {str(e)}")
-
-    def run(self, user_input: str) -> str:
-        """Run the agent with user input."""
+    def run(self, user_input: str, memory: dict = None, patient_profile: dict = None) -> dict:
+        """Run the agent with user input, memory, and patient_profile as dicts. Pass them to every tool operation and capture updates."""
         try:
             if self.agent is None:
                 logger.error("Agent is not initialized.")
-                return "Agent is not initialized."
-            
-            # Check if we're hitting rate limits too frequently
-            if hasattr(self, '_rate_limit_count'):
-                self._rate_limit_count += 1
-            else:
-                self._rate_limit_count = 0
-            
-            if self._rate_limit_count > 3:
-                return "I'm experiencing high demand right now. Please try again in a few minutes or switch to local mode (Ollama)."
-            
-            response = self.agent.run(user_input)
-            # Reset rate limit counter on success
-            self._rate_limit_count = 0
+                return {"error": "Agent is not initialized.", "memory": memory, "patient_profile": patient_profile}
+
+            # Custom tool-calling wrapper to inject memory/patient_profile
+            def tool_wrapper(tool_func):
+                def wrapped(*args, **kwargs):
+                    if args and isinstance(args[0], dict):
+                        state = args[0]
+                    else:
+                        state = {}
+                    if memory is not None:
+                        state['memory'] = memory
+                    if patient_profile is not None:
+                        state['patientProfile'] = patient_profile
+                    result = tool_func(state)
+                    # No nonlocal; just return the updated state
+                    return result
+                return wrapped
+
+            # Patch all tools to use the wrapper
+            for tool in self.agent.tools:
+                tool.func = tool_wrapper(tool.func)
+
+            state = self.agent.run(user_input)
+            # After agent.run, extract updated memory and patient_profile from state
+            if isinstance(state, dict):
+                memory = state.get('memory', memory)
+                patient_profile = state.get('patientProfile', patient_profile)
             logger.info(f"Agent response generated for input: {user_input[:50]}...")
-            return response
+            return {"response": state, "memory": memory, "patient_profile": patient_profile}
         except Exception as e:
             logger.error(f"Error running agent: {str(e)}")
-            if "rate limit" in str(e).lower() or "429" in str(e):
-                self._rate_limit_count = getattr(self, '_rate_limit_count', 0) + 1
-                return f"Rate limit reached. Please try again later or switch to local mode."
-            return f"I apologize, but I encountered an error: {str(e)}"
+            return {"error": f"I apologize, but I encountered an error: {str(e)}", "memory": memory, "patient_profile": patient_profile}
 
     def chat(self):
-        """Start interactive chat session."""
+        """Start interactive chat session with in-memory memory and patient_profile dicts."""
         print("AI Agent is ready! Type 'quit' to exit.")
         print("You can:")
-        print("- Ask questions about documents")
-        print("- Query the database")
-        print("- Update your patient profile")
-        print("- Read/write files")
-        print("- Summarize text")
+        print("- Ask questions about your patient profile")
+        print("- Summarize text or extract keywords")
+        print("- Search the web for information")
+        print("- Store and search semantic memory")
         print()
-        
+        memory = {"semantic": [], "episodes": [], "procedural": {}}
+        patient_profile = {}  # Start with empty dict, never read from disk
         while True:
             try:
                 user_input = input("\nYou: ").strip()
                 if user_input.lower() in ['quit', 'exit', 'bye']:
                     print("Goodbye!")
                     break
-                
                 if not user_input:
                     continue
-                
-                response = self.run(user_input)
-                print(f"\nAgent: {response}")
-                
+                result = self.run(user_input, memory=memory, patient_profile=patient_profile)
+                memory = result.get("memory", memory)
+                patient_profile = result.get("patient_profile", patient_profile)
+                if "response" in result:
+                    print(f"\nAgent: {result['response']}")
+                elif "error" in result:
+                    print(f"\nAgent (error): {result['error']}")
+                else:
+                    print(f"\nAgent: (no response)")
             except KeyboardInterrupt:
                 print("\nGoodbye!")
                 break
@@ -194,16 +161,10 @@ class AIAgent:
 def main():
     """Main function to run the AI agent."""
     try:
-        # Create necessary directories
-        os.makedirs("data", exist_ok=True)
-        os.makedirs("data/docs", exist_ok=True)
         LOGS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "utils", "logs")
         os.makedirs(LOGS_DIR, exist_ok=True)
-        
-        # Initialize and run agent
         agent = AIAgent()
         agent.chat()
-        
     except Exception as e:
         logger.error(f"Error in main: {str(e)}")
         print(f"Failed to start agent: {str(e)}")
