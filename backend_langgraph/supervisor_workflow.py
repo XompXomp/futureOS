@@ -7,7 +7,7 @@ import re
 import json
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from typing import Dict, Any, List, Union, Callable
+from typing import Dict, Any, List, Union, Callable, Optional
 from langgraph.prebuilt import create_react_agent
 from langgraph_supervisor import create_supervisor
 from langgraph.checkpoint.memory import InMemorySaver
@@ -18,12 +18,13 @@ from langchain_ollama import ChatOllama
 from langchain_core.messages import HumanMessage, AIMessage, ToolMessage
 from langchain_core.tools import tool
 from langchain_core.runnables import RunnableLambda
+from langgraph.graph import StateGraph, END
+from langchain_core.prompts import ChatPromptTemplate
 
 from config.settings import settings
 from tools.patient_tools import read_patient_profile, update_patient_profile
 from tools.web_search_tools import search_web
 from tools.text_tools import summarize_text, query_database, extract_keywords
-from tools.file_tools import read_file, write_file
 from tools.json_tools import read_json_file, write_json_file, list_json_files
 from tools.memory_tools import create_memory_tools
 from utils.logging_config import logger
@@ -34,198 +35,37 @@ def ensure_tool_names(tools):
             tool.name = tool.__name__
     return tools
 
-class ToolExecutor:
-    """Handles execution of tools when they're output as strings."""
-    
-    def __init__(self, tools: List):
-        self.tools = {tool.name: tool for tool in tools}
-        
-    def parse_tool_arguments(self, args_str: str) -> Union[str, Dict, List]:
-        """Parse tool arguments from string format."""
-        args_str = args_str.strip()
-        
-        # Handle simple string arguments
-        if args_str.startswith('"') and args_str.endswith('"'):
-            return args_str[1:-1]
-        if args_str.startswith("'") and args_str.endswith("'"):
-            return args_str[1:-1]
-            
-        # Handle dictionary arguments
-        if args_str.startswith('{') and args_str.endswith('}'):
-            try:
-                import json
-                return json.loads(args_str)
-            except:
-                return args_str
-                
-        # Handle list arguments
-        if args_str.startswith('[') and args_str.endswith(']'):
-            try:
-                import json
-                return json.loads(args_str)
-            except:
-                return args_str
-                
-        # Default to string
-        return args_str
-        
-    def extract_and_execute_tool_calls(self, text: str) -> str:
-        """Extract tool calls from text and execute them."""
-
-        if settings.DEBUG:
-            print(f"[DEBUG] extract_and_execute_tool_calls: {text}")
-        # Multiple patterns to catch different tool call formats
-        patterns = [
-            #r'<\|python_tag\|>(\w+)\((.*?)\)',  # <|python_tag|>tool_name("args")
-            r'(\w+)\((.*?)\)',  # tool_name("args")
-            r'Action:\s*(\w+)\s*Action Input:\s*(.*)',  # ReAct format
-        ]
-        
-        result = text
-        
-        for pattern in patterns:
-            matches = re.findall(pattern, text, re.DOTALL)
-            
-            if not matches:
-                continue
-                
-            for tool_name, args in matches:
-                if tool_name in self.tools:
-                    try:
-                        # Parse arguments
-                        parsed_args = self.parse_tool_arguments(args)
-                        
-                        # Execute the tool
-                        if isinstance(parsed_args, dict):
-                            tool_result = self.tools[tool_name](parsed_args)
-                        elif isinstance(parsed_args, list):
-                            tool_result = self.tools[tool_name](*parsed_args)
-                        else:
-                            # For string or other types, wrap as state dict
-                            tool_result = self.tools[tool_name]({"user_input": parsed_args})
-                        
-                        # Replace the tool call with the result
-                        # Determine tool call name
-                        if pattern.startswith('<\\|python_tag\\|>'):
-                            tool_call = f'<|python_tag|>{tool_name}({args})'
-                        elif 'Action:' in pattern:
-                            tool_call = f'Action: {tool_name}\nAction Input: {args}'
-                        else:
-                            tool_call = f'{tool_name}({args})'
-
-                        # Extract only useful information from tool_result
-                        if tool_name == "search_web":
-                            temp = tool_result['search_message']
-                            result = result.replace(tool_call, str(temp))
-                        else:
-                            result = result.replace(tool_call, str(tool_result))
-                        
-                    except Exception as e:
-                        logger.error(f"Error executing tool {tool_name}: {str(e)}")
-                        
-                        # Replace with error message
-                        if pattern.startswith('<\\|python_tag\\|>'):
-                            tool_call = f'<|python_tag|>{tool_name}({args})'
-                        elif 'Action:' in pattern:
-                            tool_call = f'Action: {tool_name}\nAction Input: {args}'
-                        else:
-                            tool_call = f'{tool_name}({args})'
-                            
-                        result = result.replace(tool_call, f"Error executing {tool_name}: {str(e)}")
-        return result
-
-class MessageProcessor:
-    """Processes messages to handle tool calls properly."""
-    
-    def __init__(self, tools: List):
-        self.tools = {tool.name: tool for tool in tools}
-        
-    def process_message(self, message: Union[AIMessage, str]) -> Union[AIMessage, str]:
-        """Process a message to execute any embedded tool calls."""
-        if isinstance(message, AIMessage):
-            content = message.content
-        else:
-            content = str(message)
-        
-        # Ensure content is a string for tool call checks
-        if not isinstance(content, str):
-            content = str(content)
-        # Check if the content contains tool calls
-        if self.contains_tool_calls(content):
-            processed_content = self.execute_tool_calls(content)
-            if isinstance(message, AIMessage):
-                return AIMessage(content=processed_content, name=message.name)
-            else:
-                return processed_content
-        return message
-    
-    def contains_tool_calls(self, text: str) -> bool:
-        """Check if text contains tool calls."""
-        if not isinstance(text, str):
-            text = str(text)
-        patterns = [
-            r'<\|python_tag\|>\w+\(.*?\)',
-            r'Action:\s*\w+\s*Action Input:',
-            r'\w+\(".*?"\)'
-        ]
-        
-        for pattern in patterns:
-            if re.search(pattern, text):
-                return True
-        return False
-    
-    def execute_tool_calls(self, text: str) -> str:
-        """Execute tool calls found in text."""
-        if settings.DEBUG:
-            print(f"[DEBUG] Executing tool calls: {text}")
-
-        if not isinstance(text, str):
-            text = str(text)
-        executor = ToolExecutor(list(self.tools.values()))
-        return executor.extract_and_execute_tool_calls(text)
-
 class EnhancedSupervisorWorkflow:
     def __init__(self, debug_mode: bool = False):
         """Initialize the enhanced supervisor workflow with proper tool execution."""
         self.debug_mode = debug_mode
         # Initialize LLM
         if settings.USE_OLLAMA:
-            self.model = ChatOllama(
+            self.reasoning_model = ChatOllama(
                 model=settings.OLLAMA_MODEL,
                 base_url=settings.OLLAMA_BASE_URL,
                 temperature=0.3
             )
         elif settings.USE_GROQ:
-            self.model = ChatGroq(
+            self.reasoning_model = ChatGroq(
                 model=settings.LLM_MODEL,
                 temperature=0.3
             )
         else:
             raise ValueError("Invalid LLM_PROVIDER. Set LLM_PROVIDER to 'ollama' or 'groq'.")
         
-        # Create memory tools for each agent
-        self.patient_memory_tools = create_memory_tools("patient_agent")
-        # self.web_memory_tools = create_memory_tools("web_agent")
-        # self.text_memory_tools = create_memory_tools("text_agent")
-        # self.file_memory_tools = create_memory_tools("file_agent")
-        # self.json_memory_tools = create_memory_tools("json_agent")
+        # Instantiate memory_tools as a module (not as agent tools)
+        self.memory_tools = {tool.name: tool for tool in ensure_tool_names(create_memory_tools("patient_agent"))}
         
         # Create tool executors for each agent, ensuring .name attribute
-        self.patient_tools = ensure_tool_names([read_patient_profile, update_patient_profile] + self.patient_memory_tools)
+        self.patient_tools = ensure_tool_names([read_patient_profile, update_patient_profile])
         self.web_tools = ensure_tool_names([search_web])# + self.web_memory_tools)
         self.text_tools = ensure_tool_names([summarize_text, query_database, extract_keywords])# + self.text_memory_tools)
-        self.file_tools = ensure_tool_names([read_file, write_file])# + self.file_memory_tools)
         self.json_tools = ensure_tool_names([read_json_file, write_json_file, list_json_files])# + self.json_memory_tools)
-        
-        self.patient_executor = ToolExecutor(self.patient_tools)
-        self.web_executor = ToolExecutor(self.web_tools)
-        self.text_executor = ToolExecutor(self.text_tools)
-        self.file_executor = ToolExecutor(self.file_tools)
-        self.json_executor = ToolExecutor(self.json_tools)
         
         # Create specialized agents using create_react_agent
         self.patient_agent = create_react_agent(
-            model=self.model,
+            model=self.reasoning_model,
             tools=self.patient_tools,
             name="patient_agent",
             prompt="""You are a patient profile management agent. You MUST use the available tools to provide accurate information.
@@ -251,7 +91,7 @@ class EnhancedSupervisorWorkflow:
         )
         
         self.web_agent = create_react_agent(
-            model=self.model,
+            model=self.reasoning_model,
             tools=self.web_tools,
             name="web_agent",
             prompt="""You are a web search agent. You MUST use the search_web tool for current information.
@@ -276,7 +116,7 @@ class EnhancedSupervisorWorkflow:
         )
         
         self.text_agent = create_react_agent(
-            model=self.model,
+            model=self.reasoning_model,
             tools=self.text_tools,
             name="text_agent",
             prompt="""You are a text processing agent for general conversation and text analysis.
@@ -302,33 +142,8 @@ class EnhancedSupervisorWorkflow:
                 Remember: Call tools directly when needed!"""
         )
         
-        self.file_agent = create_react_agent(
-            model=self.model,
-            tools=self.file_tools,
-            name="file_agent",
-            prompt="""You are a file management agent. You MUST use the file tools for all file operations.
-
-                AVAILABLE TOOLS:
-                - read_file: Read files from the data/docs directory
-                - write_file: Write content to files in the data/docs directory
-                - Memory tools for storing and retrieving information
-
-                CRITICAL INSTRUCTIONS:
-                1. ALWAYS use read_file for reading files
-                2. ALWAYS use write_file for writing files
-                3. Use tools by calling them directly, not as text strings
-                4. Default directory is data/docs
-                5. Provide conversational responses after file operations
-
-                EXAMPLES:
-                - User: "Read example.txt" → Call read_file, then share contents
-                - User: "Write 'Hello World' to test.txt" → Call write_file, then confirm
-
-                Remember: Execute file tools directly!"""
-        )
-        
         self.json_agent = create_react_agent(
-            model=self.model,
+            model=self.reasoning_model,
             tools=self.json_tools,
             name="json_agent",
             prompt="""You are a JSON file management agent. You MUST use the JSON tools for all JSON operations.
@@ -353,98 +168,58 @@ class EnhancedSupervisorWorkflow:
                 Remember: Execute JSON tools directly!"""
         )
         
-        # Create memory tools for memory agent
-        self.memory_tools = ensure_tool_names(create_memory_tools("patient_agent"))
-        self.memory_agent = create_react_agent(
-            model=self.model,
-            tools=self.memory_tools,
-            name="memory_agent",
-            prompt="""
-                You are a memory management agent for a healthcare AI system. Your job is to store, retrieve, and manage all types of memory for the patient agent, including semantic, episodic, and procedural memory, as well as prompt rules. You must always use the correct tool for the memory type requested by the user, and confirm the action taken in your response.
-
-                AVAILABLE TOOLS:
-                - update_semantic_memory: Store new patient information in semantic memory
-                - search_semantic_memory: Retrieve patient information from semantic memory
-                - store_episodic_memory: Store successful interactions and their outcomes
-                - search_episodic_memory: Retrieve past interactions
-                - update_procedural_memory: Update behavior rules and preferences
-                - get_procedural_memory: Retrieve behavior rules and preferences
-                - optimize_prompt: Optimize prompts using procedural memory
-                - get_memory_summary: Get comprehensive memory summary
-
-                INSTRUCTIONS:
-                1. Use the correct tool for the memory type requested.
-                2. For semantic memory (facts, knowledge, patient info), use update/search_semantic_memory.
-                3. For episodic memory (events, interactions, outcomes), use store/search_episodic_memory.
-                4. For procedural memory (rules, preferences, prompt rules, and prompt optimization), use update/get_procedural_memory. All prompt optimization is handled as a procedural memory update with category 'prompt_rules'.
-                5. For a summary of all memory, use get_memory_summary.
-                6. Always confirm the action taken in your response, and be clear about what was stored, retrieved, or updated.
-                7. If the user asks for a list, summary, or details, use the appropriate search or summary tool.
-                8. If the user asks to update or add information, use the appropriate update/store tool.
-                9. If you are unsure, ask for clarification or use get_memory_summary.
-
-                EXAMPLES:
-                - User: "I don't like rude way of talking."
-                → Use update_procedural_memory with rule_type "communication_style", rule_data {"politeness": "prefer polite, not rude"}, and confirm update.
-                - User: "Make it more technical."
-                → Use update_procedural_memory with rule_type "prompt_rules", rule_data {"technical_prompt": "<user's prompt or context>"}. The system will optimize the prompt with the LLM and store it in procedural memory.
-                - User: "I had a great appointment today."
-                → Use store_episodic_memory with interaction_type "appointment", content "great appointment today", and confirm storage.
-                - User: "Allergies: penicillin."
-                → Use update_semantic_memory with content "penicillin", category "allergy", and confirm update.
-                - User: "I prefer morning appointments."
-                → Use update_procedural_memory with rule_type "appointment_preferences", rule_data {"time": "morning"}, and confirm update.
-                - User: "Show my last two visits."
-                → Use search_episodic_memory with limit 2 and summarize the results.
-                - User: "Summarize my memory."
-                → Use get_memory_summary and provide a summary.
-                - User: "What are my prompt rules?"
-                → Use get_procedural_memory with rule_type "prompt_rules" and list the rules.
-
-                Remember: Always use the correct tool, confirm the action, and be clear and helpful in your response.
-                """
-        )
-        
-        # Create message processors for each agent
-        self.patient_processor = MessageProcessor(self.patient_tools)
-        self.web_processor = MessageProcessor(self.web_tools)
-        self.text_processor = MessageProcessor(self.text_tools)
-        self.file_processor = MessageProcessor(self.file_tools)
-        self.json_processor = MessageProcessor(self.json_tools)
-        
-        # Map agents to their processors
-        self.agent_processors = {
-            "patient_agent": self.patient_processor,
-            "web_agent": self.web_processor,
-            "text_agent": self.text_processor,
-            "file_agent": self.file_processor,
-            "json_agent": self.json_processor
-        }
-        
-        # Create supervisor workflow
-        self.workflow = create_supervisor(
-            [self.patient_agent, self.web_agent, self.text_agent, self.file_agent, self.json_agent, self.memory_agent],
-            model=self.model,
-            prompt="""
+        # Remove memory_agent from members
+        members = ["patient_agent", "web_agent", "text_agent", "json_agent"]
+        # --- Semantic Memory Pre-Check Node ---
+        def semantic_memory_precheck_node(state: Dict[str, Any]):
+            search_tool = self.memory_tools.get('search_semantic_memory_tool')
+            update_tool = self.memory_tools.get('update_semantic_memory_tool')
+            if not search_tool:
+                return state, "supervisor"
+            search_result = search_tool({
+                'query': state['user_input'],
+                'limit': 3,
+                'memory': state.get('memory', {})
+            })
+            results = search_result.get('results', [])
+            if results:
+                all_contents = "\n- ".join(r.get('content', '') for r in results)
+                memory_response = f"I found these in your memory:\n- {all_contents}"
+                prompt = ChatPromptTemplate.from_template(
+                    "Is the following memory relevant to the user's question? Respond 'true' or 'false'.\nUser: {user_input}\nMemory: {all_contents}\nAnswer:"
+                )
+                chain = prompt | self.reasoning_model
+                relevance_result = chain.invoke({"user_input": state['user_input'], "all_contents": all_contents})
+                relevance = str(relevance_result.content).strip().lower()
+                if 'true' in relevance:
+                    state['messages'].append(HumanMessage(content=memory_response))
+                    return state, END
+            # If not relevant, treat as a new fact and update semantic memory
+            if update_tool:
+                result = update_tool({
+                    'content': state['user_input'],
+                    'category': 'general',
+                    'memory': state.get('memory', {})
+                })
+                state['memory'] = result.get('memory', state.get('memory', {}))
+            return state, "supervisor"
+        # --- Supervisor Router Node ---
+        supervisor_prompt = """
 You are a supervisor for a team of specialized agents in a healthcare AI system.
 
 AVAILABLE AGENTS:
 - patient_agent: Handles patient profile queries, updates, and medical information
 - web_agent: Handles web searches and online information gathering
 - text_agent: Handles text processing, summarization, general conversation, and listing all available agents
-- file_agent: Handles file operations like reading, writing, and managing documents
 - json_agent: Handles JSON file operations (read, write, list JSON files)
-- memory_agent: Handles all memory management tasks (semantic, episodic, procedural, and prompt rules) for the patient agent
 
 ROUTING INSTRUCTIONS:
-- Output ONLY the agent name, exactly as: patient_agent, web_agent, text_agent, file_agent, json_agent, or memory_agent
+- Output ONLY the agent name, exactly as: patient_agent, web_agent, text_agent, or json_agent
 - Do not output anything else or explain your choice
 - For greetings, general conversation, or agent listing → text_agent
 - For patient info, medical data, or personal details → patient_agent
-- For file operations → file_agent
 - For JSON operations → json_agent
-- For memory management (semantic, episodic, procedural, or prompt rules) → memory_agent
-- **For ANY fact-based, current event, general knowledge, or up-to-date information question (e.g., 'Who is...', 'What is...', 'When did...', 'How many...', 'What year...', 'What is the population of...', 'When did the Olympics start?', 'Who is the CEO of...', 'What is the latest news about...', 'What is the weather like?', etc.), or anything that may require information not found in memory, ALWAYS route to → web_agent**
+- For any fact-based, current event, general knowledge, or up-to-date information question (e.g., 'Who is...', 'What is...', 'When did...', 'How many...', 'What year...', 'What is the population of...', 'When did the Olympics start?', 'Who is the CEO of...', 'What is the latest news about...', 'What is the weather like?', etc.), or anything that may require information not found in memory, ALWAYS route to → web_agent
 
 EXAMPLES:
 - User: "Who is the current US president?" → web_agent
@@ -454,111 +229,55 @@ EXAMPLES:
 - User: "What's the weather like?" → web_agent
 - User: "What is my name?" → patient_agent
 - User: "Summarize this text: ..." → text_agent
-- User: "Read example.txt" → file_agent
 - User: "List all JSON files" → json_agent
 - User: "Update my age to 35" → patient_agent
 
 Remember: Be strict and explicit in your routing. If in doubt, prefer web_agent for fact-based or current event queries.
 """
+        def supervisor_router(state: Dict[str, Any]):
+            prompt = ChatPromptTemplate.from_messages([
+                ("system", supervisor_prompt),
+                ("human", "User input: {user_input}")
+            ])
+            chain = prompt | self.reasoning_model
+            result = chain.invoke({"user_input": state['user_input']})
+            agent_name = str(result.content).strip()
+            if agent_name in members:
+                return agent_name
+            return "text_agent"
+        # --- Build the custom graph ---
+        class AgentState(dict):
+            pass
+        graph_builder = StateGraph(AgentState)
+        graph_builder.add_node("semantic_precheck", semantic_memory_precheck_node)
+        graph_builder.add_node("supervisor", supervisor_router)
+        graph_builder.add_node("patient_agent", self.patient_agent)
+        graph_builder.add_node("web_agent", self.web_agent)
+        graph_builder.add_node("text_agent", self.text_agent)
+        graph_builder.add_node("json_agent", self.json_agent)
+        graph_builder.set_entry_point("semantic_precheck")
+        graph_builder.add_edge("semantic_precheck", "supervisor")
+        for member in members:
+            graph_builder.add_edge(member, "supervisor")
+        graph_builder.add_conditional_edges(
+            "supervisor",
+            supervisor_router,
+            {member: member for member in members}
         )
+        self.app = graph_builder.compile(checkpointer=InMemorySaver())
+        logger.info("Enhanced supervisor workflow with semantic pre-check and LLM supervisor routing initialized successfully")
         
         # Setup session memory
         self.checkpointer = InMemorySaver()
         self.store = InMemoryStore()
         
         # Compile the workflow
-        self.app = self.workflow.compile(
-            checkpointer=self.checkpointer,
-            store=self.store
-        )
+        # self.app = self.workflow.compile(
+        #     checkpointer=self.checkpointer,
+        #     store=self.store
+        # )
         
         logger.info("Enhanced supervisor workflow initialized successfully")
-
-    def process_workflow_messages(self, messages: List) -> List:
-        """Process only the latest user/assistant message pair for tool calls, with debug logging."""
-        if settings.DEBUG:
-            print(f"[DEBUG] Processing workflow messages: {messages}")
-        
-        processed_messages = []
-        
-        # Find the latest user message and its following assistant message
-        latest_user_idx = None
-        for i in range(len(messages) - 1, -1, -1):
-            msg = messages[i]
-            if (
-                (isinstance(msg, dict) and msg.get("role") == "user")
-                or isinstance(msg, HumanMessage)
-                or (hasattr(msg, "role") and getattr(msg, "role", None) == "user")
-            ):
-                latest_user_idx = i
-                break
-        
-        # Only process from the latest user message onwards
-        if latest_user_idx is not None:
-            to_process = messages[latest_user_idx:]
-        else:
-            to_process = messages[-2:] if len(messages) >= 2 else messages
-        
-        for idx, message in enumerate(messages):
-            # Only process tool calls for the latest user/assistant pair
-            if message in to_process:
-                # Only process tool calls if not already processed
-                already_processed = False
-                if isinstance(message, dict):
-                    already_processed = message.get('tool_processed', False)
-                else:
-                    already_processed = getattr(message, 'tool_processed', False)
-                if already_processed:
-                    processed_messages.append(message)
-                    if settings.DEBUG:
-                        print(f"[DEBUG] Skipping already processed message: {message}")
-                    continue
-                # Try to determine which agent sent this message
-                agent_name = self.determine_agent_from_message(message)
-                if agent_name in self.agent_processors:
-                    processor = self.agent_processors[agent_name]
-                    # Only call process_message if message is AIMessage or str
-                    # For dicts, skip processing to avoid type errors
-                    # Mark as processed to avoid re-processing
-                    if isinstance(message, dict):
-                        message['tool_processed'] = True  # Mark as processed
-                    else:
-                        setattr(message, 'tool_processed', True)
-                    processed_messages.append(message)
-            else:
-                processed_messages.append(message)
-        return processed_messages
-    
-    def determine_agent_from_message(self, message) -> str:
-        """Determine which agent sent a message, supporting both dict and object messages."""
-        # Get content for both dict and object
-        if isinstance(message, dict):
-            content = message.get("content", "")
-        else:
-            content = getattr(message, "content", "")
-        if not isinstance(content, str):
-            content = str(content)
-        content_lower = content.lower()
-        if "patient" in content_lower:
-            return "patient_agent"
-        elif "search" in content_lower or "web" in content_lower:
-            return "web_agent"
-        elif "file" in content_lower:
-            return "file_agent"
-        elif "json" in content_lower:
-            return "json_agent"
-        else:
-            return "text_agent"
-
-    def post_process_agent_response(self, response: str, agent_name: str) -> str:
-        """Post-process agent response to execute any tool calls."""
-        if settings.DEBUG:
-            print(f"[DEBUG] Post-processing agent response: {response} for agent: {agent_name}")
-
-        if agent_name in self.agent_processors:
-            processor = self.agent_processors[agent_name]
-            return processor.execute_tool_calls(response)
-        return response
 
     def llm_memory_categorizer(self, user_input: str, memory: dict) -> list:
         """Use the LLM to decide if/what to store in memory, and how to categorize it, excluding patient profile fields."""
@@ -582,24 +301,24 @@ Remember: Be strict and explicit in your routing. If in doubt, prefer web_agent 
         profile_keys_str = ', '.join(profile_keys)
         prompt = ChatPromptTemplate.from_messages([
             ("system", f"""
-You are a memory categorization assistant. Given a user input, decide if any information should be stored in memory.
-- ONLY store information if it is a fact, preference, or something about the user or patient (e.g., 'I am allergic to penicillin', 'My favorite color is blue', 'I prefer polite conversation').
-- DO NOT store questions, requests for information, or queries (e.g., 'Who is the current US president?', 'What is the weather?', 'When is the next holiday?').
-- If the user input is related to any of the following patient profile fields, DO NOT add it to memory (patient info updating is handled separately, so ignore these):
-{profile_keys_str}
-- For each relevant memory type (semantic, episodic, procedural), output a JSON object with the following fields as appropriate:
-  - type: one of 'semantic', 'episodic', 'procedural'
-  - content: what to store (string or dict)
-  - category: (for semantic/procedural, e.g. 'allergy', 'preference', 'prompt_rules')
-  - interaction_type, outcome, reasoning_context: (for episodic)
-- If the user input is a prompt or prompt rule update, treat it as a procedural memory update with category 'prompt_rules'.
-- The user may not use explicit commands; they may express preferences, dislikes, or suggestions in a conversational way (e.g., 'I don't like rude way of talking', 'make it more technical'). Infer the correct memory update from such statements.
-- If nothing should be stored, return an empty list.
-- Output a JSON list of objects, no explanation or extra text.
-"""),
+            You are a memory categorization assistant. Given a user input, decide if any information should be stored in memory.
+            - ONLY store information if it is a fact, preference, or something about the user or patient (e.g., 'I am allergic to penicillin', 'My favorite color is blue', 'I prefer polite conversation').
+            - DO NOT store questions, requests for information, or queries (e.g., 'Who is the current US president?', 'What is the weather?', 'When is the next holiday?').
+            - If the user input is related to any of the following patient profile fields, DO NOT add it to memory (patient info updating is handled separately, so ignore these):
+            {profile_keys_str}
+            - For each relevant memory type (semantic, episodic, procedural), output a JSON object with the following fields as appropriate:
+            - type: one of 'semantic', 'episodic', 'procedural'
+            - content: what to store (string or dict)
+            - category: (for semantic/procedural, e.g. 'allergy', 'preference', 'prompt_rules')
+            - interaction_type, outcome, reasoning_context: (for episodic)
+            - If the user input is a prompt or prompt rule update, treat it as a procedural memory update with category 'prompt_rules'.
+            - The user may not use explicit commands; they may express preferences, dislikes, or suggestions in a conversational way (e.g., 'I don't like rude way of talking', 'make it more technical'). Infer the correct memory update from such statements.
+            - If nothing should be stored, return an empty list.
+            - Output a JSON list of objects, no explanation or extra text.
+            """),
             ("human", "User input: {user_input}\n\nMemory update JSON:")
         ])
-        chain = prompt | self.model
+        chain = prompt | self.reasoning_model
         summary = chain.invoke({"user_input": user_input})
         # Try to parse the output as JSON list
         try:
@@ -646,7 +365,7 @@ You are a memory categorization assistant. Given a user input, decide if any inf
         for update in memory_updates:
             mtype = update.get('type')
             if mtype == 'semantic':
-                tool = next((t for t in self.memory_tools if t.name == 'update_semantic_memory'), None)
+                tool = self.memory_tools.get('update_semantic_memory_tool')
                 if tool:
                     result = tool({
                         'content': update.get('content', ''),
@@ -657,7 +376,7 @@ You are a memory categorization assistant. Given a user input, decide if any inf
                     current_memory = result.get('memory', current_memory)
                     results.append(result)
             elif mtype == 'episodic':
-                tool = next((t for t in self.memory_tools if t.name == 'store_episodic_memory'), None)
+                tool = self.memory_tools.get('store_episodic_memory_tool')
                 if tool:
                     result = tool({
                         'interaction_type': update.get('interaction_type', ''),
@@ -670,7 +389,7 @@ You are a memory categorization assistant. Given a user input, decide if any inf
                     current_memory = result.get('memory', current_memory)
                     results.append(result)
             elif mtype == 'procedural':
-                tool = next((t for t in self.memory_tools if t.name == 'update_procedural_memory'), None)
+                tool = self.memory_tools.get('update_procedural_memory_tool')
                 if tool:
                     result = tool({
                         'rule_type': update.get('category', ''),
@@ -681,17 +400,19 @@ You are a memory categorization assistant. Given a user input, decide if any inf
                     results.append(result)
         return results, current_memory
 
-    def llm_postprocess_response(self, tool_output, user_input):
+    def llm_postprocess_response(self, tool_output, user_input, prompt=None):
         """Use the LLM to generate a conversational answer from the tool output and user input."""
         if settings.DEBUG:
             print(f"[DEBUG] LLM post-processing response: {tool_output} for user input: {user_input}")
         try:
             from langchain_core.prompts import ChatPromptTemplate
+            if prompt:
+                prompt = ChatPromptTemplate.from_messages(prompt)
             prompt = ChatPromptTemplate.from_messages([
                 ("system", "You are a helpful assistant. Given the following tool result and the user's question, answer as helpfully and conversationally as possible. If the tool result contains web search results, use only the most recent and explicit information from the top 5 results to answer fact-based questions (such as 'Who is the current US president?'). If there is any ambiguity or the answer is not explicit, say 'I cannot determine with certainty.' Always prefer the most recent, date-stamped, and explicit answer."),
                 ("human", "Tool result: {tool_output}\n\nUser question: {user_input}\n\nAnswer:")
             ])
-            chain = prompt | self.model
+            chain = prompt | self.reasoning_model
             summary = chain.invoke({"tool_output": str(tool_output), "user_input": user_input})
             if hasattr(summary, 'content'):
                 return summary.content
@@ -700,11 +421,11 @@ You are a memory categorization assistant. Given a user input, decide if any inf
             logger.error(f"Error in LLM post-processing: {str(e)}")
             return str(tool_output)
 
-    def run(self, user_input: str, memory: dict) -> dict:
+    def run(self, user_input: str, memory: dict, conversation: Optional[dict] = None, patient_profile: Optional[dict] = None) -> dict:
         """Run the supervisor workflow with user input."""
         try:
             # --- Semantic memory pre-check step with perfect match threshold ---
-            search_tool = next((t for t in self.memory_tools if t.name == 'search_semantic_memory'), None)
+            search_tool = self.memory_tools.get('search_semantic_memory_tool')
             preface = None
             if search_tool:
                 # Pass the memory dict to the search tool if it supports it
@@ -732,7 +453,7 @@ You are a memory categorization assistant. Given a user input, decide if any inf
                     )
                     from langchain_core.prompts import ChatPromptTemplate
                     prompt = ChatPromptTemplate.from_template(relevance_prompt)
-                    chain = prompt | self.model
+                    chain = prompt | self.reasoning_model
                     relevance_result = chain.invoke({"user_input": user_input, "all_contents": all_contents})
                     relevance = str(relevance_result.content).strip().lower() if hasattr(relevance_result, 'content') else str(relevance_result).strip().lower()
                     if settings.DEBUG:
@@ -748,7 +469,7 @@ You are a memory categorization assistant. Given a user input, decide if any inf
                         ("system", "You are a fact-checking assistant. Given a user input, determine if it is a valid, concrete fact (not a question, request, or vague statement). Respond with 'yes' or 'no' only."),
                         ("human", "User input: {user_input}\n\nAnswer:")
                     ])
-                    fact_chain = fact_check_prompt | self.model
+                    fact_chain = fact_check_prompt | self.reasoning_model
                     fact_result = fact_chain.invoke({"user_input": user_input})
                     is_fact = True #str(fact_result.content).strip().lower() == 'yes'
                     if is_fact:
@@ -792,9 +513,6 @@ You are a memory categorization assistant. Given a user input, decide if any inf
             if settings.DEBUG:
                 print(f"[DEBUG] Messages: {messages}")
             
-            # Process all messages to execute any tool calls
-            processed_messages = self.process_workflow_messages(messages)
-            
             final_response = None
             last_agent = None
             
@@ -804,7 +522,7 @@ You are a memory categorization assistant. Given a user input, decide if any inf
                 final_response = result["final_response"]
             else:
                 # Find the final response from processed messages
-                for message in reversed(processed_messages):
+                for message in reversed(messages):
                     if isinstance(message, dict):
                         if (message.get("role") == "assistant" and message.get("content")):
                             content = message["content"].strip()
@@ -821,11 +539,6 @@ You are a memory categorization assistant. Given a user input, decide if any inf
                             last_agent = message.name
                             break
 
-                # Additional post-processing if needed
-                if final_response and last_agent:
-                    if settings.DEBUG:
-                        print("\n\nRunning post-processing for final_response: \n\n")
-                    final_response = self.post_process_agent_response(final_response, last_agent)
                 if not final_response:
                     logger.info("[DEBUG] Supervisor: No final_response found in messages, using fallback.")
                     final_response = result.get("final_response", "No response generated")
