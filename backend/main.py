@@ -407,6 +407,28 @@ def build_workflow():
     
     return graph.compile()
 
+def run_agent_workflow(user_input, memory, patient_profile):
+    """
+    Run the workflow in 'server' mode: takes user_input, memory, patient_profile and returns the updated result state.
+    """
+    workflow = build_workflow()
+    initial_state: AgentState = {
+        'input': user_input,
+        'memory': memory,
+        'patientProfile': patient_profile,
+        'summary': None,
+        'keywords': None,
+        'results': None,
+        'error': None,
+        'user_input': None,
+        'text': None,
+        'query': None,
+        'content': None,
+        'final_answer': None
+    }
+    result = workflow.invoke(initial_state)
+    return result
+
 # --- Main chat loop ---
 def main():
     try:
@@ -425,17 +447,19 @@ def main():
         # Initialize persistent state
         memory = {"semantic": [], "episodes": [], "procedural": {}}
         patient_profile = {
-            "uid": "user-001",
-            "name": "Jane Smith",
-            "age": 29,
-            "bloodType": "A+",
-            "allergies": ["Peanuts"],
-            "medicationList": ["Ibuprofen"],
-            "dailyChecklist": ["Take medication", "Walk 30 minutes"],
-            "appointment": "2020-08-15T09:00:00.00",
-            "recommendations": ["Stay hydrated", "Regular exercise"],
-            "sleepHours": 8,
-            "sleepQuality": "Excellent"
+            "uid": "abc123",
+            "name": "John Doe",
+            "age": 30,
+            "bloodType": "O+",
+            "allergies": ["Penicillin", "Peanuts"],
+            "treatment": {
+                "medicationList": ["Aspirin 100mg", "Metformin 500mg"],
+                "dailyChecklist": ["Take medication", "30 min walk", "Check blood pressure"],
+                "appointment": "2024-08-01T10:30:00Z",
+                "recommendations": ["Reduce salt intake", "Increase water consumption"],
+                "sleepHours": 8,
+                "sleepQuality": "good"
+            }
         }
         
         while True:

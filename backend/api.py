@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from backend.main import run_agent_workflow
+from main import run_agent_workflow
 
 app = Flask(__name__)
 CORS(app)

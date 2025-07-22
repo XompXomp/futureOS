@@ -67,4 +67,7 @@ class Settings:
     # Memory base path for CurorMemorySystem
     MEMORY_BASE_PATH = os.path.join(DOCS_FOLDER, "memory")
 
+# Agent mode: set to 'chat' for CLI, 'server' for API integration
+AGENT_MODE = "chat"
+
 settings = Settings() 
