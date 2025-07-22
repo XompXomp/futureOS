@@ -103,5 +103,8 @@ class TextOperations:
         chain = prompt | llm
         response = chain.invoke({"text": text})
         reply = str(getattr(response, 'content', response)).strip()
-        state['final_answer'] = reply
+        if reply:
+            state['final_answer'] = reply
+        else:
+            state['final_answer'] = ""
         return state

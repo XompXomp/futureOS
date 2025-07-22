@@ -1,5 +1,10 @@
 import uuid
 from config.settings import settings
+import numpy as np
+from sentence_transformers import SentenceTransformer
+from sklearn.metrics.pairwise import cosine_similarity
+
+embedding_model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
 
 class MemoryOperations:
     @staticmethod
@@ -35,11 +40,39 @@ class MemoryOperations:
             category = state.get("category")
             limit = state.get("limit", 5)
             memory = state.get("memory") or {}
+
             if not query:
                 state['error'] = "Query is required for semantic memory search"
                 return state
+
             semantic_list = memory.get("semantic", [])
-            results = [m for m in semantic_list if (not category or m.get("category") == category) and query.lower() in m.get("content", "").lower()][:limit]
+            if not semantic_list:
+                state['results'] = []
+                return state
+
+            # Filter by category if provided
+            filtered_memories = [
+                m for m in semantic_list 
+                if not category or m.get("category") == category
+            ]
+
+            if not filtered_memories:
+                state['results'] = []
+                return state
+
+            # Compute embeddings only temporarily (not stored)
+            memory_embeddings = embedding_model.encode(
+                [m["content"] for m in filtered_memories],
+                convert_to_numpy=True
+            )
+            query_embedding = embedding_model.encode(query, convert_to_numpy=True)
+
+            scores = cosine_similarity([query_embedding], memory_embeddings)[0]
+            top_indices = scores.argsort()[::-1][:limit]
+
+            # Optional: include similarity score in results if you want
+            results = [filtered_memories[i] for i in top_indices]
+
             state['results'] = results
             return state
         except Exception as e:

@@ -91,6 +91,7 @@ def agent_endpoint():
             response["extraInfo"] = result["final_answer"]
         elif "response" in result:
             response["extraInfo"] = result["response"]
+        print("Response:-\n",jsonify(response))
         return jsonify(response)
     except Exception as e:
         return jsonify({"error": f"Internal server error: {str(e)}"}), 500
