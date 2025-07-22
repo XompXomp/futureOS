@@ -32,11 +32,19 @@ class PatientOperations:
             )
         prompt = ChatPromptTemplate.from_messages([
             ("system", (
-                "You are a precise assistant for updating patient records in JSON format. Your job is to take the full patient profile JSON below, update ONLY the field(s) relevant to the user's request, and return the ENTIRE JSON in the exact same structure and format as provided. Do not change, add, or remove any other fields or values. Do not invent or hallucinate new information. If the request is ambiguous, make no changes and return the original JSON.\n\n"
-                "Current patient profile JSON:"
-                "{profile}\n\n"
-                "User request: {user_input}\n\n"
-                "Return ONLY the full, updated JSON. Do not include any explanation, comments, or extra text. Do not change the structure or formatting of the JSON except for the requested update. ENSURE that the JSON format text returned has all property names enclosed in double quotes."
+                "You are a precise assistant for updating patient records in JSON format.\n"
+                "Your job is to take the full patient profile JSON below, update ONLY the field(s) relevant to the user's request, and return the ENTIRE JSON in the exact same structure and format as provided.\n"
+                "Do NOT change, add, or remove any other fields or values.\n"
+                "Do NOT invent or hallucinate new information.\n"
+                "If the request is ambiguous, make no changes and return the original JSON.\n"
+                "ALWAYS return valid JSON, with all property names in double quotes.\n"
+                "EXAMPLES:\n"
+                "User request: My name is John Doe\n"
+                "Current JSON: {{\"name\": \"\", \"age\": 0, ...}}\n"
+                "Output: {{\"name\": \"John Doe\", \"age\": 0, ...}}\n"
+                "User request: Update my age to 40\n"
+                "Current JSON: {{\"name\": \"John Doe\", \"age\": 0, ...}}\n"
+                "Output: {{\"name\": \"John Doe\", \"age\": 40, ...}}\n"
             )),
             ("human", "User: {user_input}\nProfile: {profile}\nOutput:")
         ])
