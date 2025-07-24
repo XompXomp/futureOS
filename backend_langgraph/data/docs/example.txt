@@ -1,2 +1,0 @@
-This is a sample file created by the LangGraph system.
-You can modify this file or create new ones.
