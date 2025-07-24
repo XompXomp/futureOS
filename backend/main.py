@@ -180,13 +180,13 @@ def route_to_agent(state: AgentState) -> str:
     user_input = state.get('input', '')
     user_lower = user_input.lower()
     
-    # Simple conversational text patterns
-    simple_text_patterns = [
-        'hello', 'hi', 'hey', 'good morning', 'good afternoon', 'good evening',
-        'how are you', 'thank you', 'thanks', 'bye', 'goodbye', 'see you',
-        'ok', 'okay', 'yes', 'no', 'sure', 'alright', 'nice', 'great',
-        'cool', 'awesome', 'perfect', 'wonderful'
-    ]
+    # # Simple conversational text patterns
+    # simple_text_patterns = [
+    #     'hello', 'hi', 'hey', 'good morning', 'good afternoon', 'good evening',
+    #     'how are you', 'thank you', 'thanks', 'bye', 'goodbye', 'see you',
+    #     'ok', 'okay', 'yes', 'no', 'sure', 'alright', 'nice', 'great',
+    #     'cool', 'awesome', 'perfect', 'wonderful'
+    # ]
     
     # # Check for simple conversational patterns
     # if any(pattern in user_lower for pattern in simple_text_patterns):
@@ -486,7 +486,6 @@ def build_workflow():
     # Use the typed state
     graph = StateGraph(AgentState)
     
-    # Add all the nodes (removed text node)
     graph.add_node('semantic_precheck', semantic_memory_precheck_node)
     graph.add_node('text', text_node)
     graph.add_node('patient', patient_node)
