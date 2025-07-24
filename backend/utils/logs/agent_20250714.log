@@ -1,0 +1,73 @@
+2025-07-14 08:26:44,156 - utils.logging_config - INFO - Loaded 1 documents
+2025-07-14 08:26:44,157 - utils.logging_config - INFO - Created 2 chunks
+2025-07-14 08:27:23,521 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-MiniLM-L6-v2
+2025-07-14 08:27:28,541 - faiss.loader - INFO - Loading faiss with AVX2 support.
+2025-07-14 08:27:29,040 - faiss.loader - INFO - Successfully loaded faiss with AVX2 support.
+2025-07-14 08:27:29,060 - faiss - INFO - Failed to load GPU Faiss: name 'GpuIndexIVFFlat' is not defined. Will not load constructor refs for GPU indexes. This is only an error if you're trying to use GPU Faiss.
+2025-07-14 08:27:29,062 - utils.logging_config - INFO - FAISS index created with 2 vectors
+2025-07-14 08:27:29,081 - utils.logging_config - INFO - RAG system initialized successfully
+2025-07-14 08:27:29,176 - utils.logging_config - INFO - Database initialized successfully
+2025-07-14 08:27:29,217 - utils.logging_config - INFO - Loaded 1 documents
+2025-07-14 08:27:29,217 - utils.logging_config - INFO - Created 2 chunks
+2025-07-14 08:27:29,218 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-MiniLM-L6-v2
+2025-07-14 08:27:32,493 - utils.logging_config - INFO - FAISS index created with 2 vectors
+2025-07-14 08:27:32,543 - utils.logging_config - INFO - RAG system initialized successfully
+2025-07-14 08:27:32,554 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-07-14 08:27:32,582 - utils.logging_config - INFO - Agent initialized with 13 tools
+2025-07-14 08:29:48,880 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-14 08:29:51,965 - utils.logging_config - INFO - Agent response generated for input: Hello...
+2025-07-14 08:30:03,474 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-14 08:30:11,202 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-14 08:30:13,248 - utils.logging_config - INFO - RAG question answered: name
+2025-07-14 08:30:20,083 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-14 08:30:23,120 - utils.logging_config - INFO - Agent response generated for input: What is my name?...
+2025-07-14 08:31:41,051 - utils.logging_config - INFO - Loaded 1 documents
+2025-07-14 08:31:41,051 - utils.logging_config - INFO - Created 2 chunks
+2025-07-14 08:31:47,159 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-MiniLM-L6-v2
+2025-07-14 08:31:51,828 - faiss.loader - INFO - Loading faiss with AVX2 support.
+2025-07-14 08:31:51,880 - faiss.loader - INFO - Successfully loaded faiss with AVX2 support.
+2025-07-14 08:31:51,886 - faiss - INFO - Failed to load GPU Faiss: name 'GpuIndexIVFFlat' is not defined. Will not load constructor refs for GPU indexes. This is only an error if you're trying to use GPU Faiss.
+2025-07-14 08:31:51,886 - utils.logging_config - INFO - FAISS index created with 2 vectors
+2025-07-14 08:31:51,909 - utils.logging_config - INFO - RAG system initialized successfully
+2025-07-14 08:31:51,931 - utils.logging_config - INFO - Database initialized successfully
+2025-07-14 08:31:52,166 - utils.logging_config - INFO - Loaded 1 documents
+2025-07-14 08:31:52,166 - utils.logging_config - INFO - Created 2 chunks
+2025-07-14 08:31:52,167 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-MiniLM-L6-v2
+2025-07-14 08:31:55,814 - utils.logging_config - INFO - FAISS index created with 2 vectors
+2025-07-14 08:31:55,835 - utils.logging_config - INFO - RAG system initialized successfully
+2025-07-14 08:31:55,840 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-07-14 08:31:55,843 - utils.logging_config - INFO - Agent initialized with 13 tools
+2025-07-14 08:32:14,100 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-14 08:32:21,796 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-14 08:32:23,837 - utils.logging_config - INFO - RAG question answered: name
+2025-07-14 08:32:30,276 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-14 08:32:31,552 - utils.logging_config - INFO - Agent response generated for input: What is my name?...
+2025-07-14 08:33:47,956 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-14 08:33:55,626 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-14 08:34:00,112 - utils.logging_config - INFO - RAG question answered: medications
+2025-07-14 08:34:06,955 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-14 08:34:12,241 - utils.logging_config - INFO - Agent response generated for input: What are my medicaitons?...
+2025-07-14 08:34:24,827 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-14 08:34:30,191 - utils.logging_config - INFO - Agent response generated for input: What tools can you see?...
+2025-07-14 08:35:14,240 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-14 08:35:17,021 - utils.logging_config - INFO - Google PSE search completed for query: Superman release date...
+2025-07-14 08:35:20,840 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-14 08:35:23,019 - utils.logging_config - INFO - Agent response generated for input: When did superman release?...
+2025-07-14 08:36:06,046 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-14 08:36:13,175 - utils.logging_config - INFO - Agent response generated for input: What files can you access?...
+2025-07-14 09:11:54,901 - utils.logging_config - INFO - Loaded 1 documents
+2025-07-14 09:11:54,920 - utils.logging_config - INFO - Created 2 chunks
+2025-07-14 09:11:59,160 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-MiniLM-L6-v2
+2025-07-14 09:12:03,075 - faiss.loader - INFO - Loading faiss with AVX2 support.
+2025-07-14 09:12:03,142 - faiss.loader - INFO - Successfully loaded faiss with AVX2 support.
+2025-07-14 09:12:03,148 - faiss - INFO - Failed to load GPU Faiss: name 'GpuIndexIVFFlat' is not defined. Will not load constructor refs for GPU indexes. This is only an error if you're trying to use GPU Faiss.
+2025-07-14 09:12:03,149 - utils.logging_config - INFO - FAISS index created with 2 vectors
+2025-07-14 09:12:03,165 - utils.logging_config - INFO - RAG system initialized successfully
+2025-07-14 09:12:03,203 - utils.logging_config - INFO - Database initialized successfully
+2025-07-14 09:12:03,205 - utils.logging_config - INFO - Loaded 1 documents
+2025-07-14 09:12:03,207 - utils.logging_config - INFO - Created 2 chunks
+2025-07-14 09:12:03,207 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-MiniLM-L6-v2
+2025-07-14 09:12:06,022 - utils.logging_config - INFO - FAISS index created with 2 vectors
+2025-07-14 09:12:06,034 - utils.logging_config - INFO - RAG system initialized successfully
+2025-07-14 09:12:06,043 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-07-14 09:12:06,045 - utils.logging_config - INFO - Agent initialized with 13 tools

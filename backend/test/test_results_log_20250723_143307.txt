@@ -1,0 +1,5237 @@
+
+Category: general conversation
+Query: Hi
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": []
+}
+Response: {
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": []
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk"
+      ],
+      "medicationList": [
+        "aspirin"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: general conversation
+Query: Hello, how are you?
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": []
+}
+Response: {
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": []
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk"
+      ],
+      "medicationList": [
+        "aspirin"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: general conversation
+Query: Tell me a joke.
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": []
+}
+Response: {
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": []
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk"
+      ],
+      "medicationList": [
+        "aspirin"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: general conversation
+Query: Good morning!
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": []
+}
+Response: {
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": []
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk"
+      ],
+      "medicationList": [
+        "aspirin"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: general conversation
+Query: What's your name?
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": []
+}
+Response: {
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": []
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk"
+      ],
+      "medicationList": [
+        "aspirin"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: general conversation
+Query: How do you work?
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": []
+}
+Response: {
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": []
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk"
+      ],
+      "medicationList": [
+        "aspirin"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: general conversation
+Query: Thank you!
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": []
+}
+Response: {
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": []
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk"
+      ],
+      "medicationList": [
+        "aspirin"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: general conversation
+Query: Bye.
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": []
+}
+Response: {
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": []
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk"
+      ],
+      "medicationList": [
+        "aspirin"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: general conversation
+Query: Can you help me?
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": []
+}
+Response: {
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": []
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk"
+      ],
+      "medicationList": [
+        "aspirin"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: general conversation
+Query: What can you do?
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": []
+}
+Response: {
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": []
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk"
+      ],
+      "medicationList": [
+        "aspirin"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: general conversation
+Query: Who created you?
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": []
+}
+Response: {
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": []
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk"
+      ],
+      "medicationList": [
+        "aspirin"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: general conversation
+Query: How old are you?
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": []
+}
+Response: {
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": []
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk"
+      ],
+      "medicationList": [
+        "aspirin"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: general conversation
+Query: What's the meaning of life?
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": []
+}
+Response: {
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": []
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk"
+      ],
+      "medicationList": [
+        "aspirin"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: general conversation
+Query: Do you like music?
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": []
+}
+Response: {
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": []
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk"
+      ],
+      "medicationList": [
+        "aspirin"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: general conversation
+Query: What's your favorite color?
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": []
+}
+Response: {
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": []
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk"
+      ],
+      "medicationList": [
+        "aspirin"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: patient profile
+Query: Update my age to 40.
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": []
+}
+Response: {
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": []
+  },
+  "updatedPatientProfile": {
+    "age": 40,
+    "allergies": [
+      "pollen"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk"
+      ],
+      "medicationList": [
+        "aspirin"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: patient profile
+Query: Add yoga to my daily routine.
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": []
+}
+Response: {
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": []
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk",
+        "yoga"
+      ],
+      "medicationList": [
+        "aspirin"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: patient profile
+Query: Change my appointment to 2024-08-01.
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": []
+}
+Response: {
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": []
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-08-01",
+      "dailyChecklist": [
+        "walk"
+      ],
+      "medicationList": [
+        "aspirin"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: patient profile
+Query: Add penicillin to my allergies.
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": []
+}
+Response: {
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": []
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen",
+      "penicillin"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk"
+      ],
+      "medicationList": [
+        "aspirin"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: patient profile
+Query: Remove aspirin from my medications.
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": []
+}
+Response: {
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": []
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk"
+      ],
+      "medicationList": [],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: patient profile
+Query: Update my name to Jane Smith.
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": []
+}
+Response: {
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": []
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen"
+    ],
+    "bloodType": "O+",
+    "name": "Jane Smith",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk"
+      ],
+      "medicationList": [
+        "aspirin"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: patient profile
+Query: Add meditation to my daily checklist.
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": []
+}
+Response: {
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": []
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk",
+        "meditation"
+      ],
+      "medicationList": [
+        "aspirin"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: patient profile
+Query: Delete my allergy to pollen.
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": []
+}
+Response: {
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": []
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk"
+      ],
+      "medicationList": [
+        "aspirin"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: patient profile
+Query: Update my sleep hours to 8.
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": []
+}
+Response: {
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": []
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk"
+      ],
+      "medicationList": [
+        "aspirin"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 8,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: patient profile
+Query: Add vitamin D to my medications.
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": []
+}
+Response: {
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": []
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk"
+      ],
+      "medicationList": [
+        "aspirin",
+        "vitamin D"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: patient profile
+Query: Make my profile more up to date.
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": []
+}
+Response: {
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": []
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk"
+      ],
+      "medicationList": [
+        "aspirin"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 8,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: patient profile
+Query: I want to start a new health routine.
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": []
+}
+Response: {
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": []
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk",
+        "new health routine"
+      ],
+      "medicationList": [
+        "aspirin"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: patient profile
+Query: Change something in my medications.
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": []
+}
+Response: {
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": []
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk"
+      ],
+      "medicationList": [
+        "ibuprofen"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: patient profile
+Query: Improve my daily checklist.
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": []
+}
+Response: {
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": []
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk",
+        "meditate"
+      ],
+      "medicationList": [
+        "aspirin"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: patient profile
+Query: Update my health info.
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": []
+}
+Response: {
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": []
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk"
+      ],
+      "medicationList": [
+        "aspirin"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: semantic memory search
+Query: I like roses
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": [
+    {
+      "category": "general",
+      "content": "I like roses",
+      "id": "acf5b003-0757-400b-ba0b-6a0e0c1917cb",
+      "metadata": {},
+      "patient_id": "default_patient"
+    },
+    {
+      "category": "general",
+      "content": "I am a fan of Chelsea",
+      "id": "e77091cf-d931-42a4-8e76-9325d23de73d",
+      "metadata": {},
+      "patient_id": "default_patient"
+    }
+  ]
+}
+Response: {
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": [
+      {
+        "category": "general",
+        "content": "I like roses",
+        "id": "acf5b003-0757-400b-ba0b-6a0e0c1917cb",
+        "metadata": {},
+        "patient_id": "default_patient"
+      },
+      {
+        "category": "general",
+        "content": "I am a fan of Chelsea",
+        "id": "e77091cf-d931-42a4-8e76-9325d23de73d",
+        "metadata": {},
+        "patient_id": "default_patient"
+      },
+      {
+        "category": "general",
+        "content": "I like roses",
+        "id": "91250c20-fd1b-4563-ade7-268b78298ae0",
+        "metadata": {},
+        "patient_id": "default_patient"
+      }
+    ]
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk"
+      ],
+      "medicationList": [
+        "aspirin"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: semantic memory search
+Query: I am a fan of Chelsea
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": [
+    {
+      "category": "general",
+      "content": "I like roses",
+      "id": "acf5b003-0757-400b-ba0b-6a0e0c1917cb",
+      "metadata": {},
+      "patient_id": "default_patient"
+    },
+    {
+      "category": "general",
+      "content": "I am a fan of Chelsea",
+      "id": "e77091cf-d931-42a4-8e76-9325d23de73d",
+      "metadata": {},
+      "patient_id": "default_patient"
+    }
+  ]
+}
+Response: {
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": [
+      {
+        "category": "general",
+        "content": "I like roses",
+        "id": "acf5b003-0757-400b-ba0b-6a0e0c1917cb",
+        "metadata": {},
+        "patient_id": "default_patient"
+      },
+      {
+        "category": "general",
+        "content": "I am a fan of Chelsea",
+        "id": "e77091cf-d931-42a4-8e76-9325d23de73d",
+        "metadata": {},
+        "patient_id": "default_patient"
+      },
+      {
+        "category": "general",
+        "content": "I am a fan of Chelsea",
+        "id": "aa349e59-d255-4f71-9fb8-728d20f6944a",
+        "metadata": {},
+        "patient_id": "default_patient"
+      }
+    ]
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk"
+      ],
+      "medicationList": [
+        "aspirin"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: semantic memory search
+Query: What is my favorite flower?
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": [
+    {
+      "category": "general",
+      "content": "I like roses",
+      "id": "acf5b003-0757-400b-ba0b-6a0e0c1917cb",
+      "metadata": {},
+      "patient_id": "default_patient"
+    },
+    {
+      "category": "general",
+      "content": "I am a fan of Chelsea",
+      "id": "e77091cf-d931-42a4-8e76-9325d23de73d",
+      "metadata": {},
+      "patient_id": "default_patient"
+    }
+  ]
+}
+Response: {
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": [
+      {
+        "category": "general",
+        "content": "I like roses",
+        "id": "acf5b003-0757-400b-ba0b-6a0e0c1917cb",
+        "metadata": {},
+        "patient_id": "default_patient"
+      },
+      {
+        "category": "general",
+        "content": "I am a fan of Chelsea",
+        "id": "e77091cf-d931-42a4-8e76-9325d23de73d",
+        "metadata": {},
+        "patient_id": "default_patient"
+      }
+    ]
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk"
+      ],
+      "medicationList": [
+        "aspirin"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: semantic memory search
+Query: Remind me about my preferences.
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": [
+    {
+      "category": "general",
+      "content": "I like roses",
+      "id": "acf5b003-0757-400b-ba0b-6a0e0c1917cb",
+      "metadata": {},
+      "patient_id": "default_patient"
+    },
+    {
+      "category": "general",
+      "content": "I am a fan of Chelsea",
+      "id": "e77091cf-d931-42a4-8e76-9325d23de73d",
+      "metadata": {},
+      "patient_id": "default_patient"
+    }
+  ]
+}
+Response: {
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": [
+      {
+        "category": "general",
+        "content": "I like roses",
+        "id": "acf5b003-0757-400b-ba0b-6a0e0c1917cb",
+        "metadata": {},
+        "patient_id": "default_patient"
+      },
+      {
+        "category": "general",
+        "content": "I am a fan of Chelsea",
+        "id": "e77091cf-d931-42a4-8e76-9325d23de73d",
+        "metadata": {},
+        "patient_id": "default_patient"
+      }
+    ]
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk"
+      ],
+      "medicationList": [
+        "aspirin"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: semantic memory search
+Query: What did I tell you about my sleep?
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": [
+    {
+      "category": "general",
+      "content": "I like roses",
+      "id": "acf5b003-0757-400b-ba0b-6a0e0c1917cb",
+      "metadata": {},
+      "patient_id": "default_patient"
+    },
+    {
+      "category": "general",
+      "content": "I am a fan of Chelsea",
+      "id": "e77091cf-d931-42a4-8e76-9325d23de73d",
+      "metadata": {},
+      "patient_id": "default_patient"
+    }
+  ]
+}
+Response: {
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": [
+      {
+        "category": "general",
+        "content": "I like roses",
+        "id": "acf5b003-0757-400b-ba0b-6a0e0c1917cb",
+        "metadata": {},
+        "patient_id": "default_patient"
+      },
+      {
+        "category": "general",
+        "content": "I am a fan of Chelsea",
+        "id": "e77091cf-d931-42a4-8e76-9325d23de73d",
+        "metadata": {},
+        "patient_id": "default_patient"
+      }
+    ]
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk"
+      ],
+      "medicationList": [
+        "aspirin"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: semantic memory search
+Query: Do you remember my favorite football team?
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": [
+    {
+      "category": "general",
+      "content": "I like roses",
+      "id": "acf5b003-0757-400b-ba0b-6a0e0c1917cb",
+      "metadata": {},
+      "patient_id": "default_patient"
+    },
+    {
+      "category": "general",
+      "content": "I am a fan of Chelsea",
+      "id": "e77091cf-d931-42a4-8e76-9325d23de73d",
+      "metadata": {},
+      "patient_id": "default_patient"
+    }
+  ]
+}
+Response: {
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": [
+      {
+        "category": "general",
+        "content": "I like roses",
+        "id": "acf5b003-0757-400b-ba0b-6a0e0c1917cb",
+        "metadata": {},
+        "patient_id": "default_patient"
+      },
+      {
+        "category": "general",
+        "content": "I am a fan of Chelsea",
+        "id": "e77091cf-d931-42a4-8e76-9325d23de73d",
+        "metadata": {},
+        "patient_id": "default_patient"
+      }
+    ]
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk"
+      ],
+      "medicationList": [
+        "aspirin"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: semantic memory search
+Query: Recall my favorite color.
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": [
+    {
+      "category": "general",
+      "content": "I like roses",
+      "id": "acf5b003-0757-400b-ba0b-6a0e0c1917cb",
+      "metadata": {},
+      "patient_id": "default_patient"
+    },
+    {
+      "category": "general",
+      "content": "I am a fan of Chelsea",
+      "id": "e77091cf-d931-42a4-8e76-9325d23de73d",
+      "metadata": {},
+      "patient_id": "default_patient"
+    }
+  ]
+}
+Response: {
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": [
+      {
+        "category": "general",
+        "content": "I like roses",
+        "id": "acf5b003-0757-400b-ba0b-6a0e0c1917cb",
+        "metadata": {},
+        "patient_id": "default_patient"
+      },
+      {
+        "category": "general",
+        "content": "I am a fan of Chelsea",
+        "id": "e77091cf-d931-42a4-8e76-9325d23de73d",
+        "metadata": {},
+        "patient_id": "default_patient"
+      }
+    ]
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk"
+      ],
+      "medicationList": [
+        "aspirin"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: semantic memory search
+Query: What do you know about my hobbies?
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": [
+    {
+      "category": "general",
+      "content": "I like roses",
+      "id": "acf5b003-0757-400b-ba0b-6a0e0c1917cb",
+      "metadata": {},
+      "patient_id": "default_patient"
+    },
+    {
+      "category": "general",
+      "content": "I am a fan of Chelsea",
+      "id": "e77091cf-d931-42a4-8e76-9325d23de73d",
+      "metadata": {},
+      "patient_id": "default_patient"
+    }
+  ]
+}
+Response: {
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": [
+      {
+        "category": "general",
+        "content": "I like roses",
+        "id": "acf5b003-0757-400b-ba0b-6a0e0c1917cb",
+        "metadata": {},
+        "patient_id": "default_patient"
+      },
+      {
+        "category": "general",
+        "content": "I am a fan of Chelsea",
+        "id": "e77091cf-d931-42a4-8e76-9325d23de73d",
+        "metadata": {},
+        "patient_id": "default_patient"
+      }
+    ]
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk"
+      ],
+      "medicationList": [
+        "aspirin"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: semantic memory search
+Query: Remind me what I said about tea.
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": [
+    {
+      "category": "general",
+      "content": "I like roses",
+      "id": "acf5b003-0757-400b-ba0b-6a0e0c1917cb",
+      "metadata": {},
+      "patient_id": "default_patient"
+    },
+    {
+      "category": "general",
+      "content": "I am a fan of Chelsea",
+      "id": "e77091cf-d931-42a4-8e76-9325d23de73d",
+      "metadata": {},
+      "patient_id": "default_patient"
+    }
+  ]
+}
+Response: {
+  "extraInfo": "No information about the user's statement regarding tea was found in their memory or the search results.",
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": [
+      {
+        "category": "general",
+        "content": "I like roses",
+        "id": "acf5b003-0757-400b-ba0b-6a0e0c1917cb",
+        "metadata": {},
+        "patient_id": "default_patient"
+      },
+      {
+        "category": "general",
+        "content": "I am a fan of Chelsea",
+        "id": "e77091cf-d931-42a4-8e76-9325d23de73d",
+        "metadata": {},
+        "patient_id": "default_patient"
+      }
+    ]
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk"
+      ],
+      "medicationList": [
+        "aspirin"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: semantic memory search
+Query: What are my preferences?
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": [
+    {
+      "category": "general",
+      "content": "I like roses",
+      "id": "acf5b003-0757-400b-ba0b-6a0e0c1917cb",
+      "metadata": {},
+      "patient_id": "default_patient"
+    },
+    {
+      "category": "general",
+      "content": "I am a fan of Chelsea",
+      "id": "e77091cf-d931-42a4-8e76-9325d23de73d",
+      "metadata": {},
+      "patient_id": "default_patient"
+    }
+  ]
+}
+Response: {
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": [
+      {
+        "category": "general",
+        "content": "I like roses",
+        "id": "acf5b003-0757-400b-ba0b-6a0e0c1917cb",
+        "metadata": {},
+        "patient_id": "default_patient"
+      },
+      {
+        "category": "general",
+        "content": "I am a fan of Chelsea",
+        "id": "e77091cf-d931-42a4-8e76-9325d23de73d",
+        "metadata": {},
+        "patient_id": "default_patient"
+      }
+    ]
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk"
+      ],
+      "medicationList": [
+        "aspirin"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: semantic memory search
+Query: What did I mention about my allergies?
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": [
+    {
+      "category": "general",
+      "content": "I like roses",
+      "id": "acf5b003-0757-400b-ba0b-6a0e0c1917cb",
+      "metadata": {},
+      "patient_id": "default_patient"
+    },
+    {
+      "category": "general",
+      "content": "I am a fan of Chelsea",
+      "id": "e77091cf-d931-42a4-8e76-9325d23de73d",
+      "metadata": {},
+      "patient_id": "default_patient"
+    }
+  ]
+}
+Response: {
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": [
+      {
+        "category": "general",
+        "content": "I like roses",
+        "id": "acf5b003-0757-400b-ba0b-6a0e0c1917cb",
+        "metadata": {},
+        "patient_id": "default_patient"
+      },
+      {
+        "category": "general",
+        "content": "I am a fan of Chelsea",
+        "id": "e77091cf-d931-42a4-8e76-9325d23de73d",
+        "metadata": {},
+        "patient_id": "default_patient"
+      }
+    ]
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk"
+      ],
+      "medicationList": [
+        "aspirin"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: semantic memory search
+Query: What do you remember about my routines?
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": [
+    {
+      "category": "general",
+      "content": "I like roses",
+      "id": "acf5b003-0757-400b-ba0b-6a0e0c1917cb",
+      "metadata": {},
+      "patient_id": "default_patient"
+    },
+    {
+      "category": "general",
+      "content": "I am a fan of Chelsea",
+      "id": "e77091cf-d931-42a4-8e76-9325d23de73d",
+      "metadata": {},
+      "patient_id": "default_patient"
+    }
+  ]
+}
+Response: {
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": [
+      {
+        "category": "general",
+        "content": "I like roses",
+        "id": "acf5b003-0757-400b-ba0b-6a0e0c1917cb",
+        "metadata": {},
+        "patient_id": "default_patient"
+      },
+      {
+        "category": "general",
+        "content": "I am a fan of Chelsea",
+        "id": "e77091cf-d931-42a4-8e76-9325d23de73d",
+        "metadata": {},
+        "patient_id": "default_patient"
+      }
+    ]
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk"
+      ],
+      "medicationList": [
+        "aspirin"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: semantic memory search
+Query: Recall my favorite drink.
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": [
+    {
+      "category": "general",
+      "content": "I like roses",
+      "id": "acf5b003-0757-400b-ba0b-6a0e0c1917cb",
+      "metadata": {},
+      "patient_id": "default_patient"
+    },
+    {
+      "category": "general",
+      "content": "I am a fan of Chelsea",
+      "id": "e77091cf-d931-42a4-8e76-9325d23de73d",
+      "metadata": {},
+      "patient_id": "default_patient"
+    }
+  ]
+}
+Response: {
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": [
+      {
+        "category": "general",
+        "content": "I like roses",
+        "id": "acf5b003-0757-400b-ba0b-6a0e0c1917cb",
+        "metadata": {},
+        "patient_id": "default_patient"
+      },
+      {
+        "category": "general",
+        "content": "I am a fan of Chelsea",
+        "id": "e77091cf-d931-42a4-8e76-9325d23de73d",
+        "metadata": {},
+        "patient_id": "default_patient"
+      }
+    ]
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk"
+      ],
+      "medicationList": [
+        "aspirin"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: semantic memory search
+Query: What did I say about my diet?
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": [
+    {
+      "category": "general",
+      "content": "I like roses",
+      "id": "acf5b003-0757-400b-ba0b-6a0e0c1917cb",
+      "metadata": {},
+      "patient_id": "default_patient"
+    },
+    {
+      "category": "general",
+      "content": "I am a fan of Chelsea",
+      "id": "e77091cf-d931-42a4-8e76-9325d23de73d",
+      "metadata": {},
+      "patient_id": "default_patient"
+    }
+  ]
+}
+Response: {
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": [
+      {
+        "category": "general",
+        "content": "I like roses",
+        "id": "acf5b003-0757-400b-ba0b-6a0e0c1917cb",
+        "metadata": {},
+        "patient_id": "default_patient"
+      },
+      {
+        "category": "general",
+        "content": "I am a fan of Chelsea",
+        "id": "e77091cf-d931-42a4-8e76-9325d23de73d",
+        "metadata": {},
+        "patient_id": "default_patient"
+      }
+    ]
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk"
+      ],
+      "medicationList": [
+        "aspirin"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: semantic memory search
+Query: Remind me of my favorite activities.
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": [
+    {
+      "category": "general",
+      "content": "I like roses",
+      "id": "acf5b003-0757-400b-ba0b-6a0e0c1917cb",
+      "metadata": {},
+      "patient_id": "default_patient"
+    },
+    {
+      "category": "general",
+      "content": "I am a fan of Chelsea",
+      "id": "e77091cf-d931-42a4-8e76-9325d23de73d",
+      "metadata": {},
+      "patient_id": "default_patient"
+    }
+  ]
+}
+Response: {
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": [
+      {
+        "category": "general",
+        "content": "I like roses",
+        "id": "acf5b003-0757-400b-ba0b-6a0e0c1917cb",
+        "metadata": {},
+        "patient_id": "default_patient"
+      },
+      {
+        "category": "general",
+        "content": "I am a fan of Chelsea",
+        "id": "e77091cf-d931-42a4-8e76-9325d23de73d",
+        "metadata": {},
+        "patient_id": "default_patient"
+      }
+    ]
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk"
+      ],
+      "medicationList": [
+        "aspirin"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: semantic memory update
+Query: I like tulips
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": []
+}
+Response: {
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": [
+      {
+        "category": "general",
+        "content": "I like tulips",
+        "id": "a45bd62b-a906-4c3c-bf03-730d64f33ccf",
+        "metadata": {},
+        "patient_id": "default_patient"
+      }
+    ]
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk"
+      ],
+      "medicationList": [
+        "aspirin"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: semantic memory update
+Query: I enjoy watching football, especially Chelsea
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": []
+}
+Response: {
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": [
+      {
+        "category": "general",
+        "content": "I enjoy watching football, especially Chelsea",
+        "id": "30015807-5921-4e45-955b-016fc52a8448",
+        "metadata": {},
+        "patient_id": "default_patient"
+      }
+    ]
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk"
+      ],
+      "medicationList": [
+        "aspirin"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: semantic memory update
+Query: I have some preferences you should remember.
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": []
+}
+Response: {
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": []
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk"
+      ],
+      "medicationList": [
+        "aspirin"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: semantic memory update
+Query: I prefer tea over coffee.
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": []
+}
+Response: {
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": [
+      {
+        "category": "general",
+        "content": "I prefer tea over coffee.",
+        "id": "f5d7d03e-e726-4630-9957-cec26176d057",
+        "metadata": {},
+        "patient_id": "default_patient"
+      }
+    ]
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk"
+      ],
+      "medicationList": [
+        "aspirin"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: semantic memory update
+Query: Remember that I love hiking.
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": []
+}
+Response: {
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": [
+      {
+        "category": "general",
+        "content": "Remember that I love hiking.",
+        "id": "04cf8b99-cd29-4b6c-ad3c-b5832e2bcdb1",
+        "metadata": {},
+        "patient_id": "default_patient"
+      }
+    ]
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk",
+        "hike"
+      ],
+      "medicationList": [
+        "aspirin"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: semantic memory update
+Query: I dislike loud noises.
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": []
+}
+Response: {
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": [
+      {
+        "category": "general",
+        "content": "I dislike loud noises.",
+        "id": "2a435a21-2284-4c69-a071-ae126ebde5ee",
+        "metadata": {},
+        "patient_id": "default_patient"
+      }
+    ]
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk"
+      ],
+      "medicationList": [
+        "aspirin"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: semantic memory update
+Query: I want to try meditation.
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": []
+}
+Response: {
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": []
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk"
+      ],
+      "medicationList": [
+        "aspirin"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: semantic memory update
+Query: I am allergic to peanuts.
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": []
+}
+Response: {
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": [
+      {
+        "category": "general",
+        "content": "I am allergic to peanuts.",
+        "id": "72366ff4-f2bf-4545-b509-2a707c634216",
+        "metadata": {},
+        "patient_id": "default_patient"
+      }
+    ]
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen",
+      "peanuts"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk"
+      ],
+      "medicationList": [
+        "aspirin"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: semantic memory update
+Query: I want to start a new hobby: painting.
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": []
+}
+Response: {
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": [
+      {
+        "category": "general",
+        "content": "I want to start a new hobby: painting.",
+        "id": "755e9547-0d5b-47e9-9812-e2922223420b",
+        "metadata": {},
+        "patient_id": "default_patient"
+      }
+    ]
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk"
+      ],
+      "medicationList": [
+        "aspirin"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: semantic memory update
+Query: I want to remember my favorite movie is Inception.
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": []
+}
+Response: {
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": [
+      {
+        "category": "general",
+        "content": "I want to remember my favorite movie is Inception.",
+        "id": "c5887bdb-e8f0-4178-b0b2-6efb6df24afe",
+        "metadata": {},
+        "patient_id": "default_patient"
+      }
+    ]
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk"
+      ],
+      "medicationList": [
+        "aspirin"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: semantic memory update
+Query: I want to keep track of my water intake.
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": []
+}
+Response: {
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": []
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk",
+        "track water intake"
+      ],
+      "medicationList": [
+        "aspirin"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: semantic memory update
+Query: I want to remember my favorite author is Tolkien.
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": []
+}
+Response: {
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": [
+      {
+        "category": "general",
+        "content": "I want to remember my favorite author is Tolkien.",
+        "id": "9f03e418-dae3-43a1-9309-eb54bdeaf1ee",
+        "metadata": {},
+        "patient_id": "default_patient"
+      }
+    ]
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk"
+      ],
+      "medicationList": [
+        "aspirin"
+      ],
+      "recommendations": [
+        "drink water",
+        "remember favorite author is Tolkien"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: semantic memory update
+Query: I want to remember my favorite city is Paris.
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": []
+}
+Response: {
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": [
+      {
+        "category": "general",
+        "content": "I want to remember my favorite city is Paris.",
+        "id": "2d146288-aaa4-4c20-a457-06851362edd4",
+        "metadata": {},
+        "patient_id": "default_patient"
+      }
+    ]
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk"
+      ],
+      "medicationList": [
+        "aspirin"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: semantic memory update
+Query: I want to remember my favorite animal is dog.
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": []
+}
+Response: {
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": [
+      {
+        "category": "general",
+        "content": "I want to remember my favorite animal is dog.",
+        "id": "0a7555ab-f5ad-4afb-892d-70b6ab54b194",
+        "metadata": {},
+        "patient_id": "default_patient"
+      }
+    ]
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk",
+        "remember favorite animal is dog"
+      ],
+      "medicationList": [
+        "aspirin"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: web search
+Query: Current bitcoin value.
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": []
+}
+Response: {
+  "extraInfo": "The current bitcoin value is approximately $118,522.73 per BTC (BTC/USD) with a market cap of around $2,358.15 billion USD.",
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": []
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk"
+      ],
+      "medicationList": [
+        "aspirin"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: web search
+Query: Latest news on diabetes research.
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": []
+}
+Response: {
+  "extraInfo": "The tool found several recent news articles on diabetes research:\n- [American Diabetes Association](https://diabetes.org/recent-advances)\n- [ScienceDaily](https://www.sciencedaily.com/news/health_medicine/diabetes/)\n- [ADA](https://diabetes.org/)\n- [Diabetes UK](https://www.diabetes.org.uk/about-us/news-and-views)\n- [Diabetes Care journal](https://diabetesjournals.org/care)",
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": []
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk"
+      ],
+      "medicationList": [
+        "aspirin"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: web search
+Query: Weather in Dubai today.
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": []
+}
+Response: {
+  "extraInfo": "The current weather in Dubai is cloudy early with peeks of sunshine expected later in the day. It's hazy, with a high temperature of 101°F (38°C) and winds shifting from SSW to NW at 10 mph.",
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": []
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk"
+      ],
+      "medicationList": [
+        "aspirin"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: web search
+Query: Nvidia stock price.
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": []
+}
+Response: {
+  "extraInfo": "The tool provided links to several websites where the user can find the current stock price of Nvidia. However, it did not directly provide the current stock price in its output.",
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": []
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk"
+      ],
+      "medicationList": [
+        "aspirin"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: web search
+Query: COVID-19 cases in US.
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": []
+}
+Response: {
+  "extraInfo": "The tool provides several sources for tracking COVID-19 cases in the US:\n\n- CDC COVID Data Tracker: <https://covid.cdc.gov/>\n- WHO COVID-19 dashboard: <https://data.who.int/dashboards/covid19/cases>\n- Worldometer: <https://www.worldometers.info/coronavirus/country/us/>\n- CDC's Rt estimates for states: <https://www.cdc.gov/cfa-modeling-and-forecasting/rt-estimates/index.html>\n- USAFacts COVID-19 tracker: <https://usafacts.org/visualizations/coronavirus-covid-19-spread-map/>",
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": []
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk"
+      ],
+      "medicationList": [
+        "aspirin"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: web search
+Query: Population of China.
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": []
+}
+Response: {
+  "extraInfo": "The current population of China is approximately 1,416 million as of July 22, 2025.",
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": []
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk"
+      ],
+      "medicationList": [
+        "aspirin"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: web search
+Query: Earthquake in Japan today.
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": []
+}
+Response: {
+  "extraInfo": "Based on the tool output, there were no earthquakes of magnitude M1.5 or greater in Japan today. The most recent earthquake information provided is from July 20, 2025, with a magnitude of 3.4.",
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": []
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk"
+      ],
+      "medicationList": [
+        "aspirin"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: web search
+Query: Manchester United last match score.
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": []
+}
+Response: {
+  "extraInfo": "The tool output provides links to various websites where you can find Manchester United's latest scores and results. However, it does not specify the score of their last match directly in the output.",
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": []
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk"
+      ],
+      "medicationList": [
+        "aspirin"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: web search
+Query: Gold price today.
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": []
+}
+Response: {
+  "extraInfo": "The current gold price today is not explicitly stated in the tool output. However, it mentions that the live gold spot price can be found on various websites listed.",
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": []
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk"
+      ],
+      "medicationList": [
+        "aspirin"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: web search
+Query: Top news headlines.
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": []
+}
+Response: {
+  "extraInfo": "The top news headlines are:\n\n1. **CNN**: Breaking News, Latest News and Videos\n   - Link: <https://www.cnn.com/>\n   - Snippet: View the latest news and breaking news today for U.S., world, weather, entertainment, politics and health at CNN.com.\n\n2. **ABC News** - Breaking News, Latest News and Videos\n   - Link: <https://abcnews.go.com/>\n   - Snippet: Your trusted source for breaking news, analysis, exclusive interviews, headlines, and videos at ABCNews.com.\n\n3. **CBS News | Breaking news, top stories & today's latest headlines**\n   - Link: <https://www.cbsnews.com/>\n   - Snippet: Trump says he's struck \"massive\" trade deal with Japan calling for 15% tariffs ... N.J. federal judges sideline Alina Habba as top prosecutor, DOJ ousts her...\n\n4. **NBC News** - Breaking News & Top Stories - Latest World, US ...\n   - Link: <https://www.nbcnews.com/>\n   - Snippet: Go to NBCNews.com for breaking news, videos, and the latest top stories in world news, business, politics, health and pop culture ...\n\n5. **Google News**\n   - Link: <https://news.google.com/>\n   - Snippet: News ... Top stories ... BBC ... More than 100 aid agencies say 'mass starvation' spreading across Gaza.",
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": []
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk"
+      ],
+      "medicationList": [
+        "aspirin"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: web search
+Query: Weather forecast for New York tomorrow.
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": []
+}
+Response: {
+  "extraInfo": "The tool output provides several weather forecasts for New York City over the next ten days. However, it does not explicitly state the weather forecast for tomorrow. Therefore, the answer to the user's question is not found in the output.",
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": []
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk"
+      ],
+      "medicationList": [
+        "aspirin"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: web search
+Query: Ethereum price now.
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": []
+}
+Response: {
+  "extraInfo": "The current live Ethereum (ETH) price is approximately $3672.92 USD, with a 24-hour trading volume of around $38 billion USD.",
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": []
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk"
+      ],
+      "medicationList": [
+        "aspirin"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: web search
+Query: Latest advancements in AI research.
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": []
+}
+Response: {
+  "extraInfo": "The tool has provided several links to articles detailing the latest advancements in AI research. These include developments in AI trends, robotics, nature conservation, healthcare, and Google's own AI progress in 2024.",
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": []
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk"
+      ],
+      "medicationList": [
+        "aspirin"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: web search
+Query: Current oil prices.
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": []
+}
+Response: {
+  "extraInfo": "The current oil prices can be found at the following sources:\n\n- Bloomberg Energy: <https://www.bloomberg.com/energy>\n- OilPrice.com: <https://oilprice.com/>\n- Trading Economics: <https://tradingeconomics.com/commodity/crude-oil>\n- AAA Gas Prices: <https://gasprices.aaa.com/>\n- U.S. Energy Information Administration: <https://www.eia.gov/petroleum/gasdiesel/>",
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": []
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk"
+      ],
+      "medicationList": [
+        "aspirin"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
+
+Category: web search
+Query: US presidential election news.
+Previous Profile: {
+  "uid": "123",
+  "name": "John Doe",
+  "age": 35,
+  "bloodType": "O+",
+  "allergies": [
+    "pollen"
+  ],
+  "treatment": {
+    "medicationList": [
+      "aspirin"
+    ],
+    "dailyChecklist": [
+      "walk"
+    ],
+    "appointment": "2024-07-22",
+    "recommendations": [
+      "drink water"
+    ],
+    "sleepHours": 7,
+    "sleepQuality": "good"
+  }
+}
+Previous Memory: {
+  "episodes": [],
+  "procedural": {},
+  "semantic": []
+}
+Response: {
+  "extraInfo": "The tool output provides several articles related to fake news and its impact during the 2016 U.S. presidential election, but it does not include any recent or up-to-date news about the current US presidential election in 2024.",
+  "updatedMemory": {
+    "episodes": [],
+    "id": "memory",
+    "procedural": null,
+    "semantic": []
+  },
+  "updatedPatientProfile": {
+    "age": 35,
+    "allergies": [
+      "pollen"
+    ],
+    "bloodType": "O+",
+    "name": "John Doe",
+    "treatment": {
+      "appointment": "2024-07-22",
+      "dailyChecklist": [
+        "walk"
+      ],
+      "medicationList": [
+        "aspirin"
+      ],
+      "recommendations": [
+        "drink water"
+      ],
+      "sleepHours": 7,
+      "sleepQuality": "good"
+    },
+    "uid": "123"
+  }
+}
+------------------------------------------------------------
