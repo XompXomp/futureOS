@@ -61,7 +61,7 @@ services:
       context: services/moshi-server
       dockerfile: public.Dockerfile
     environment:
-      - HUGGING_FACE_HUB_TOKEN=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
+      
     volumes:
       - ./volumes/cargo-registry-tts:/root/.cargo/registry
       - ./volumes/tts-target:/app/target
@@ -85,7 +85,7 @@ services:
       context: services/moshi-server
       dockerfile: public.Dockerfile
     environment:
-      - HUGGING_FACE_HUB_TOKEN=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
+      
     volumes:
       - ./volumes/cargo-registry-stt:/root/.cargo/registry
       - ./volumes/stt-target:/app/target
@@ -116,7 +116,7 @@ services:
       - ./volumes/huggingface-cache:/root/.cache/huggingface"
       - ./volumes/vllm-cache:/root/.cache/vllm
     environment:
-      - HUGGING_FACE_HUB_TOKEN=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
+      
     deploy:
       resources:
         reservations:
