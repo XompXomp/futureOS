@@ -22,8 +22,6 @@ def create_web_tools():
                 "- Weather forecasts (e.g., 'weather in Dubai tomorrow')\n"
                 "- Sports scores (e.g., 'Manchester United last match score')\n"
                 "- Public statistics that may change (e.g., 'current population of China', 'latest COVID cases in US')\n\n"
-                "DO NOT use this for static factual questions like: 'Who is the president of India?' or 'What is the capital of France?' "
-                "unless specifically asked for 'current', 'latest', or 'today'."
             )
         )
     ] 

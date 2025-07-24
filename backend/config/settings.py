@@ -29,16 +29,16 @@ class Settings:
     EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
     
     # Ollama Settings (for local models)
-    USE_OLLAMA = False #os.getenv("USE_OLLAMA", "true").lower() == "true"
-    USE_GROQ = True #os.getenv("USE_GROQ", "False") == "True"
     USE_LOCAL = False
     if (USE_LOCAL):
         OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434") # Using model from local machine
         OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3.1:8b")
     else:  
         OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "https://mac.futureos.xyz/") # Using model from SLab
-        OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3.3:70b") #llama3.3:70b
-    
+        OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "mistral-nemo:12b") #llama3.3:70b
+    USE_OLLAMA = False #os.getenv("USE_OLLAMA", "true").lower() == "true"
+    USE_GROQ = True #os.getenv("USE_GROQ", "False") == "True"
+
     # Retry Settings
     MAX_RETRIES = int(os.getenv("MAX_RETRIES", "3"))
     RETRY_DELAY = float(os.getenv("RETRY_DELAY", "2.0"))
