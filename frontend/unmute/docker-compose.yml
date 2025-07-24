@@ -1,0 +1,131 @@
+# See NOTE comments for places to modify.
+services:
+  traefik:
+    image: traefik:v3.3.1
+    command:
+      # Swarm provider configuration
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:11000"
+    ports:
+      - "11000:11000"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+
+  frontend:
+    image: unmute-frontend:latest
+    build:
+      context: frontend/
+      dockerfile: hot-reloading.Dockerfile
+    volumes:
+      - ./frontend/src:/app/src
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=PathPrefix(`/`)"
+      - "traefik.http.routers.frontend.entrypoints=web"
+      - "traefik.http.services.frontend.loadbalancer.server.port=3000"
+      - "traefik.http.routers.frontend.priority=10" # lowest priority
+    ports:
+      - "11001:3000"
+
+  backend:
+    image: unmute-backend:latest
+    build:
+      context: ./
+      target: hot-reloading
+    volumes:
+      - ./unmute:/app/unmute
+    environment:
+      - KYUTAI_STT_URL=ws://stt:8080
+      - KYUTAI_TTS_URL=ws://tts:8080
+      - KYUTAI_LLM_URL=https://mac.futureos.xyz
+      - KYUTAI_LLM_MODEL=gemma3:27b
+      - NEWSAPI_API_KEY=$NEWSAPI_API_KEY
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend.rule=PathPrefix(`/api`) || PathPrefix(`/v1/realtime`)"
+      - "traefik.http.routers.backend.middlewares=strip-api"
+      - "traefik.http.middlewares.strip-api.replacepathregex.regex=^/api/(.*)"
+      - "traefik.http.middlewares.strip-api.replacepathregex.replacement=/$$1"
+      - "traefik.http.routers.backend.entrypoints=web"
+      - "traefik.http.services.backend.loadbalancer.server.port=11002"
+      - "traefik.http.routers.backend.priority=100" # higher priority than frontend
+      - "prometheus-port=80"
+    ports:
+      - "11002:11002"
+
+  tts:
+    image: moshi-server:latest
+    command: ["worker", "--config", "configs/tts.toml"]
+    build:
+      context: services/moshi-server
+      dockerfile: public.Dockerfile
+    environment:
+      - HUGGING_FACE_HUB_TOKEN=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
+    volumes:
+      - ./volumes/cargo-registry-tts:/root/.cargo/registry
+      - ./volumes/tts-target:/app/target
+      - ./volumes/uv-cache:/root/.cache/uv
+      - /tmp/models/:/models
+      - ./volumes/tts-logs:/logs
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    ports:
+      - "11003:8080"
+
+  stt:
+    image: moshi-server:latest
+    command: ["worker", "--config", "configs/stt.toml"]
+    build:
+      context: services/moshi-server
+      dockerfile: public.Dockerfile
+    environment:
+      - HUGGING_FACE_HUB_TOKEN=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
+    volumes:
+      - ./volumes/cargo-registry-stt:/root/.cargo/registry
+      - ./volumes/stt-target:/app/target
+      - ./volumes/uv-cache:/root/.cache/uv
+      - /tmp/models/:/models
+      - ./volumes/stt-logs:/logs
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    ports:
+      - "11004:8080"
+
+  llm:
+    image: vllm/vllm-openai:v0.9.1
+    command:
+      [
+        "--model=meta-llama/Llama-3.2-1B-Instruct",
+        "--max-model-len=1536",
+        "--dtype=bfloat16",
+        "--gpu-memory-utilization=0.4",
+        "--port=11005"
+      ]
+    volumes:
+      - ./volumes/huggingface-cache:/root/.cache/huggingface"
+      - ./volumes/vllm-cache:/root/.cache/vllm
+    environment:
+      - HUGGING_FACE_HUB_TOKEN=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
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    ports:
+      - "11005:11005"
+
+networks:
+  default:
