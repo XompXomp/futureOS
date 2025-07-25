@@ -7,8 +7,8 @@ import threading
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
 
-FRONTEND_API_ENDPOINT = "http://172.22.225.49:8000/endpoint"  # Example frontend API endpoint
-MEDICAL_LLM_ENDPOINT = "http://172.22.225.49:8000/medical-llm"  # Example medical LLM endpoint
+FRONTEND_API_ENDPOINT = "http://172.22.225.49:8002/api/llama-bridge"  # Example frontend API endpoint
+MEDICAL_LLM_ENDPOINT = "http://172.22.225.49:8000/endpoint"  # Example medical LLM endpoint
 
 # --- Data Builders (placeholders for real data gathering) ---
 def build_daily_updates_payload():
@@ -83,7 +83,7 @@ def handle_daily_cycle():
 
 def handle_weekly_cycle():
     # Step 1: Request weekly data (conversations and general insights) from frontend
-    weekly_payload = request_from_frontend("weekly")
+    weekly_payload = request_from_frontend("convo_general_insights")
     if weekly_payload:
         # Step 2: Send to medical LLM with payload_type 'weekly'
         medical_response = send_to_medical_llm(weekly_payload, "weekly")
@@ -93,9 +93,10 @@ def handle_weekly_cycle():
 
 # --- Main Loop ---
 def main_loop():
-    DAILY_HOUR = 8      # 8:00 AM
-    WEEKLY_HOUR = 9     # 9:00 AM
-    WEEKLY_DAY = 1      # Monday (isoweekday)
+    now = datetime.now()
+    DAILY_HOUR = now.hour      # Set to current hour for testing
+    WEEKLY_HOUR = now.hour     # Set to current hour for testing
+    WEEKLY_DAY = now.isoweekday()  # Set to today for testing
     last_daily_date = None
     last_weekly_date = None
     while True:
