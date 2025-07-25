@@ -32,10 +32,22 @@ export interface Memory {
   semantic: object[];
 }
 
+export interface Links {
+  id: string; // always 'links' for singleton
+  links: any[];
+}
+
+export interface General {
+  id: string; // always 'general' for singleton
+  general: any;
+}
+
 class AppDB extends Dexie {
   patientProfile!: Table<PatientProfile, string>; // uid as primary key
   conversation!: Table<Conversation, string>; // cid as primary key
   memory!: Table<Memory, string>; // id as primary key
+  links!: Table<Links, string>; // id as primary key
+  general!: Table<General, string>; // id as primary key
 
   constructor() {
     super('AppDB');
@@ -45,6 +57,10 @@ class AppDB extends Dexie {
     });
     this.version(2).stores({
       memory: 'id',
+    });
+    this.version(3).stores({
+      links: 'id',
+      general: 'id',
     });
   }
 }
@@ -79,6 +95,24 @@ export async function updateProcedural(procedural: object) {
   if (!memory) return;
   memory.procedural = procedural;
   await updateMemory(memory);
+}
+
+// Links DB functions
+export async function getLinks() {
+  return db.links.get('links');
+}
+
+export async function updateLinks(links: Links) {
+  return db.links.put(links);
+}
+
+// General DB functions
+export async function getGeneral() {
+  return db.general.get('general');
+}
+
+export async function updateGeneral(general: General) {
+  return db.general.put(general);
 }
 
 // Sample data initialization
@@ -119,6 +153,20 @@ export async function initializeSampleData() {
       episodes: [],
       procedural: {},
       semantic: [],
+    });
+  }
+  const existingLinks = await db.links.get('links');
+  if (!existingLinks) {
+    await db.links.add({
+      id: 'links',
+      links: [],
+    });
+  }
+  const existingGeneral = await db.general.get('general');
+  if (!existingGeneral) {
+    await db.general.add({
+      id: 'general',
+      general: {},
     });
   }
 }

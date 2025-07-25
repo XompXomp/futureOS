@@ -300,17 +300,15 @@ const App: React.FC = () => {
       }));
     }
     // Send to Llama via REST
-    const memory = await getMemory();
+    // const memory = await getMemory();
     // --- Build request payload with optional fields ---
     const requestBody: any = {
       prompt,
       patientProfile: profile,
-      memory,
     };
     if (options.updates) requestBody.updates = options.updates;
     if (conversation) requestBody.conversation = conversation.conversation;
-    if (options.links) requestBody.links = options.links;
-    if (options.general) requestBody.general = options.general;
+    // Removed: memory, links, general from requestBody
     fetch('http://172.22.225.47:5100/api/agent', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -467,18 +465,16 @@ const App: React.FC = () => {
       console.warn('[DEBUG] sendPromptToLlama: patientProfile is null');
       return;
     }
-    const memory = await getMemory();
-    console.log('[DEBUG] Sending to Llama:', { prompt, patientProfile: profileRef.current, memory });
+    // const memory = await getMemory();
+    console.log('[DEBUG] Sending to Llama:', { prompt, patientProfile: profileRef.current });
     // --- Build request payload with optional fields ---
     const requestBody: any = {
       prompt,
       patientProfile: profileRef.current,
-      memory,
     };
     if (options.updates) requestBody.updates = options.updates;
     if (conversation) requestBody.conversation = conversation.conversation;
-    if (options.links) requestBody.links = options.links;
-    if (options.general) requestBody.general = options.general;
+    // Removed: memory, links, general from requestBody
     fetch('http://172.22.225.47:5100/api/agent', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
