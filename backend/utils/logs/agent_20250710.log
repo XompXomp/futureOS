@@ -1,0 +1,85 @@
+2025-07-10 08:44:59,499 - utils.logging_config - INFO - Loaded 1 documents
+2025-07-10 08:44:59,499 - utils.logging_config - INFO - Created 2 chunks
+2025-07-10 08:45:40,773 - tensorflow - WARNING - From C:\Users\ankur\AppData\Local\Programs\Python\Python310\lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-07-10 08:45:41,226 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cpu
+2025-07-10 08:45:41,226 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-MiniLM-L6-v2
+2025-07-10 08:45:46,630 - faiss.loader - INFO - Loading faiss with AVX2 support.
+2025-07-10 08:45:47,124 - faiss.loader - INFO - Successfully loaded faiss with AVX2 support.
+2025-07-10 08:45:47,128 - faiss - INFO - Failed to load GPU Faiss: name 'GpuIndexIVFFlat' is not defined. Will not load constructor refs for GPU indexes. This is only an error if you're trying to use GPU Faiss.
+2025-07-10 08:45:47,129 - utils.logging_config - INFO - FAISS index created with 2 vectors
+2025-07-10 08:45:47,146 - utils.logging_config - INFO - RAG system initialized successfully
+2025-07-10 08:45:47,238 - utils.logging_config - INFO - Database initialized successfully
+2025-07-10 08:45:47,242 - utils.logging_config - INFO - Loaded 1 documents
+2025-07-10 08:45:47,242 - utils.logging_config - INFO - Created 2 chunks
+2025-07-10 08:45:47,243 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cpu
+2025-07-10 08:45:47,244 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-MiniLM-L6-v2
+2025-07-10 08:45:50,737 - utils.logging_config - INFO - FAISS index created with 2 vectors
+2025-07-10 08:45:50,758 - utils.logging_config - INFO - RAG system initialized successfully
+2025-07-10 08:45:50,765 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-07-10 08:45:50,782 - utils.logging_config - INFO - Agent initialized with 13 tools
+2025-07-10 08:46:03,153 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-10 08:46:10,535 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-10 08:46:12,504 - utils.logging_config - INFO - RAG question answered: name
+2025-07-10 08:46:19,028 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-10 08:46:20,369 - utils.logging_config - INFO - Agent response generated for input: What is my name?...
+2025-07-10 09:57:39,174 - utils.logging_config - INFO - Loaded 1 documents
+2025-07-10 09:57:39,199 - utils.logging_config - INFO - Created 2 chunks
+2025-07-10 09:58:05,787 - tensorflow - WARNING - From C:\Users\ankur\AppData\Local\Programs\Python\Python310\lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-07-10 09:58:06,617 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cpu
+2025-07-10 09:58:06,618 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-MiniLM-L6-v2
+2025-07-10 09:58:13,037 - faiss.loader - INFO - Loading faiss with AVX2 support.
+2025-07-10 09:58:13,140 - faiss.loader - INFO - Successfully loaded faiss with AVX2 support.
+2025-07-10 09:58:13,151 - faiss - INFO - Failed to load GPU Faiss: name 'GpuIndexIVFFlat' is not defined. Will not load constructor refs for GPU indexes. This is only an error if you're trying to use GPU Faiss.
+2025-07-10 09:58:13,153 - utils.logging_config - INFO - FAISS index created with 2 vectors
+2025-07-10 09:58:13,183 - utils.logging_config - INFO - RAG system initialized successfully
+2025-07-10 09:58:13,210 - utils.logging_config - ERROR - Error initializing database: unable to open database file
+2025-07-10 09:58:13,238 - utils.logging_config - INFO - Loaded 1 documents
+2025-07-10 09:58:13,239 - utils.logging_config - INFO - Created 2 chunks
+2025-07-10 09:58:13,241 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cpu
+2025-07-10 09:58:13,241 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-MiniLM-L6-v2
+2025-07-10 09:58:16,802 - utils.logging_config - INFO - FAISS index created with 2 vectors
+2025-07-10 09:58:16,849 - utils.logging_config - INFO - RAG system initialized successfully
+2025-07-10 09:58:16,861 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-07-10 09:58:16,868 - utils.logging_config - INFO - Agent initialized with 13 tools
+2025-07-10 09:58:16,898 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://172.22.225.47:5000
+2025-07-10 09:58:16,898 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-07-10 09:58:16,902 - werkzeug - INFO -  * Restarting with stat
+2025-07-10 09:58:19,752 - utils.logging_config - INFO - Loaded 1 documents
+2025-07-10 09:58:19,753 - utils.logging_config - INFO - Created 2 chunks
+2025-07-10 09:58:39,262 - tensorflow - WARNING - From C:\Users\ankur\AppData\Local\Programs\Python\Python310\lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-07-10 09:58:40,070 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cpu
+2025-07-10 09:58:40,071 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-MiniLM-L6-v2
+2025-07-10 09:58:45,777 - faiss.loader - INFO - Loading faiss with AVX2 support.
+2025-07-10 09:58:45,984 - faiss.loader - INFO - Successfully loaded faiss with AVX2 support.
+2025-07-10 09:58:45,994 - faiss - INFO - Failed to load GPU Faiss: name 'GpuIndexIVFFlat' is not defined. Will not load constructor refs for GPU indexes. This is only an error if you're trying to use GPU Faiss.
+2025-07-10 09:58:45,996 - utils.logging_config - INFO - FAISS index created with 2 vectors
+2025-07-10 09:58:46,043 - utils.logging_config - INFO - RAG system initialized successfully
+2025-07-10 09:58:46,092 - utils.logging_config - ERROR - Error initializing database: unable to open database file
+2025-07-10 09:58:46,095 - utils.logging_config - INFO - Loaded 1 documents
+2025-07-10 09:58:46,096 - utils.logging_config - INFO - Created 2 chunks
+2025-07-10 09:58:46,097 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cpu
+2025-07-10 09:58:46,098 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-MiniLM-L6-v2
+2025-07-10 09:58:49,986 - utils.logging_config - INFO - FAISS index created with 2 vectors
+2025-07-10 09:58:50,016 - utils.logging_config - INFO - RAG system initialized successfully
+2025-07-10 09:58:50,021 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-07-10 09:58:50,024 - utils.logging_config - INFO - Agent initialized with 13 tools
+2025-07-10 09:58:50,033 - werkzeug - WARNING -  * Debugger is active!
+2025-07-10 09:58:50,040 - werkzeug - INFO -  * Debugger PIN: 102-882-442
+2025-07-10 09:58:50,061 - werkzeug - INFO - 127.0.0.1 - - [10/Jul/2025 09:58:50] "GET /api/health HTTP/1.1" 200 -
+2025-07-10 09:58:50,063 - werkzeug - INFO - 127.0.0.1 - - [10/Jul/2025 09:58:50] "OPTIONS /api/chat HTTP/1.1" 200 -
+2025-07-10 09:58:59,833 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-10 09:59:01,879 - utils.logging_config - INFO - Successfully read file: D:\Ankur\MyApp\backend\data\docs\patient_profile.json
+2025-07-10 09:59:01,880 - utils.logging_config - INFO - Successfully loaded JSON from: D:\Ankur\MyApp\backend\data\docs\patient_profile.json
+2025-07-10 09:59:05,363 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-10 09:59:29,937 - utils.logging_config - INFO - Agent response generated for input: Show my medical information...
+2025-07-10 09:59:30,110 - werkzeug - INFO - 127.0.0.1 - - [10/Jul/2025 09:59:30] "POST /api/chat HTTP/1.1" 200 -
+2025-07-10 10:01:42,550 - werkzeug - INFO - 127.0.0.1 - - [10/Jul/2025 10:01:42] "OPTIONS /api/chat HTTP/1.1" 200 -
+2025-07-10 10:01:47,671 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-10 10:01:56,550 - utils.logging_config - INFO - Agent response generated for input: What medications am I taking?...
+2025-07-10 10:01:56,551 - werkzeug - INFO - 127.0.0.1 - - [10/Jul/2025 10:01:56] "POST /api/chat HTTP/1.1" 200 -

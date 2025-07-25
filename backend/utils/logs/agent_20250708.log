@@ -1,0 +1,311 @@
+2025-07-08 13:26:37,675 - langchain_community.document_loaders.directory - ERROR - Error loading file \data\docs\patient_profile.txt
+2025-07-08 13:26:37,675 - utils.logging_config - ERROR - Error setting up RAG system: Not a valid ndjson
+2025-07-08 13:26:37,698 - utils.logging_config - INFO - Database initialized successfully
+2025-07-08 13:26:37,702 - langchain_community.document_loaders.directory - ERROR - Error loading file \data\docs\patient_profile.txt
+2025-07-08 13:26:37,702 - utils.logging_config - ERROR - Error setting up RAG system: Not a valid ndjson
+2025-07-08 13:26:37,705 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-07-08 13:26:37,708 - utils.logging_config - INFO - Agent initialized with 13 tools
+2025-07-08 13:26:42,119 - utils.logging_config - ERROR - Error running agent: Missing some input keys: {'input'}
+2025-07-08 13:36:24,116 - utils.logging_config - INFO - Loaded 1 documents
+2025-07-08 13:36:24,116 - utils.logging_config - INFO - Created 1 chunks
+2025-07-08 13:37:03,430 - tensorflow - WARNING - From C:\Users\ankur\AppData\Local\Programs\Python\Python310\lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-07-08 13:37:03,912 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cpu
+2025-07-08 13:37:03,913 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-MiniLM-L6-v2
+2025-07-08 13:37:08,030 - faiss.loader - INFO - Loading faiss with AVX2 support.
+2025-07-08 13:37:08,508 - faiss.loader - INFO - Successfully loaded faiss with AVX2 support.
+2025-07-08 13:37:08,514 - faiss - INFO - Failed to load GPU Faiss: name 'GpuIndexIVFFlat' is not defined. Will not load constructor refs for GPU indexes. This is only an error if you're trying to use GPU Faiss.
+2025-07-08 13:37:08,514 - utils.logging_config - INFO - FAISS index created with 1 vectors
+2025-07-08 13:37:08,530 - utils.logging_config - INFO - RAG system initialized successfully
+2025-07-08 13:37:08,545 - utils.logging_config - INFO - Database initialized successfully
+2025-07-08 13:37:08,547 - utils.logging_config - INFO - Loaded 1 documents
+2025-07-08 13:37:08,547 - utils.logging_config - INFO - Created 1 chunks
+2025-07-08 13:37:08,548 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cpu
+2025-07-08 13:37:08,548 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-MiniLM-L6-v2
+2025-07-08 13:37:11,393 - utils.logging_config - INFO - FAISS index created with 1 vectors
+2025-07-08 13:37:11,406 - utils.logging_config - INFO - RAG system initialized successfully
+2025-07-08 13:37:11,408 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-07-08 13:37:11,410 - utils.logging_config - INFO - Agent initialized with 13 tools
+2025-07-08 13:37:15,428 - utils.logging_config - ERROR - Error running agent: Missing some input keys: {'chat_history'}
+2025-07-08 13:39:31,262 - utils.logging_config - ERROR - Error running agent: Missing some input keys: {'chat_history'}
+2025-07-08 13:41:33,509 - utils.logging_config - INFO - Loaded 1 documents
+2025-07-08 13:41:33,509 - utils.logging_config - INFO - Created 1 chunks
+2025-07-08 13:41:43,698 - tensorflow - WARNING - From C:\Users\ankur\AppData\Local\Programs\Python\Python310\lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-07-08 13:41:43,991 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cpu
+2025-07-08 13:41:43,992 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-MiniLM-L6-v2
+2025-07-08 13:41:47,671 - faiss.loader - INFO - Loading faiss with AVX2 support.
+2025-07-08 13:41:47,684 - faiss.loader - INFO - Successfully loaded faiss with AVX2 support.
+2025-07-08 13:41:47,689 - faiss - INFO - Failed to load GPU Faiss: name 'GpuIndexIVFFlat' is not defined. Will not load constructor refs for GPU indexes. This is only an error if you're trying to use GPU Faiss.
+2025-07-08 13:41:47,689 - utils.logging_config - INFO - FAISS index created with 1 vectors
+2025-07-08 13:41:47,704 - utils.logging_config - INFO - RAG system initialized successfully
+2025-07-08 13:41:47,718 - utils.logging_config - INFO - Database initialized successfully
+2025-07-08 13:41:47,720 - utils.logging_config - INFO - Loaded 1 documents
+2025-07-08 13:41:47,720 - utils.logging_config - INFO - Created 1 chunks
+2025-07-08 13:41:47,721 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cpu
+2025-07-08 13:41:47,721 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-MiniLM-L6-v2
+2025-07-08 13:41:50,575 - utils.logging_config - INFO - FAISS index created with 1 vectors
+2025-07-08 13:41:50,587 - utils.logging_config - INFO - RAG system initialized successfully
+2025-07-08 13:41:50,590 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-07-08 13:41:50,592 - utils.logging_config - INFO - Agent initialized with 13 tools
+2025-07-08 13:42:02,206 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 13:42:05,212 - utils.logging_config - INFO - Agent response generated for input: hi...
+2025-07-08 13:42:18,724 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 13:42:21,750 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 13:42:23,013 - utils.logging_config - INFO - RAG question answered: name
+2025-07-08 13:42:29,563 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 13:42:32,280 - utils.logging_config - INFO - Agent response generated for input: what is my name...
+2025-07-08 13:42:48,162 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 13:42:51,138 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 13:42:54,559 - utils.logging_config - INFO - RAG question answered: goals
+2025-07-08 13:43:01,848 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 13:43:06,848 - utils.logging_config - INFO - Agent response generated for input: what are my goals...
+2025-07-08 13:43:20,195 - utils.logging_config - INFO - Loaded 1 documents
+2025-07-08 13:43:20,196 - utils.logging_config - INFO - Created 2 chunks
+2025-07-08 13:43:32,170 - tensorflow - WARNING - From C:\Users\ankur\AppData\Local\Programs\Python\Python310\lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-07-08 13:43:32,500 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cpu
+2025-07-08 13:43:32,500 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-MiniLM-L6-v2
+2025-07-08 13:43:36,239 - faiss.loader - INFO - Loading faiss with AVX2 support.
+2025-07-08 13:43:36,260 - faiss.loader - INFO - Successfully loaded faiss with AVX2 support.
+2025-07-08 13:43:36,266 - faiss - INFO - Failed to load GPU Faiss: name 'GpuIndexIVFFlat' is not defined. Will not load constructor refs for GPU indexes. This is only an error if you're trying to use GPU Faiss.
+2025-07-08 13:43:36,267 - utils.logging_config - INFO - FAISS index created with 2 vectors
+2025-07-08 13:43:36,292 - utils.logging_config - INFO - RAG system initialized successfully
+2025-07-08 13:43:36,314 - utils.logging_config - INFO - Database initialized successfully
+2025-07-08 13:43:36,317 - utils.logging_config - INFO - Loaded 1 documents
+2025-07-08 13:43:36,318 - utils.logging_config - INFO - Created 2 chunks
+2025-07-08 13:43:36,319 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cpu
+2025-07-08 13:43:36,320 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-MiniLM-L6-v2
+2025-07-08 13:43:39,301 - utils.logging_config - INFO - FAISS index created with 2 vectors
+2025-07-08 13:43:39,327 - utils.logging_config - INFO - RAG system initialized successfully
+2025-07-08 13:43:39,331 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-07-08 13:43:39,335 - utils.logging_config - INFO - Agent initialized with 13 tools
+2025-07-08 13:44:31,539 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 13:44:34,543 - utils.logging_config - INFO - Agent response generated for input: hi...
+2025-07-08 13:44:42,088 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 13:44:49,224 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 13:44:55,259 - utils.logging_config - INFO - RAG question answered: goals
+2025-07-08 13:45:02,430 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 13:45:10,655 - utils.logging_config - INFO - Agent response generated for input: what are my goals...
+2025-07-08 13:45:27,549 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 13:45:29,885 - utils.logging_config - INFO - Successfully read file: D:\Ankur\MyApp\backend\data\docs\patient_profile.json
+2025-07-08 13:45:29,887 - utils.logging_config - INFO - Successfully loaded JSON from: D:\Ankur\MyApp\backend\data\docs\patient_profile.json
+2025-07-08 13:45:29,890 - utils.logging_config - INFO - Successfully wrote to file: D:\Ankur\MyApp\backend\data\docs\patient_profile.json
+2025-07-08 13:45:29,890 - utils.logging_config - INFO - Successfully updated JSON values in: D:\Ankur\MyApp\backend\data\docs\patient_profile.json
+2025-07-08 13:45:30,615 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 13:45:35,506 - utils.logging_config - INFO - Agent response generated for input: my name is actually angel...
+2025-07-08 13:45:49,241 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 13:45:51,580 - utils.logging_config - INFO - Successfully read file: D:\Ankur\MyApp\backend\data\docs\patient_profile.json
+2025-07-08 13:45:51,580 - utils.logging_config - INFO - Successfully loaded JSON from: D:\Ankur\MyApp\backend\data\docs\patient_profile.json
+2025-07-08 13:45:51,583 - utils.logging_config - INFO - Successfully wrote to file: D:\Ankur\MyApp\backend\data\docs\patient_profile.json
+2025-07-08 13:45:51,583 - utils.logging_config - INFO - Successfully updated JSON values in: D:\Ankur\MyApp\backend\data\docs\patient_profile.json
+2025-07-08 13:45:52,338 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 13:45:55,759 - utils.logging_config - INFO - Agent response generated for input: my name is angel...
+2025-07-08 13:46:12,690 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 13:46:20,018 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 13:46:23,623 - utils.logging_config - INFO - RAG question answered: melatonin adherence
+2025-07-08 13:46:32,711 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 13:46:39,337 - utils.logging_config - INFO - Agent response generated for input: What is my melatonin adherence...
+2025-07-08 13:47:03,405 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 13:47:09,745 - utils.logging_config - INFO - Agent response generated for input: what is panadol?...
+2025-07-08 13:47:34,739 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 13:47:42,898 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 13:47:48,710 - utils.logging_config - INFO - RAG question answered: medications
+2025-07-08 13:48:00,413 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 13:48:13,567 - utils.logging_config - INFO - Agent response generated for input: what other medications would a patient like me nee...
+2025-07-08 13:49:39,655 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 13:49:43,815 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 13:49:47,573 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 13:49:51,454 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 13:49:55,172 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 13:50:07,847 - utils.logging_config - INFO - Agent response generated for input: Add a goal "Reach 10000 steps everyday" in my goal...
+2025-07-08 13:54:06,603 - utils.logging_config - INFO - Loaded 1 documents
+2025-07-08 13:54:06,604 - utils.logging_config - INFO - Created 2 chunks
+2025-07-08 13:54:18,888 - tensorflow - WARNING - From C:\Users\ankur\AppData\Local\Programs\Python\Python310\lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-07-08 13:54:19,265 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cpu
+2025-07-08 13:54:19,265 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-MiniLM-L6-v2
+2025-07-08 13:54:23,090 - faiss.loader - INFO - Loading faiss with AVX2 support.
+2025-07-08 13:54:23,113 - faiss.loader - INFO - Successfully loaded faiss with AVX2 support.
+2025-07-08 13:54:23,120 - faiss - INFO - Failed to load GPU Faiss: name 'GpuIndexIVFFlat' is not defined. Will not load constructor refs for GPU indexes. This is only an error if you're trying to use GPU Faiss.
+2025-07-08 13:54:23,121 - utils.logging_config - INFO - FAISS index created with 2 vectors
+2025-07-08 13:54:23,146 - utils.logging_config - INFO - RAG system initialized successfully
+2025-07-08 13:54:23,169 - utils.logging_config - INFO - Database initialized successfully
+2025-07-08 13:54:23,172 - utils.logging_config - INFO - Loaded 1 documents
+2025-07-08 13:54:23,172 - utils.logging_config - INFO - Created 2 chunks
+2025-07-08 13:54:23,174 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cpu
+2025-07-08 13:54:23,174 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-MiniLM-L6-v2
+2025-07-08 13:54:26,043 - utils.logging_config - INFO - FAISS index created with 2 vectors
+2025-07-08 13:54:26,064 - utils.logging_config - INFO - RAG system initialized successfully
+2025-07-08 13:54:26,068 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-07-08 13:54:26,070 - utils.logging_config - INFO - Agent initialized with 13 tools
+2025-07-08 13:54:34,872 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 13:54:37,872 - utils.logging_config - INFO - Agent response generated for input: hi...
+2025-07-08 13:54:48,894 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 13:54:56,236 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 13:54:58,271 - utils.logging_config - INFO - RAG question answered: name
+2025-07-08 13:55:05,108 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 13:55:08,070 - utils.logging_config - INFO - Agent response generated for input: what is my name...
+2025-07-08 13:55:32,486 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 13:55:35,369 - utils.logging_config - INFO - Successfully read file: D:\Ankur\MyApp\backend\data\docs\patient_profile.json
+2025-07-08 13:55:35,370 - utils.logging_config - INFO - Successfully loaded JSON from: D:\Ankur\MyApp\backend\data\docs\patient_profile.json
+2025-07-08 13:55:35,372 - utils.logging_config - INFO - Successfully wrote to file: D:\Ankur\MyApp\backend\data\docs\patient_profile.json
+2025-07-08 13:55:35,372 - utils.logging_config - INFO - Successfully updated JSON values in: D:\Ankur\MyApp\backend\data\docs\patient_profile.json
+2025-07-08 13:55:36,129 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 13:55:40,397 - utils.logging_config - INFO - Agent response generated for input: Update my goal to add "Reach 10000 steps everyday"...
+2025-07-08 13:56:15,535 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 13:56:18,357 - utils.logging_config - INFO - Successfully read file: D:\Ankur\MyApp\backend\data\docs\patient_profile.json
+2025-07-08 13:56:18,358 - utils.logging_config - INFO - Successfully loaded JSON from: D:\Ankur\MyApp\backend\data\docs\patient_profile.json
+2025-07-08 13:56:18,362 - utils.logging_config - INFO - Successfully wrote to file: D:\Ankur\MyApp\backend\data\docs\patient_profile.json
+2025-07-08 13:56:18,362 - utils.logging_config - INFO - Successfully updated JSON values in: D:\Ankur\MyApp\backend\data\docs\patient_profile.json
+2025-07-08 13:56:19,117 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 13:56:23,384 - utils.logging_config - INFO - Agent response generated for input: add my goal to add "Reach 10000 steps everyday"...
+2025-07-08 13:56:46,565 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 13:56:49,622 - utils.logging_config - INFO - Successfully read file: D:\Ankur\MyApp\backend\data\docs\patient_profile.json
+2025-07-08 13:56:49,623 - utils.logging_config - INFO - Successfully loaded JSON from: D:\Ankur\MyApp\backend\data\docs\patient_profile.json
+2025-07-08 13:56:49,625 - utils.logging_config - INFO - Successfully wrote to file: D:\Ankur\MyApp\backend\data\docs\patient_profile.json
+2025-07-08 13:56:49,625 - utils.logging_config - INFO - Successfully updated JSON values in: D:\Ankur\MyApp\backend\data\docs\patient_profile.json
+2025-07-08 13:56:50,355 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 13:56:55,102 - utils.logging_config - INFO - Agent response generated for input: Append to my existing goals "Reach 10000 steps eve...
+2025-07-08 14:10:27,987 - utils.logging_config - INFO - Loaded 1 documents
+2025-07-08 14:10:27,987 - utils.logging_config - INFO - Created 2 chunks
+2025-07-08 14:10:46,811 - tensorflow - WARNING - From C:\Users\ankur\AppData\Local\Programs\Python\Python310\lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-07-08 14:10:47,710 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cpu
+2025-07-08 14:10:47,711 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-MiniLM-L6-v2
+2025-07-08 14:10:55,053 - faiss.loader - INFO - Loading faiss with AVX2 support.
+2025-07-08 14:10:55,121 - faiss.loader - INFO - Successfully loaded faiss with AVX2 support.
+2025-07-08 14:10:55,137 - faiss - INFO - Failed to load GPU Faiss: name 'GpuIndexIVFFlat' is not defined. Will not load constructor refs for GPU indexes. This is only an error if you're trying to use GPU Faiss.
+2025-07-08 14:10:55,139 - utils.logging_config - INFO - FAISS index created with 2 vectors
+2025-07-08 14:10:55,200 - utils.logging_config - INFO - RAG system initialized successfully
+2025-07-08 14:10:55,257 - utils.logging_config - INFO - Database initialized successfully
+2025-07-08 14:10:55,263 - utils.logging_config - INFO - Loaded 1 documents
+2025-07-08 14:10:55,264 - utils.logging_config - INFO - Created 2 chunks
+2025-07-08 14:10:55,268 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cpu
+2025-07-08 14:10:55,269 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-MiniLM-L6-v2
+2025-07-08 14:10:58,357 - utils.logging_config - INFO - FAISS index created with 2 vectors
+2025-07-08 14:10:58,380 - utils.logging_config - INFO - RAG system initialized successfully
+2025-07-08 14:10:58,384 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-07-08 14:10:58,387 - utils.logging_config - INFO - Agent initialized with 13 tools
+2025-07-08 14:11:26,580 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 14:11:33,875 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 14:11:35,818 - utils.logging_config - INFO - RAG question answered: name
+2025-07-08 14:11:42,279 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 14:11:43,540 - utils.logging_config - INFO - Agent response generated for input: What is my name?...
+2025-07-08 14:13:31,259 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 14:13:33,482 - utils.logging_config - INFO - Successfully read file: D:\Ankur\MyApp\backend\data\docs\patient_profile.json
+2025-07-08 14:13:33,482 - utils.logging_config - INFO - Successfully loaded JSON from: D:\Ankur\MyApp\backend\data\docs\patient_profile.json
+2025-07-08 14:13:37,155 - utils.logging_config - INFO - Successfully wrote to file: D:\Ankur\MyApp\backend\data\docs\patient_profile.json
+2025-07-08 14:13:37,156 - utils.logging_config - INFO - Successfully updated JSON values in: D:\Ankur\MyApp\backend\data\docs\patient_profile.json
+2025-07-08 14:13:38,907 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 14:13:42,002 - utils.logging_config - INFO - Agent response generated for input: My name is john...
+2025-07-08 14:14:18,944 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 14:14:26,315 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 14:14:31,843 - utils.logging_config - INFO - RAG question answered: medications
+2025-07-08 14:14:39,218 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 14:14:50,231 - utils.logging_config - INFO - Agent response generated for input: What are my medications?...
+2025-07-08 14:15:19,769 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 14:15:26,939 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 14:15:36,005 - utils.logging_config - INFO - RAG question answered: sleep
+2025-07-08 14:15:45,275 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 14:15:48,690 - utils.logging_config - INFO - Agent response generated for input: On average how many hours of sleep do i get?...
+2025-07-08 14:15:59,811 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 14:16:06,651 - utils.logging_config - INFO - Agent response generated for input: On average how many hours of sleep do i get per we...
+2025-07-08 14:58:19,433 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 14:58:22,163 - utils.logging_config - INFO - Agent response generated for input: you did good, exit...
+2025-07-08 15:48:40,068 - utils.logging_config - INFO - Loaded 1 documents
+2025-07-08 15:48:40,069 - utils.logging_config - INFO - Created 2 chunks
+2025-07-08 15:48:52,995 - tensorflow - WARNING - From C:\Users\ankur\AppData\Local\Programs\Python\Python310\lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-07-08 15:48:53,436 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cpu
+2025-07-08 15:48:53,437 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-MiniLM-L6-v2
+2025-07-08 15:48:57,504 - faiss.loader - INFO - Loading faiss with AVX2 support.
+2025-07-08 15:48:57,527 - faiss.loader - INFO - Successfully loaded faiss with AVX2 support.
+2025-07-08 15:48:57,535 - faiss - INFO - Failed to load GPU Faiss: name 'GpuIndexIVFFlat' is not defined. Will not load constructor refs for GPU indexes. This is only an error if you're trying to use GPU Faiss.
+2025-07-08 15:48:57,535 - utils.logging_config - INFO - FAISS index created with 2 vectors
+2025-07-08 15:48:57,559 - utils.logging_config - INFO - RAG system initialized successfully
+2025-07-08 15:48:57,613 - utils.logging_config - INFO - Database initialized successfully
+2025-07-08 15:48:57,649 - utils.logging_config - INFO - Loaded 1 documents
+2025-07-08 15:48:57,649 - utils.logging_config - INFO - Created 2 chunks
+2025-07-08 15:48:57,650 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cpu
+2025-07-08 15:48:57,650 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-MiniLM-L6-v2
+2025-07-08 15:49:00,633 - utils.logging_config - INFO - FAISS index created with 2 vectors
+2025-07-08 15:49:00,655 - utils.logging_config - INFO - RAG system initialized successfully
+2025-07-08 15:49:00,664 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-07-08 15:49:00,668 - utils.logging_config - INFO - Agent initialized with 13 tools
+2025-07-08 15:49:20,362 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 15:49:27,538 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 15:49:29,567 - utils.logging_config - INFO - RAG question answered: name
+2025-07-08 15:49:35,946 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 15:49:37,293 - utils.logging_config - INFO - Agent response generated for input: What is my name?...
+2025-07-08 15:49:47,498 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 15:49:54,623 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 15:49:59,595 - utils.logging_config - INFO - RAG question answered: goals
+2025-07-08 15:50:06,463 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 15:50:12,240 - utils.logging_config - INFO - Agent response generated for input: What are my current goals?...
+2025-07-08 15:51:00,257 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 15:51:02,897 - utils.logging_config - INFO - Successfully read file: D:\Ankur\MyApp\backend\data\docs\patient_profile.json
+2025-07-08 15:51:02,897 - utils.logging_config - INFO - Successfully loaded JSON from: D:\Ankur\MyApp\backend\data\docs\patient_profile.json
+2025-07-08 15:51:07,550 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 15:51:49,038 - utils.logging_config - INFO - Successfully wrote to file: D:\Ankur\MyApp\backend\data\docs\patient_profile.json
+2025-07-08 15:51:56,151 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 15:51:59,696 - utils.logging_config - INFO - Agent response generated for input: Add "walk 10000 steps" to the goals...
+2025-07-08 15:52:12,390 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 15:52:20,342 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 15:52:25,279 - utils.logging_config - INFO - RAG question answered: goals
+2025-07-08 15:52:34,143 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 15:52:43,270 - utils.logging_config - INFO - Agent response generated for input: what are my current goals?...
+2025-07-08 15:53:38,444 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 15:53:40,885 - utils.logging_config - INFO - Successfully read file: D:\Ankur\MyApp\backend\data\docs\patient_profile.json
+2025-07-08 15:53:40,886 - utils.logging_config - ERROR - Invalid JSON in file D:\Ankur\MyApp\backend\data\docs\patient_profile.json: Expecting value: line 43 column 3 (char 967)
+2025-07-08 15:53:41,611 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 15:53:43,422 - utils.logging_config - INFO - Successfully read file: D:\Ankur\MyApp\backend\data\docs\patient_profile.json
+2025-07-08 15:53:43,422 - utils.logging_config - ERROR - Invalid JSON in file D:\Ankur\MyApp\backend\data\docs\patient_profile.json: Expecting value: line 43 column 3 (char 967)
+2025-07-08 15:53:44,148 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 15:53:51,976 - utils.logging_config - INFO - Agent response generated for input: Add "walk 10000 steps daily" to goals...
+2025-07-08 15:54:07,349 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 15:54:09,826 - utils.logging_config - INFO - Successfully read file: D:\Ankur\MyApp\backend\data\docs\patient_profile.json
+2025-07-08 15:54:09,827 - utils.logging_config - INFO - Successfully loaded JSON from: D:\Ankur\MyApp\backend\data\docs\patient_profile.json
+2025-07-08 15:54:14,497 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 15:54:56,656 - utils.logging_config - INFO - Successfully wrote to file: D:\Ankur\MyApp\backend\data\docs\patient_profile.json
+2025-07-08 15:55:06,931 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 15:55:11,871 - utils.logging_config - INFO - Agent response generated for input: try again...
+2025-07-08 15:59:12,957 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 15:59:20,233 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 15:59:24,699 - utils.logging_config - INFO - RAG question answered: medications
+2025-07-08 15:59:35,601 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 15:59:50,337 - utils.logging_config - INFO - Agent response generated for input: I think i feel sick, what medicatoins should i avo...
+2025-07-08 16:00:47,599 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 16:00:56,407 - utils.logging_config - INFO - Agent response generated for input: Can you not check for drug interactions?...
+2025-07-08 16:01:46,302 - utils.logging_config - INFO - Loaded 1 documents
+2025-07-08 16:01:46,303 - utils.logging_config - INFO - Created 2 chunks
+2025-07-08 16:01:56,091 - tensorflow - WARNING - From C:\Users\ankur\AppData\Local\Programs\Python\Python310\lib\site-packages\tf_keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+2025-07-08 16:01:56,387 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cpu
+2025-07-08 16:01:56,388 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-MiniLM-L6-v2
+2025-07-08 16:02:00,327 - faiss.loader - INFO - Loading faiss with AVX2 support.
+2025-07-08 16:02:00,349 - faiss.loader - INFO - Successfully loaded faiss with AVX2 support.
+2025-07-08 16:02:00,355 - faiss - INFO - Failed to load GPU Faiss: name 'GpuIndexIVFFlat' is not defined. Will not load constructor refs for GPU indexes. This is only an error if you're trying to use GPU Faiss.
+2025-07-08 16:02:00,356 - utils.logging_config - INFO - FAISS index created with 2 vectors
+2025-07-08 16:02:00,381 - utils.logging_config - INFO - RAG system initialized successfully
+2025-07-08 16:02:00,403 - utils.logging_config - INFO - Database initialized successfully
+2025-07-08 16:02:00,406 - utils.logging_config - INFO - Loaded 1 documents
+2025-07-08 16:02:00,406 - utils.logging_config - INFO - Created 2 chunks
+2025-07-08 16:02:00,408 - sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cpu
+2025-07-08 16:02:00,408 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-MiniLM-L6-v2
+2025-07-08 16:02:03,491 - utils.logging_config - INFO - FAISS index created with 2 vectors
+2025-07-08 16:02:03,511 - utils.logging_config - INFO - RAG system initialized successfully
+2025-07-08 16:02:03,514 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-07-08 16:02:03,517 - utils.logging_config - INFO - Agent initialized with 13 tools
+2025-07-08 16:02:18,083 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 16:02:20,427 - utils.logging_config - ERROR - Error performing Google PSE search: 'Resource' object has no attribute 'list'
+2025-07-08 16:02:21,158 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 16:02:28,672 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 16:02:33,294 - utils.logging_config - INFO - RAG question answered: medications
+2025-07-08 16:02:40,460 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 16:02:43,939 - utils.logging_config - ERROR - Error performing Google PSE search: 'Resource' object has no attribute 'list'
+2025-07-08 16:02:44,923 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 16:02:54,097 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 16:02:57,322 - utils.logging_config - INFO - RAG question answered: What are the potential drug interactions between Melatonin and Lisinopril?
+2025-07-08 16:03:05,147 - httpx - INFO - HTTP Request: POST https://mac.futureos.xyz/api/chat "HTTP/1.1 200 OK"
+2025-07-08 16:03:14,920 - utils.logging_config - INFO - Agent response generated for input: Google what are the drug ineractoins with my medic...
