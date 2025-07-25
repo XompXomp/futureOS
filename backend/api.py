@@ -41,6 +41,7 @@ def agent_endpoint():
         # --- Input Processing and Validation ---
         user_input = data.get("prompt", "")
         memory = data.get("memory", {})
+        updates = data.get("updates", {})
 
         # Validate and sanitize memory structure
         if not isinstance(memory, dict):
@@ -65,13 +66,18 @@ def agent_endpoint():
             return jsonify({"error": "Missing 'prompt' in request."}), 400
 
         # --- Call backend.main.run_agent_workflow ---
-        result = run_agent_workflow(user_input, memory, patient_profile)
+        result = run_agent_workflow(
+            user_input, memory, patient_profile,
+            updates=updates
+        )
 
         # --- Patient Profile Transformation ---
         profile = result.get("patientProfile", patient_profile)
-        # Flatten treatment fields if present
-        treatment_keys = ["medicationList", "dailyChecklist", "appointment", "recommendations", "sleepHours", "sleepQuality"]
-        treatment_data = {k: profile.pop(k) for k in treatment_keys if k in profile}
+        # Dynamically collect all treatment fields
+        treatment_data = {}
+        for k in list(profile.keys()):
+            if k not in ("uid", "name", "age", "bloodType", "allergies", "treatment"):
+                treatment_data[k] = profile.pop(k)
         # Compose the nested treatment dict
         transformed_profile = profile.copy()
         transformed_profile["treatment"] = treatment_data
@@ -83,9 +89,11 @@ def agent_endpoint():
         transformed_memory = build_default_memory(mem)
 
         # Prepare response with transformed data
+        
         response = {
             "updatedPatientProfile": transformed_profile,
             "updatedMemory": transformed_memory,
+            "updatedUpdates": result.get("updates", updates),
         }
         if "final_answer" in result and result["final_answer"]:
             response["extraInfo"] = result["final_answer"]

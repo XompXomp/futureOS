@@ -19,6 +19,7 @@ class AgentState(TypedDict):
     input: str
     memory: dict
     patientProfile: dict
+    updates: dict # Only keep this
     final_answer: Optional[str]
     source: Optional[str]
     error: Optional[str]
@@ -474,11 +475,11 @@ def llm_tagger_node(state: AgentState) -> AgentState:
             "Examples: 'Nvidia stock price', 'Current bitcoin value', 'Latest news on diabetes research', "
             "'Weather in Dubai today', 'Population of China', 'COVID-19 cases in US'.\n"
             "Classify as WEB if the input matches the WEB logic from the router prompt.\n\n"
-            "2. TEXT: For simple greetings, chit-chat, casual conversations, or general questions that don't need tools. "
+            "2. TEXT: For simple greetings, chit-chat, casual conversations, or general questions that don't need tools or requests related to updating or adding recommendations"
             "Examples: 'Hi', 'Tell me a joke', 'What is your name?', 'Explain photosynthesis'.\n"
             "Classify as TEXT if the input matches the TEXT logic from the router prompt.\n\n"
             "3. PATIENT: For anything related to the patient’s profile, such as their name, age, gender, allergies, medications, routines, appointments, or personal history."
-            "DO NOT use for editing(add, remove, update) recommendations or anything related to recommendations."
+            "VERY IMPORTANT: DO NOT use for any requests related to recommendations, or anything related to recommendations."
             "Examples: 'What medications is the patient taking?', 'Update sleep quality to poor', 'Does John have any allergies?', 'Add walking to daily checklist'.\n"
             "Classify as PATIENT if the input matches the PATIENT logic from the router prompt.\n\n"
             "4. MEDICAL: For anything that is medical reasoning, verification, or critical treatment suggestions. "
@@ -534,14 +535,6 @@ def medical_reasoning_node(state: AgentState) -> AgentState:
     now = datetime.now()
     dt_str = now.strftime("%d_%m_%y_%H_%M")
 
-    # payload = {
-    #     "updates": [
-    #         {
-    #             "datetime": dt_str,
-    #             "text": user_input
-    #         }
-    #     ]
-    # }
     payload = {"prompt": user_input}
 
     try:
@@ -625,8 +618,10 @@ def build_workflow():
 
     def tagger_conditional(state):
         tag = state.get('route_tag', 'text')
-        if tag == 'text' or tag == 'patient':
+        if tag == 'text':
             return 'semantic_precheck'
+        elif tag == 'patient':
+            return 'patient'
         elif tag == 'web':
             return 'web'
         elif tag == 'medical':
@@ -638,6 +633,7 @@ def build_workflow():
 
     graph.add_conditional_edges('llm_tagger', tagger_conditional, {
         'semantic_precheck': 'semantic_precheck',
+        'patient': 'patient',
         'web': 'web',
         'medical': 'medical',
         'semantic_update': 'semantic_update',
@@ -667,20 +663,21 @@ def build_workflow():
 
     return graph.compile()
 
-def run_agent_workflow(user_input, memory, patient_profile):
+def run_agent_workflow(user_input, memory, patient_profile, updates=None):
     """
-    Run the workflow in 'server' mode: takes user_input, memory, patient_profile and returns the updated result state.
+    Run the workflow in 'server' mode: takes user_input, memory, patient_profile, updates and returns the updated result state.
     """
     workflow = build_workflow()
     initial_state: AgentState = {
         'input': user_input,
         'memory': memory,
         'patientProfile': patient_profile,
+        'updates': updates if updates is not None else {},
         'final_answer': None,
         'source': None,
         'error': None,
         'insights': None,
-        'updates': None
+        'route_tag': None
     }
     result = workflow.invoke(initial_state)
     return result

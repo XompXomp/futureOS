@@ -18,6 +18,12 @@ class PatientOperations:
     def update_patient_profile(state: dict) -> dict:
         user_input = state.get('user_input', '')
         current_profile = state.get('patientProfile', {})
+        
+        # Remove recommendations from profile before passing to LLM
+        profile_without_recommendations = current_profile.copy()
+        if 'recommendations' in profile_without_recommendations:
+            del profile_without_recommendations['recommendations']
+            
         # Use LLM to extract and update patient information
         if getattr(settings, "USE_OLLAMA", False):
             llm = ChatOllama(
@@ -30,15 +36,17 @@ class PatientOperations:
                 model=settings.LLM_MODEL,
                 temperature=0.3
             )
+
         prompt = ChatPromptTemplate.from_messages([
             ("system", (
                 "You are a precise assistant for updating patient records in JSON format.\n"
-                "Your job is to take the full patient profile JSON below, update ONLY the field(s) relevant to the user's request, and return the ENTIRE JSON in the exact same structure and format as provided.\n"
+                "Your job is to take the full patient profile JSON below, update ONLY the field value(s) relevant to the user's request, never add a new field even if the user explicitely requests it, return the original, and return the ENTIRE JSON in the exact same structure and format as provided.\n"
+                "VERY IMPORTANT: NEVER add a new field even if the user explicitely requests it, return the original json instead."
                 "Do NOT change, add, or remove any other fields or values.\n"
+                "NEVER add new fields to the profile, only update the existing fields.\n"
                 "Do NOT invent or hallucinate new information.\n"
-                "DO NOT edit the recommendations field under any circumstances, make no changes to and return the original JSON.\n"
-                "If the request is ambiguous, make no changes and return the original JSON.\n"
                 "ALWAYS return valid JSON, with all property names in double quotes.\n"
+                "IF the user request is about adding new field that doesnt already exist, dont explain yourself, just return a no.\n"
                 "EXAMPLES:\n"
                 "User request: My name is John Doe\n"
                 "Current JSON: {{\"name\": \"\", \"age\": 0, ...}}\n"
@@ -52,7 +60,7 @@ class PatientOperations:
         chain = prompt | llm
         llm_output = chain.invoke({
             "user_input": user_input,
-            "profile": json.dumps(current_profile)
+            "profile": json.dumps(profile_without_recommendations)
         })
         llm_json_str = str(llm_output.content)
         match = re.search(r'\{.*\}', llm_json_str, re.DOTALL)
@@ -66,5 +74,10 @@ class PatientOperations:
                     updated_profile = current_profile  # fallback
         else:
             updated_profile = current_profile  # fallback
+
+        # Add back recommendations to the updated profile
+        if 'recommendations' in current_profile['treatment']:
+            updated_profile['recommendations'] = current_profile['recommendations']
+            
         state['patientProfile'] = updated_profile
         return state 
