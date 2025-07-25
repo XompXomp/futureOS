@@ -3,6 +3,7 @@ from config.settings import settings
 import numpy as np
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
+from datetime import datetime
 
 embedding_model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
 
@@ -19,8 +20,10 @@ class MemoryOperations:
                 return state
             semantic_list = memory.setdefault("semantic", [])
             memory_id = str(uuid.uuid4())
+            memory_datetime = datetime.now().strftime("%d_%m_%y_%H_%M")
             new_entry = {
                 "id": memory_id,
+                "datetime": memory_datetime,
                 "content": content,
                 "category": category,
                 "metadata": metadata,

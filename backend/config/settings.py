@@ -10,6 +10,7 @@ class Settings:
     OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
     GOOGLE_PSE_API_KEY = os.getenv("GOOGLE_PSE_API_KEY")
     GOOGLE_PSE_CX = os.getenv("GOOGLE_PSE_CX")  # Custom Search Engine ID
+    GROQ_API_KEY = os.getenv("GROQ_API_KEY")
     
     # Database
     DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///data/database.db")

@@ -11,20 +11,20 @@ from langchain_groq import ChatGroq
 from langchain_ollama import ChatOllama
 from langchain_core.prompts import ChatPromptTemplate
 from langgraph.graph import StateGraph, END
+import requests
+from datetime import datetime
 
 # --- Define the state structure properly ---
 class AgentState(TypedDict):
     input: str
-    memory: Dict
-    patientProfile: Dict
-    # Add other fields that your tools might return
-    results: Optional[str]
-    error: Optional[str]
-    user_input: Optional[str]
-    query: Optional[str]
-    content: Optional[str]
+    memory: dict
+    patientProfile: dict
     final_answer: Optional[str]
     source: Optional[str]
+    error: Optional[str]
+    insights: Optional[str]
+    updates: Optional[str]
+    route_tag: Optional[str]  # <-- Add this line
 
 def select_tool_llm(user_input: str, tool_metadata: list[dict]) -> str:
     """Use an LLM to select the best tool based on user input and tool descriptions."""
@@ -174,107 +174,72 @@ def route_to_agent(state: AgentState) -> str:
     This function is used specifically for conditional edge routing.
     It receives the state and returns the agent name as a string.
     """
-    print(f"DEBUG - route_to_agent received state keys: {list(state.keys())}")
-    print(f"DEBUG - route_to_agent input: {state.get('input', 'NO INPUT')}")
+    # print(f"DEBUG - route_to_agent received state keys: {list(state.keys())}")
+    # print(f"DEBUG - route_to_agent input: {state.get('input', 'NO INPUT')}")
     
-    user_input = state.get('input', '')
-    user_lower = user_input.lower()
-    
-    # # Simple conversational text patterns
-    # simple_text_patterns = [
-    #     'hello', 'hi', 'hey', 'good morning', 'good afternoon', 'good evening',
-    #     'how are you', 'thank you', 'thanks', 'bye', 'goodbye', 'see you',
-    #     'ok', 'okay', 'yes', 'no', 'sure', 'alright', 'nice', 'great',
-    #     'cool', 'awesome', 'perfect', 'wonderful'
-    # ]
-    
-    # # Check for simple conversational patterns
-    # if any(pattern in user_lower for pattern in simple_text_patterns):
-    #     print("DEBUG - Routing to text (simple conversation)")
-    #     return 'text'
-    
-    # # Patient-related keywords
-    # if any(keyword in user_lower for keyword in ['name', 'age', 'profile', 'patient', 'update', 'my', 'i am']):
-    #     print("DEBUG - Routing to patient")
-    #     return 'patient'
+    # user_input = state.get('input', '')
+    # user_lower = user_input.lower()
         
-    # # Web search keywords
-    # if any(keyword in user_lower for keyword in ['search', 'google', 'who is', 'what is', 'current', 'latest', 'news']):
-    #     print("DEBUG - Routing to web")
-    #     return 'web'# # Check for simple conversational patterns
-    # if any(pattern in user_lower for pattern in simple_text_patterns):
-    #     print("DEBUG - Routing to text (simple conversation)")
-    #     return 'text'
-    
-    # # Patient-related keywords
-    # if any(keyword in user_lower for keyword in ['name', 'age', 'profile', 'patient', 'update', 'my', 'i am']):
-    #     print("DEBUG - Routing to patient")
-    #     return 'patient'
-        
-    # # Web search keywords
-    # if any(keyword in user_lower for keyword in ['search', 'google', 'who is', 'what is', 'current', 'latest', 'news']):
-    #     print("DEBUG - Routing to web")
-    #     return 'web'
-        
-    # Fall back to LLM routing for ambiguous cases
-    try:
-        if getattr(settings, "USE_OLLAMA", False):
-            llm = ChatOllama(
-                model=settings.OLLAMA_MODEL,
-                base_url=settings.OLLAMA_BASE_URL,
-                temperature=0.3
-            )
-        else:
-            llm = ChatGroq(
-                model=settings.LLM_MODEL,
-                temperature=0.3
-            )
-        
-        prompt = ChatPromptTemplate.from_messages([
-            ("system", (
-                "You are a strict router for a healthcare AI system. Based on the user's input, choose exactly one agent to handle the request.\n"
-                "Available agents: text, patient, web\n\n"
-                "Routing rules:\n"
-                "1. Use 'text' for simple greetings, chit-chat, casual conversations, or general questions that don't need tools.\n"
-                "   Examples:\n"
-                "   - 'Hi'\n"
-                "   - 'Tell me a joke'\n"
-                "   - 'What is your name?'\n"
-                "   - 'Explain photosynthesis'\n\n"
-                "2. Use 'patient' for anything related to the patient’s profile, such as their name, age, gender, allergies, medications, routines, appointments, health recommendations, or personal history.\n"
-                "   Examples:\n"
-                "   - 'What medications is the patient taking?'\n"
-                "   - 'Update sleep quality to poor'\n"
-                "   - 'Does John have any allergies?'\n"
-                "   - 'Add walking to daily checklist'\n\n"
-                "3. Use 'web' for real-time or fact-based queries that may change over time and require a current search.\n"
-                "   Examples:\n"
-                "   - 'Nvidia stock price'\n"
-                "   - 'Current bitcoin value'\n"
-                "   - 'Latest news on diabetes research'\n"
-                "   - 'Weather in Dubai today'\n"
-                "   - 'Population of China'\n"
-                "   - 'COVID-19 cases in US'\n\n"
-                "Output ONLY one of: text, patient, web — and nothing else."
-            ))
-            ,
-            ("human", "User input: {user_input}")
-        ])
-        
-        chain = prompt | llm
-        result = chain.invoke({"user_input": user_input})
-        agent_name = str(result.content).strip().lower()
-        
-        if agent_name in ['text', 'patient', 'web']:
-            print(f"DEBUG - LLM routing to {agent_name}")
-            return agent_name
-            
-    except Exception as e:
-        logger.error(f"Error in LLM routing: {str(e)}")
-    
-    # Default fallback to text for safety
-    print("DEBUG - Default routing to text")
-    return 'text'
+    # # Fall back to LLM routing for ambiguous cases
+    # try:
+    #     if getattr(settings, "USE_OLLAMA", False):
+    #         llm = ChatOllama(
+    #             model=settings.OLLAMA_MODEL,
+    #             base_url=settings.OLLAMA_BASE_URL,
+    #             temperature=0.3
+    #         )
+    #     else:
+    #         llm = ChatGroq(
+    #             model=settings.LLM_MODEL,
+    #             temperature=0.3
+    #         )
+    #     
+    #     prompt = ChatPromptTemplate.from_messages([
+    #         ("system", (
+    #             "You are a strict router for a healthcare AI system. Based on the user's input, choose exactly one agent to handle the request.\n"
+    #             "Available agents: text, patient, web\n\n"
+    #             "Routing rules:\n"
+    #             "1. Use 'text' for simple greetings, chit-chat, casual conversations, or general questions that don't need tools.\n"
+    #             "   Examples:\n"
+    #             "   - 'Hi'\n"
+    #             "   - 'Tell me a joke'\n"
+    #             "   - 'What is your name?'\n"
+    #             "   - 'Explain photosynthesis'\n\n"
+    #             "2. Use 'patient' for anything related to the patient’s profile, such as their name, age, gender, allergies, medications, routines, appointments, health recommendations, or personal history.\n"
+    #             "   Examples:\n"
+    #             "   - 'What medications is the patient taking?'\n"
+    #             "   - 'Update sleep quality to poor'\n"
+    #             "   - 'Does John have any allergies?'\n"
+    #             "   - 'Add walking to daily checklist'\n\n"
+    #             "3. Use 'web' for real-time or fact-based queries that may change over time and require a current search.\n"
+    #             "   Examples:\n"
+    #             "   - 'Nvidia stock price'\n"
+    #             "   - 'Current bitcoin value'\n"
+    #             "   - 'Latest news on diabetes research'\n"
+    #             "   - 'Weather in Dubai today'\n"
+    #             "   - 'Population of China'\n"
+    #             "   - 'COVID-19 cases in US'\n\n"
+    #             "Output ONLY one of: text, patient, web — and nothing else."
+    #         ))
+    #         ,
+    #         ("human", "User input: {user_input}")
+    #     ])
+    #     
+    #     chain = prompt | llm
+    #     result = chain.invoke({"user_input": user_input})
+    #     agent_name = str(result.content).strip().lower()
+    #     if agent_name in ['text', 'patient', 'web']:
+    #         print(f"DEBUG - LLM routing to {agent_name}")
+    #         return agent_name
+    # except Exception as e:
+    #     logger.error(f"Error in LLM routing: {str(e)}")
+    # 
+    # # Default fallback to text for safety
+    # print("DEBUG - Default routing to text")
+    # return 'text'
+
+    # New logic: use the tag set by the llm_tagger_node
+    return state.get('route_tag', 'text')
 
 def postprocess_response(user_input, tool_output, source: str = None):
     if getattr(settings, "USE_OLLAMA", False):
@@ -447,7 +412,7 @@ def semantic_memory_precheck_node(state: AgentState) -> AgentState:
             return state
         # If not relevant, check if input is meaningful to store
         filter_prompt = ChatPromptTemplate.from_template(
-            "Should the following user input be stored in semantic memory? Only store if it is a meaningful fact, preference, or something about the user. Respond 'true' or 'false'.\nUser input: {user_input}\nAnswer:"
+            "Should the following user input be stored in semantic memory? Store if it's a meaningful fact, preference, about the user, OR contains medical-related information. Respond 'true' or 'false'.\nUser input: {user_input}\nAnswer:"
         )
         filter_chain = filter_prompt | llm
         filter_result = filter_chain.invoke({"user_input": user_input})
@@ -465,7 +430,7 @@ def semantic_memory_precheck_node(state: AgentState) -> AgentState:
         return state
     # 5. If no results, check if input is meaningful to store
     filter_prompt = ChatPromptTemplate.from_template(
-        "Should the following user input be stored in semantic memory? Only store if it is a meaningful fact, preference, or something about the user. Respond 'true' or 'false'.\nUser input: {user_input}\nAnswer:"
+        "Should the following user input be stored in semantic memory? Store if it's a meaningful fact, preference, about the user, OR contains medical-related information. Respond 'true' or 'false'.\nUser input: {user_input}\nAnswer:"
     )
     filter_chain = filter_prompt | llm
     filter_result = filter_chain.invoke({"user_input": user_input})
@@ -481,41 +446,225 @@ def semantic_memory_precheck_node(state: AgentState) -> AgentState:
         print("DEBUG - User input not meaningful for semantic memory, not storing (no prior results).")
     return state
 
-# --- Build the LangGraph workflow ---
+# --- LLM Tagger Node (NEW) ---
+def llm_tagger_node(state: AgentState) -> AgentState:
+    user_input = state.get('input', '')
+
+    # --- LLM-based classification (web, patient, text, medical, ui_change, add_treatment) ---
+    if getattr(settings, "USE_OLLAMA", False):
+        llm = ChatOllama(
+            model=settings.OLLAMA_MODEL,
+            base_url=settings.OLLAMA_BASE_URL,
+            temperature=0.3
+        )
+    else:
+        llm = ChatGroq(
+            model=settings.LLM_MODEL,
+            temperature=0.3,
+            api_key=os.getenv("GROQ_API_KEY")
+        )
+    from langchain_core.prompts import ChatPromptTemplate
+
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", (
+            "You are a strict classifier for a healthcare AI system. "
+            "Given a user input, classify it into exactly one of the following tags:\n\n"
+            "TAGS:\n"
+            "1. WEB: For real-time or fact-based queries that may change over time and require a current search. "
+            "Examples: 'Nvidia stock price', 'Current bitcoin value', 'Latest news on diabetes research', "
+            "'Weather in Dubai today', 'Population of China', 'COVID-19 cases in US'.\n"
+            "Classify as WEB if the input matches the WEB logic from the router prompt.\n\n"
+            "2. TEXT: For simple greetings, chit-chat, casual conversations, or general questions that don't need tools. "
+            "Examples: 'Hi', 'Tell me a joke', 'What is your name?', 'Explain photosynthesis'.\n"
+            "Classify as TEXT if the input matches the TEXT logic from the router prompt.\n\n"
+            "3. PATIENT: For anything related to the patient’s profile, such as their name, age, gender, allergies, medications, routines, appointments, or personal history."
+            "DO NOT use for editing(add, remove, update) recommendations or anything related to recommendations."
+            "Examples: 'What medications is the patient taking?', 'Update sleep quality to poor', 'Does John have any allergies?', 'Add walking to daily checklist'.\n"
+            "Classify as PATIENT if the input matches the PATIENT logic from the router prompt.\n\n"
+            "4. MEDICAL: For anything that is medical reasoning, verification, or critical treatment suggestions. "
+            "This includes requests for medical advice, diagnosis, or complex medical questions that require domain-specific reasoning. "
+            "Examples: 'Is this treatment safe for diabetes?', 'What are the contraindications for this drug?', "
+            "'Should I combine these two medications?', 'Verify the diagnosis for this patient'.\n"
+            "Classify as MEDICAL if the input is about medical reasoning, verification, or critical suggestions.\n\n"
+            "5. UI_CHANGE: For requests related to changing the user interface, such as themes, layout, or settings. "
+            "Examples: 'Change theme to dark mode', 'Switch to compact view', 'Open settings'.\n"
+            "Classify as UI_CHANGE if the input is about UI themes or interface changes.\n\n"
+            "6. ADD_TREATMENT: For requests to add a treatment of a particular type (e.g., 'Add physiotherapy to my plan'), "
+            "but NOT for adding medications or anything else. "
+            "Examples: 'Add physical therapy to my treatment plan', 'Include occupational therapy'. "
+            "Do NOT use this tag for medication or general additions.\n\n"
+            "Respond ONLY with one tag: WEB, TEXT, PATIENT, MEDICAL, UI_CHANGE, or ADD_TREATMENT. "
+            "Do not explain your choice. Output only the tag."
+        )),
+        ("human", "User input: {user_input}")
+    ])
+    chain = prompt | llm
+    result = chain.invoke({"user_input": user_input})
+    tag = str(result.content).strip().lower()
+    state['route_tag'] = tag  # This is what the agent will use
+
+    # --- Prepare tag for Unmute API ---
+    if tag in ['text', 'patient']:
+        unmute_tag = 'NORMAL'
+    else:
+        unmute_tag = tag.upper()
+
+    # --- Notify Unmute and set API response to final_answer ---
+    # try:
+    #     api_response = requests.post(
+    #         "http://unmute-api/notify",
+    #         json={"tag": unmute_tag, "input": user_input},
+    #         timeout=5
+    #     )
+    #     if api_response.ok:
+    #         state['final_answer'] = api_response.text
+    #     else:
+    #         state['final_answer'] = f"API error: {api_response.status_code} {api_response.text}"
+    # except Exception as e:
+    #     state['final_answer'] = f"API request failed: {e}"
+
+    return state
+
+# --- Medical Reasoning Node (NEW) ---
+def medical_reasoning_node(state: AgentState) -> AgentState:
+    user_input = state.get('input', '')
+    memory = state.get('memory', {})
+
+    # Format current time as DD_MM_YY_HH_MM
+    now = datetime.now()
+    dt_str = now.strftime("%d_%m_%y_%H_%M")
+
+    # payload = {
+    #     "updates": [
+    #         {
+    #             "datetime": dt_str,
+    #             "text": user_input
+    #         }
+    #     ]
+    # }
+    payload = {"prompt": user_input}
+
+    try:
+        response = requests.post(
+            "http://172.22.225.49:8000/endpoint",
+            json=payload,
+            timeout=5
+        )
+        if response.ok:
+            state['final_answer'] = response.text
+        else:
+            state['final_answer'] = f"API error: {response.status_code} {response.text}"
+    except Exception as e:
+        state['final_answer'] = f"API request failed: {e}"
+
+    state['source'] = 'medical'
+    return state
+
+# --- Semantic Update Node (NEW) ---
+def semantic_update_node(state: AgentState) -> AgentState:
+    """
+    Only updates semantic memory with the user input if appropriate.
+    """
+    user_input = state.get('input', '')
+    memory = state.get('memory', {})
+
+    # Import/create memory tools as in your other nodes
+    from tools.memory_tools import create_memory_tools
+    tools = {t.name: t.func for t in create_memory_tools()}
+
+    # Use the same LLM as elsewhere
+    if getattr(settings, "USE_OLLAMA", False):
+        llm = ChatOllama(
+            model=settings.OLLAMA_MODEL,
+            base_url=settings.OLLAMA_BASE_URL,
+            temperature=0.3
+        )
+    else:
+        llm = ChatGroq(
+            model=settings.LLM_MODEL,
+            temperature=0.3
+        )
+    from langchain_core.prompts import ChatPromptTemplate
+
+    # LLM: Should we store this in semantic memory?
+    filter_prompt = ChatPromptTemplate.from_template(
+        "Should the following user input be stored in semantic memory? Store if it's a meaningful fact, preference, about the user, OR contains medical-related information. Respond 'true' or 'false'.\nUser input: {user_input}\nAnswer:"
+    )
+    filter_chain = filter_prompt | llm
+    filter_result = filter_chain.invoke({"user_input": user_input})
+    should_store = str(filter_result.content).strip().lower()
+    if 'true' in should_store:
+        update_state = state.copy()
+        update_state['content'] = user_input
+        update_state['category'] = 'general'
+        updated = tools['update_semantic_memory'](update_state)
+        state['memory'] = updated.get('memory', memory)
+    return state
+
+# --- UI Change Node (NEW, optional) ---
+def ui_change_node(state: AgentState) -> AgentState:
+    # This node can set a special flag for the frontend to handle
+    state['final_answer'] = "[UI_CHANGE] Action required on frontend."
+    state['source'] = 'ui'
+    return state
+
+# --- Build the LangGraph workflow (UPDATED) ---
 def build_workflow():
-    # Use the typed state
     graph = StateGraph(AgentState)
-    
+    graph.add_node('llm_tagger', llm_tagger_node)
     graph.add_node('semantic_precheck', semantic_memory_precheck_node)
     graph.add_node('text', text_node)
     graph.add_node('patient', patient_node)
     graph.add_node('web', web_node)
+    graph.add_node('medical', medical_reasoning_node)
+    graph.add_node('semantic_update', semantic_update_node) # Added semantic_update_node
+    graph.add_node('ui_change', ui_change_node)
     graph.add_node('postprocess', postprocess_node)
-    
-    # Set semantic precheck as entry
-    graph.set_entry_point('semantic_precheck')
 
-    # Single conditional edge from semantic_precheck
+    graph.set_entry_point('llm_tagger')
+
+    def tagger_conditional(state):
+        tag = state.get('route_tag', 'text')
+        if tag == 'text' or tag == 'patient':
+            return 'semantic_precheck'
+        elif tag == 'web':
+            return 'web'
+        elif tag == 'medical':
+            return 'semantic_update' # Changed to semantic_update
+        elif tag in ('ui_change', 'add_treatment'):
+            return 'ui_change'
+        else:
+            return 'semantic_precheck'  # fallback
+
+    graph.add_conditional_edges('llm_tagger', tagger_conditional, {
+        'semantic_precheck': 'semantic_precheck',
+        'web': 'web',
+        'medical': 'medical',
+        'semantic_update': 'semantic_update',
+        'ui_change': 'ui_change'
+    })
+
+    # Existing agentic workflow
     def precheck_conditional(state):
         if state.get('final_answer'):
             return 'postprocess'
         else:
-            # Use route_to_agent to determine which node to go to
             return route_to_agent(state)
-    
-    graph.add_conditional_edges('semantic_precheck', precheck_conditional, {
-    'text': 'text',
-    'patient': 'patient',
-    'web': 'web',
-    'postprocess': 'postprocess'
-})
 
-    # Both patient and web nodes go to postprocess
-    graph.add_edge('text', 'postprocess')
+    graph.add_conditional_edges('semantic_precheck', precheck_conditional, {
+        'text': 'text',
+        'patient': 'patient',
+        'postprocess': 'postprocess'
+    })
+
+    graph.add_edge('text', END)
     graph.add_edge('patient', 'postprocess')
     graph.add_edge('web', 'postprocess')
+    graph.add_edge('semantic_update', 'medical')
+    graph.add_edge('medical', END)
+    graph.add_edge('ui_change', END)
     graph.add_edge('postprocess', END)
-    
+
     return graph.compile()
 
 def run_agent_workflow(user_input, memory, patient_profile):
@@ -527,12 +676,11 @@ def run_agent_workflow(user_input, memory, patient_profile):
         'input': user_input,
         'memory': memory,
         'patientProfile': patient_profile,
-        'results': None,
+        'final_answer': None,
+        'source': None,
         'error': None,
-        'user_input': None,
-        'query': None,
-        'content': None,
-        'final_answer': None
+        'insights': None,
+        'updates': None
     }
     result = workflow.invoke(initial_state)
     return result

@@ -36,6 +36,7 @@ class PatientOperations:
                 "Your job is to take the full patient profile JSON below, update ONLY the field(s) relevant to the user's request, and return the ENTIRE JSON in the exact same structure and format as provided.\n"
                 "Do NOT change, add, or remove any other fields or values.\n"
                 "Do NOT invent or hallucinate new information.\n"
+                "DO NOT edit the recommendations field under any circumstances, make no changes to and return the original JSON.\n"
                 "If the request is ambiguous, make no changes and return the original JSON.\n"
                 "ALWAYS return valid JSON, with all property names in double quotes.\n"
                 "EXAMPLES:\n"
