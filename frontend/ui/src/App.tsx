@@ -98,6 +98,9 @@ const App: React.FC = () => {
   const [profile, setProfile] = useState<PatientProfile | null>(null);
   const [loading, setLoading] = useState(false);
   const [recording, setRecording] = useState(false);
+  // --- Add state for links and general ---
+  const [links, setLinks] = useState<any[] | null>(null);
+  const [general, setGeneral] = useState<any | null>(null);
   const [audioMode, setAudioMode] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
   const audioPlayerRef = useRef<HTMLAudioElement | null>(null);
@@ -215,12 +218,20 @@ const App: React.FC = () => {
                 updateConversation(updated);
                 return updated;
               });
-              console.log('[DEBUG] About to check profileRef.current:', profileRef.current);
-              if (profileRef.current) {
-                sendPromptToLlama(bufferedText);
-              } else {
-                console.warn('[DEBUG] [flush] Not sending to Llama: patientProfile is null');
+              // --- SEND TO UNMUTE BACKEND ---
+              if (wsRef.current && wsRef.current.readyState === 1) {
+                wsRef.current.send(JSON.stringify({
+                  type: 'conversation.item.input_text',
+                  text: bufferedText,
+                  patientProfile: profileRef.current,
+                }));
               }
+              // --- (Removed) SEND TO LLAMA ---
+              // if (profileRef.current) {
+              //   sendPromptToLlama(bufferedText);
+              // } else {
+              //   console.warn('[DEBUG] [flush] Not sending to Llama: patientProfile is null');
+              // }
             } else {
               console.log('[DEBUG] [flush] Buffer empty, nothing to add to chat.');
             }
@@ -256,7 +267,7 @@ const App: React.FC = () => {
   }, []);
 
   // Send text input as a message
-  const handleSendPrompt = async (prompt: string) => {
+  const handleSendPrompt = async (prompt: string, options: { updates?: any, links?: any[], general?: any } = {}) => {
     console.log('handleSendPrompt called', {
       wsReadyState: wsRef.current?.readyState,
       hasProfile: !!profile,
@@ -290,24 +301,44 @@ const App: React.FC = () => {
     }
     // Send to Llama via REST
     const memory = await getMemory();
+    // --- Build request payload with optional fields ---
+    const requestBody: any = {
+      prompt,
+      patientProfile: profile,
+      memory,
+    };
+    if (options.updates) requestBody.updates = options.updates;
+    if (conversation) requestBody.conversation = conversation.conversation;
+    if (options.links) requestBody.links = options.links;
+    if (options.general) requestBody.general = options.general;
     fetch('http://172.22.225.47:5100/api/agent', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        prompt,
-        patientProfile: profile,
-        memory,
-      }),
+      body: JSON.stringify(requestBody),
     })
       .then(res => res.json())
       .then(data => {
-        if (data.updatedPatientProfile) {
-          console.log('[DEBUG] setProfile called with (Llama/Unmute response):', data.updatedPatientProfile);
-          setProfile(data.updatedPatientProfile);
-          updatePatientProfile(data.updatedPatientProfile);
+        if (data.updatedPatientProfile || data.patientProfile) {
+          const newProfile = data.updatedPatientProfile || data.patientProfile;
+          console.log('[DEBUG] setProfile called with (Llama/Unmute response):', newProfile);
+          setProfile(newProfile);
+          updatePatientProfile(newProfile);
         }
-        if (data.updatedMemory) {
-          updateMemory(data.updatedMemory);
+        if (data.updatedMemory || data.memory) {
+          const newMemory = data.updatedMemory || data.memory;
+          updateMemory(newMemory);
+        }
+        if (data.updates) {
+          // handle updates if needed
+          console.log('[DEBUG] Received updates from Llama:', data.updates);
+        }
+        if (data.links) {
+          setLinks(data.links);
+          console.log('[DEBUG] Received links from Llama:', data.links);
+        }
+        if (data.general) {
+          setGeneral(data.general);
+          console.log('[DEBUG] Received general from Llama:', data.general);
         }
         // Forward extraInfo from Llama to Unmute if present
         if (data.extraInfo) {
@@ -430,7 +461,7 @@ const App: React.FC = () => {
   }, []);
 
   // Function to send prompt to Llama (must be inside App to access wsRef)
-  async function sendPromptToLlama(prompt: string) {
+  async function sendPromptToLlama(prompt: string, options: { updates?: any, links?: any[], general?: any } = {}) {
     console.log('[DEBUG] sendPromptToLlama called, profileRef.current:', profileRef.current, 'profile:', profile);
     if (!profileRef.current) {
       console.warn('[DEBUG] sendPromptToLlama: patientProfile is null');
@@ -438,26 +469,45 @@ const App: React.FC = () => {
     }
     const memory = await getMemory();
     console.log('[DEBUG] Sending to Llama:', { prompt, patientProfile: profileRef.current, memory });
-    // Send patientProfile and memory for correct user identification
+    // --- Build request payload with optional fields ---
+    const requestBody: any = {
+      prompt,
+      patientProfile: profileRef.current,
+      memory,
+    };
+    if (options.updates) requestBody.updates = options.updates;
+    if (conversation) requestBody.conversation = conversation.conversation;
+    if (options.links) requestBody.links = options.links;
+    if (options.general) requestBody.general = options.general;
     fetch('http://172.22.225.47:5100/api/agent', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        prompt,
-        patientProfile: profileRef.current,
-        memory,
-      })
+      body: JSON.stringify(requestBody),
     })
       .then(res => res.json())
       .then(data => {
         console.log('[DEBUG] Llama response:', data);
-        if (data.updatedPatientProfile) {
-          console.log('[DEBUG] setProfile called with (Llama/Unmute response):', data.updatedPatientProfile);
-          setProfile(data.updatedPatientProfile);
-          updatePatientProfile(data.updatedPatientProfile);
+        if (data.updatedPatientProfile || data.patientProfile) {
+          const newProfile = data.updatedPatientProfile || data.patientProfile;
+          console.log('[DEBUG] setProfile called with (Llama/Unmute response):', newProfile);
+          setProfile(newProfile);
+          updatePatientProfile(newProfile);
         }
-        if (data.updatedMemory) {
-          updateMemory(data.updatedMemory);
+        if (data.updatedMemory || data.memory) {
+          const newMemory = data.updatedMemory || data.memory;
+          updateMemory(newMemory);
+        }
+        if (data.updates) {
+          // handle updates if needed
+          console.log('[DEBUG] Received updates from Llama:', data.updates);
+        }
+        if (data.links) {
+          setLinks(data.links);
+          console.log('[DEBUG] Received links from Llama:', data.links);
+        }
+        if (data.general) {
+          setGeneral(data.general);
+          console.log('[DEBUG] Received general from Llama:', data.general);
         }
         if (data.extraInfo) {
           console.log('[DEBUG] Received extraInfo from Llama:', data.extraInfo);
@@ -481,6 +531,18 @@ const App: React.FC = () => {
           <pre style={{ fontSize: 12, whiteSpace: 'pre-wrap', margin: 0 }}>
             {JSON.stringify(profile, null, 2)}
           </pre>
+        </div>
+      )}
+      {links && (
+        <div style={{ background: '#efe', padding: 12, borderRadius: 8, marginBottom: 12 }}>
+          <h4>Links (Debug)</h4>
+          <pre style={{ fontSize: 12, whiteSpace: 'pre-wrap', margin: 0 }}>{JSON.stringify(links, null, 2)}</pre>
+        </div>
+      )}
+      {general && (
+        <div style={{ background: '#ffe', padding: 12, borderRadius: 8, marginBottom: 12 }}>
+          <h4>General (Debug)</h4>
+          <pre style={{ fontSize: 12, whiteSpace: 'pre-wrap', margin: 0 }}>{JSON.stringify(general, null, 2)}</pre>
         </div>
       )}
       <h2>AI Health Chatbot</h2>
