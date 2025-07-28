@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef, RefObject } from 'react';
 import './App.css';
-import { getPatientProfile, getConversation, updatePatientProfile, updateConversation, PatientProfile, Conversation, getMemory, updateMemory } from './db';
+import { getPatientProfile, getConversation, updatePatientProfile, updateConversation, PatientProfile, Conversation, getMemory, updateMemory, getLinks, updateLinks, getGeneral, updateGeneral } from './db';
 import OpusRecorder from 'opus-recorder';
 
 const WS_URL = 'ws://172.22.225.138:11000/v1/realtime';
@@ -99,7 +99,7 @@ const App: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [recording, setRecording] = useState(false);
   // --- Add state for links and general ---
-  const [links, setLinks] = useState<any[] | null>(null);
+  const [links, setLinks] = useState<Record<string, any> | null>(null);
   const [general, setGeneral] = useState<any | null>(null);
   const [audioMode, setAudioMode] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
@@ -120,11 +120,23 @@ const App: React.FC = () => {
   }, [profile]);
 
   useEffect(() => {
+    console.log('[DEBUG] General state changed:', general);
+  }, [general]);
+
+  useEffect(() => {
     getPatientProfile().then(result => {
       console.log('[DEBUG] setProfile called with (initial load):', result ?? null);
       setProfile(result ?? null);
     });
     getConversation().then(result => setConversation(result ?? null));
+    getLinks().then(result => {
+      console.log('[DEBUG] setLinks called with (initial load):', result?.links ?? null);
+      setLinks(result?.links ?? null);
+    });
+    getGeneral().then(result => {
+      console.log('[DEBUG] setGeneral called with (initial load):', result?.general ?? null);
+      setGeneral(result?.general ?? null);
+    });
   }, []);
 
   // WebSocket connection
@@ -300,15 +312,15 @@ const App: React.FC = () => {
       }));
     }
     // Send to Llama via REST
-    // const memory = await getMemory();
-    // --- Build request payload with optional fields ---
+    const memory = await getMemory();
+    // --- Build request payload with required fields ---
     const requestBody: any = {
       prompt,
       patientProfile: profile,
+      memory: memory || { id: 'memory', memory: [] }
     };
     if (options.updates) requestBody.updates = options.updates;
-    if (conversation) requestBody.conversation = conversation.conversation;
-    // Removed: memory, links, general from requestBody
+    // Note: conversation, links, general are accessed via local backend bridge
     fetch('http://172.22.225.47:5100/api/agent', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -465,16 +477,16 @@ const App: React.FC = () => {
       console.warn('[DEBUG] sendPromptToLlama: patientProfile is null');
       return;
     }
-    // const memory = await getMemory();
-    console.log('[DEBUG] Sending to Llama:', { prompt, patientProfile: profileRef.current });
-    // --- Build request payload with optional fields ---
+    const memory = await getMemory();
+    console.log('[DEBUG] Sending to Llama:', { prompt, patientProfile: profileRef.current, memory });
+    // --- Build request payload with required fields ---
     const requestBody: any = {
       prompt,
       patientProfile: profileRef.current,
+      memory: memory || { id: 'memory', memory: [] }
     };
     if (options.updates) requestBody.updates = options.updates;
-    if (conversation) requestBody.conversation = conversation.conversation;
-    // Removed: memory, links, general from requestBody
+    // Note: conversation, links, general are accessed via local backend bridge
     fetch('http://172.22.225.47:5100/api/agent', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -520,63 +532,76 @@ const App: React.FC = () => {
   }
 
   return (
-    <div style={{ maxWidth: 480, margin: '0 auto', padding: 16 }}>
-      {profile && (
-        <div style={{ background: '#eef', padding: 12, borderRadius: 8, marginBottom: 12 }}>
-          <h4>Patient Profile (Debug)</h4>
-          <pre style={{ fontSize: 12, whiteSpace: 'pre-wrap', margin: 0 }}>
-            {JSON.stringify(profile, null, 2)}
-          </pre>
-        </div>
-      )}
-      {links && (
-        <div style={{ background: '#efe', padding: 12, borderRadius: 8, marginBottom: 12 }}>
-          <h4>Links (Debug)</h4>
-          <pre style={{ fontSize: 12, whiteSpace: 'pre-wrap', margin: 0 }}>{JSON.stringify(links, null, 2)}</pre>
-        </div>
-      )}
-      {general && (
-        <div style={{ background: '#ffe', padding: 12, borderRadius: 8, marginBottom: 12 }}>
-          <h4>General (Debug)</h4>
-          <pre style={{ fontSize: 12, whiteSpace: 'pre-wrap', margin: 0 }}>{JSON.stringify(general, null, 2)}</pre>
-        </div>
-      )}
-      <h2>AI Health Chatbot</h2>
-      <div style={{ minHeight: 300, background: '#f7f7f7', padding: 12, borderRadius: 8, marginBottom: 12 }}>
-        {conversation?.conversation.map((msg, idx) => (
-          <div key={idx} style={{ textAlign: msg.sender === 'user' ? 'right' : 'left', margin: '8px 0' }}>
-            <span style={{
-              display: 'inline-block',
-              background: msg.sender === 'user' ? '#3182ce' : '#fff',
-              color: msg.sender === 'user' ? '#fff' : '#222',
-              borderRadius: 16,
-              padding: '8px 14px',
-              maxWidth: '75%',
-            }}>{msg.text}</span>
+    <div style={{ maxWidth: 1200, margin: '0 auto', padding: 16 }}>
+      <div style={{ display: 'flex', gap: 24, alignItems: 'flex-start' }}>
+        {/* Left side - Chatbot */}
+        <div style={{ flex: 1, maxWidth: 600 }}>
+          <h2>AI Health Chatbot</h2>
+          <div style={{ minHeight: 300, background: '#f7f7f7', padding: 12, borderRadius: 8, marginBottom: 12 }}>
+            {conversation?.conversation.map((msg, idx) => (
+              <div key={idx} style={{ textAlign: msg.sender === 'user' ? 'right' : 'left', margin: '8px 0' }}>
+                <span style={{
+                  display: 'inline-block',
+                  background: msg.sender === 'user' ? '#3182ce' : '#fff',
+                  color: msg.sender === 'user' ? '#fff' : '#222',
+                  borderRadius: 16,
+                  padding: '8px 14px',
+                  maxWidth: '75%',
+                }}>{msg.text}</span>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
-      <div style={{ display: 'flex', gap: 8 }}>
-        <button
-          onClick={handleAudioRecord}
-          disabled={loading || !profile}
-          style={{ background: recording ? '#e53e3e' : '#3182ce', color: '#fff', border: 'none', borderRadius: '50%', width: 40, height: 40, fontSize: 18 }}
-          aria-label={recording ? 'Stop recording' : 'Record audio'}
-        >
-          {recording ? '■' : '🎤'}
-        </button>
-        <input
-          type="text"
-          value={input}
-          onChange={e => setInput(e.target.value)}
-          onKeyDown={e => { if (e.key === 'Enter' && input.trim() && !loading) handleSendPrompt(input.trim()); }}
-          disabled={loading}
-          placeholder="Type your message..."
-          style={{ flex: 1, padding: '8px 12px', borderRadius: 16, border: '1px solid #ccc' }}
-        />
-        <button onClick={() => input.trim() && !loading && handleSendPrompt(input.trim())} disabled={loading || !input.trim()} style={{ background: '#3182ce', color: '#fff', border: 'none', borderRadius: '50%', width: 40, height: 40, fontSize: 18 }}>
-          ➤
-        </button>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button
+              onClick={handleAudioRecord}
+              disabled={loading || !profile}
+              style={{ background: recording ? '#e53e3e' : '#3182ce', color: '#fff', border: 'none', borderRadius: '50%', width: 40, height: 40, fontSize: 18 }}
+              aria-label={recording ? 'Stop recording' : 'Record audio'}
+            >
+              {recording ? '■' : '🎤'}
+            </button>
+            <input
+              type="text"
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter' && input.trim() && !loading) handleSendPrompt(input.trim()); }}
+              disabled={loading}
+              placeholder="Type your message..."
+              style={{ flex: 1, padding: '8px 12px', borderRadius: 16, border: '1px solid #ccc' }}
+            />
+            <button onClick={() => input.trim() && !loading && handleSendPrompt(input.trim())} disabled={loading || !input.trim()} style={{ background: '#3182ce', color: '#fff', border: 'none', borderRadius: '50%', width: 40, height: 40, fontSize: 18 }}>
+              ➤
+            </button>
+          </div>
+        </div>
+
+        {/* Right side - Patient Profile, Links, and General */}
+        <div style={{ width: 400, flexShrink: 0 }}>
+          {profile && (
+            <div style={{ background: '#eef', padding: 12, borderRadius: 8, marginBottom: 12 }}>
+              <h4>Patient Profile</h4>
+              <pre style={{ fontSize: 12, whiteSpace: 'pre-wrap', margin: 0 }}>
+                {JSON.stringify(profile, null, 2)}
+              </pre>
+            </div>
+          )}
+          <div style={{ background: '#efe', padding: 12, borderRadius: 8, marginBottom: 12 }}>
+            <h4>Links</h4>
+            {links ? (
+              <pre style={{ fontSize: 12, whiteSpace: 'pre-wrap', margin: 0 }}>{JSON.stringify(links, null, 2)}</pre>
+            ) : (
+              <p style={{ fontSize: 12, color: '#666', margin: 0, fontStyle: 'italic' }}>No links available</p>
+            )}
+          </div>
+          <div style={{ background: '#ffe', padding: 12, borderRadius: 8, marginBottom: 12 }}>
+            <h4>General</h4>
+            {general ? (
+              <pre style={{ fontSize: 12, whiteSpace: 'pre-wrap', margin: 0 }}>{JSON.stringify(general, null, 2)}</pre>
+            ) : (
+              <p style={{ fontSize: 12, color: '#666', margin: 0, fontStyle: 'italic' }}>No general information available</p>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

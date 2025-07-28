@@ -6,51 +6,108 @@ const PORT = 8002;
 app.use(cors());
 app.use(express.json());
 
-// In-memory store for demonstration (replace with IPC or polling for real IndexedDB data)
-let memory = { id: 'memory', episodes: [], procedural: {}, semantic: [] };
-let links = { id: 'links', links: [] };
-let general = { id: 'general', general: {} };
-let conversation = { cid: 'conv-001', tags: [], conversation: [] };
+// Sample data for demonstration
 let updates = [
+  { datetime: '03_07_25_10_30', text: 'Panadol removed from medications' },
+  { datetime: '03_07_25_11_45', text: 'Ibuprofen added to medications' }
+];
+
+let memory = [
+  { datetime: '01_07_25_09_00', text: "Patient said they can't sleep" },
+  { datetime: '02_07_25_22_15', text: 'Wakes up multiple times' }
+];
+
+let links = {
+  Sleep: {
+    'disturbed sleep': 0.6,
+    'tired in morning': 0.3
+  }
+};
+
+let conversation = [
   {
-    datetime: "2023-04-02T13:00:00",
-    text: "Panadol added to medications"
+    cid: 1,
+    user: "I haven't been sleeping well",
+    AI: "Tell me more about that",
+    Tag: "Sleep",
+    Datetime: "2024-06-01T08:00:00"
   }
 ];
 
-app.post('/api/llama-bridge', (req, res) => {
-  const body = req.body;
-  // Handle data requests
-  if (body.request_type) {
-    if (body.request_type === 'updates') {
-      return res.json({ updates });
-    }
-    if (body.request_type === 'memory_links') {
-      return res.json({ memory, links });
-    }
-    if (body.request_type === 'convo_general_insights') {
-      return res.json({ conversation, general });
-    }
-    return res.status(400).json({ error: 'Unknown request_type' });
+let general = {
+  EmotionalCues: ["anxious", "tired"],
+  Tone: "reflective",
+  Engagement: "high",
+  Hesitation: "minimal",
+  NuancedFindings: ["User shows progress in managing stress"]
+};
+
+// GET /updates
+app.get('/updates', (req, res) => {
+  res.json(updates);
+});
+
+// GET /memory-links
+app.get('/memory-links', (req, res) => {
+  res.json({ memory, links });
+});
+
+// GET /conversations-insights
+app.get('/conversations-insights', (req, res) => {
+  res.json({ conversations: conversation, previous_insights: general });
+});
+
+// POST /recommendations-treatment
+app.post('/recommendations-treatment', (req, res) => {
+  // In a real app, update patient profile here
+  console.log('Received recommendations/treatment:', req.body);
+  res.json({ status: 'ok' });
+});
+
+// POST /links-function-call
+app.post('/links-function-call', (req, res) => {
+  // In a real app, update links here
+  console.log('Received links/function call:', req.body);
+  res.json({ status: 'ok' });
+});
+
+// POST /general-insights
+app.post('/general-insights', (req, res) => {
+  // In a real app, update general insights here
+  console.log('Received general insights:', req.body);
+  res.json({ status: 'ok' });
+});
+
+// Healthcare LLM Update Endpoints
+app.post('/api/healthcare-updates', (req, res) => {
+  const { type, data } = req.body;
+  console.log(`Received healthcare update - type: ${type}, data:`, data);
+  
+  switch (type) {
+    case 'recommendations':
+      // Update patient profile recommendations
+      console.log('Updating patient profile recommendations:', data);
+      // In a real implementation, this would update the frontend's IndexedDB
+      // For now, we'll just log it
+      break;
+      
+    case 'links':
+      // Update links
+      console.log('Updating links:', data);
+      links = { ...links, ...data };
+      break;
+      
+    case 'general':
+      // Update general insights
+      console.log('Updating general insights:', data);
+      general = { ...general, ...data };
+      break;
+      
+    default:
+      console.log('Unknown update type:', type);
   }
-  // Handle data updates
-  if (body.tag && body.data) {
-    if (body.tag === 'recommendations_and_treatment_insights') {
-      // Update recommendations/treatment insights (define logic)
-      updates = { ...updates, ...body.data };
-      return res.json({ status: 'ok' });
-    }
-    if (body.tag === 'links_and_function_call') {
-      links = { ...links, ...body.data };
-      return res.json({ status: 'ok' });
-    }
-    if (body.tag === 'updated_general_insights') {
-      general = { ...general, ...body.data };
-      return res.json({ status: 'ok' });
-    }
-    return res.status(400).json({ error: 'Unknown tag' });
-  }
-  return res.status(400).json({ error: 'Invalid request' });
+  
+  res.json({ status: 'ok', message: `Updated ${type}` });
 });
 
 app.listen(PORT, '0.0.0.0', () => {

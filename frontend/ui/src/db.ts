@@ -27,9 +27,7 @@ export interface Conversation {
 
 export interface Memory {
   id: string; // always 'memory' for singleton
-  episodes: object[];
-  procedural: object | null;
-  semantic: object[];
+  memory: any; // array of objects with datetime and text
 }
 
 export interface Links {
@@ -85,24 +83,10 @@ export async function updateMemory(memory: Memory) {
   return db.memory.put(memory);
 }
 
-export async function addEpisode(episode: object) {
+export async function addMemoryItem(item: object) {
   const memory = await getMemory();
   if (!memory) return;
-  memory.episodes.push(episode);
-  await updateMemory(memory);
-}
-
-export async function addSemantic(semantic: object) {
-  const memory = await getMemory();
-  if (!memory) return;
-  memory.semantic.push(semantic);
-  await updateMemory(memory);
-}
-
-export async function updateProcedural(procedural: object) {
-  const memory = await getMemory();
-  if (!memory) return;
-  memory.procedural = procedural;
+  memory.memory.push(item);
   await updateMemory(memory);
 }
 
@@ -168,14 +152,16 @@ export async function initializeSampleData() {
   if (!existingMemory) {
     await db.memory.add({
       id: 'memory',
-      episodes: [
+      memory: [
         {
-          datetime: '2023-04-01T12:00:00',
-          text: 'I occasionally feel tired in the morning.'
+          datetime: '01_07_25_09_00',
+          text: "Patient said they can't sleep"
+        },
+        {
+          datetime: '02_07_25_22_15',
+          text: 'Wakes up multiple times'
         }
       ],
-      procedural: {},
-      semantic: [],
     });
   }
   const existingLinks = await db.links.get('links');
@@ -183,7 +169,10 @@ export async function initializeSampleData() {
     await db.links.add({
       id: 'links',
       links: {
-        Sleep: {}
+        Sleep: {
+          'disturbed sleep': 0.6,
+          'tired in morning': 0.3
+        }
       },
     });
   }
@@ -192,14 +181,11 @@ export async function initializeSampleData() {
     await db.general.add({
       id: 'general',
       general: {
-        EmotionalCues: ["Relieved", "Worried"],
-        Tone: "Reflective",
-        Engagement: "High",
-        Hesitation: "Minimal",
-        NuancedFindings: [
-          "The user is managing stress and anxiety.",
-          "There is a sense of ongoing emotional complexity."
-        ]
+        EmotionalCues: ["anxious", "tired"],
+        Tone: "reflective",
+        Engagement: "high",
+        Hesitation: "minimal",
+        NuancedFindings: ["User shows progress in managing stress"]
       },
     });
   }
@@ -209,8 +195,12 @@ export async function initializeSampleData() {
       id: 'updates',
       updates: [
         {
-          datetime: '2023-04-02T13:00:00',
-          text: 'User update message'
+          datetime: '03_07_25_10_30',
+          text: 'Panadol removed from medications'
+        },
+        {
+          datetime: '03_07_25_11_45',
+          text: 'Ibuprofen added to medications'
         }
       ],
     });
