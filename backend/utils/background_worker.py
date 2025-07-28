@@ -37,10 +37,8 @@ def request_from_frontend(request_type):
 
 def send_to_medical_llm(payload, payload_type):
     # Always send a 'payload_type' key along with the payload to the medical LLM
-    payload_with_type = dict(payload)
-    payload_with_type['payload_type'] = payload_type
     try:
-        response = requests.post(MEDICAL_LLM_ENDPOINT, json=payload_with_type, timeout=10)
+        response = requests.post(MEDICAL_LLM_ENDPOINT, json=payload, timeout=10)
         response.raise_for_status()
         logging.info(f"Sent {payload_type} payload to medical LLM. Response: {response.json()}")
         return response.json()

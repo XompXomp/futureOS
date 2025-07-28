@@ -20,7 +20,7 @@ class MemoryOperations:
                 return state
             semantic_list = memory.setdefault("semantic", [])
             memory_id = str(uuid.uuid4())
-            memory_datetime = datetime.now().strftime("%d_%m_%y_%H_%M")
+            memory_datetime = datetime.now().replace(microsecond=0).isoformat()
             new_entry = {
                 "id": memory_id,
                 "datetime": memory_datetime,

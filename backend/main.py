@@ -19,7 +19,7 @@ class AgentState(TypedDict):
     input: str
     memory: dict
     patientProfile: dict
-    updates: dict # Only keep this
+    updates: list # Only keep this
     final_answer: Optional[str]
     source: Optional[str]
     error: Optional[str]
@@ -88,6 +88,106 @@ def text_node(state: AgentState) -> AgentState:
     # Simply return the state unchanged - no processing needed
     return state
 
+# --- Helper functions for change tracking ---
+def deep_compare_dicts(before: dict, after: dict, path: str = "") -> list:
+    """Recursively compare two dictionaries and return list of changes"""
+    changes = []
+    
+    # Get all keys from both dictionaries (top-level keys are the same)
+    all_keys = before.keys()
+    
+    for key in all_keys:
+        current_path = f"{path}.{key}" if path else key
+        before_val = before.get(key)
+        after_val = after.get(key)
+        
+        # Compare values
+        if isinstance(before_val, dict) and isinstance(after_val, dict):
+            # Recursively compare nested dictionaries
+            nested_changes = deep_compare_dicts(before_val, after_val, current_path)
+            changes.extend(nested_changes)
+        elif isinstance(before_val, list) and isinstance(after_val, list):
+            # Compare lists by length and content
+            if len(before_val) != len(after_val) or before_val != after_val:
+                # Determine if it's an addition or removal based on length
+                if len(after_val) > len(before_val):
+                    changes.append({
+                        "path": current_path,
+                        "before": before_val,
+                        "after": after_val,
+                        "type": "added"
+                    })
+                elif len(after_val) < len(before_val):
+                    changes.append({
+                        "path": current_path,
+                        "before": before_val,
+                        "after": after_val,
+                        "type": "removed"
+                    })
+                else:
+                    # Same length but different content (modified)
+                    changes.append({
+                        "path": current_path,
+                        "before": before_val,
+                        "after": after_val,
+                        "type": "modified"
+                    })
+        else:
+            # Compare primitive values
+            if before_val != after_val:
+                changes.append({
+                    "path": current_path,
+                    "before": before_val,
+                    "after": after_val,
+                    "type": "modified"
+                })
+    
+    return changes
+
+def generate_change_summary(changes: list) -> str:
+    """Use LLM to generate a concise summary of changes"""
+    if not changes:
+        return ""
+    
+    # Prepare LLM
+    if getattr(settings, "USE_OLLAMA", False):
+        llm = ChatOllama(
+            model=settings.OLLAMA_MODEL,
+            base_url=settings.OLLAMA_BASE_URL,
+            temperature=0.3
+        )
+    else:
+        llm = ChatGroq(
+            model=settings.LLM_MODEL,
+            temperature=0.3
+        )
+    
+    # Format changes for LLM
+    changes_text = "\n".join([
+        f"Field: {change['path']}\nBefore: {change['before']}\nAfter: {change['after']}\nType: {change['type']}\n"
+        for change in changes
+    ])
+    
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", (
+            "You are a healthcare assistant. Given a list of changes to a patient profile, "
+            "generate a very brief, natural summary of what was updated. "
+            "Use simple, clear language. Keep it under 20 words per change. "
+            "Focus on what the user actually changed, not technical details.\n\n"
+            "Examples:\n"
+            "- 'Updated age from 25 to 26'\n"
+            "- 'Added allergy to penicillin'\n"
+            "- 'Changed sleep quality from good to poor'\n"
+            "- 'Added walking to daily activities'\n\n"
+            "Return only the summary text, nothing else."
+        )),
+        ("human", f"Changes made to patient profile:\n{changes_text}\nSummary:")
+    ])
+    
+    chain = prompt | llm
+    result = chain.invoke({"changes": changes_text})
+    return str(result.content).strip()
+
 # --- Tool node wrappers with LLM-based tool selection ---
 def patient_node(state: AgentState) -> AgentState:
     print(f"DEBUG - patient_node received state keys: {list(state.keys())}")
@@ -109,6 +209,9 @@ def patient_node(state: AgentState) -> AgentState:
 
         new_state = state.copy()
 
+        # Store original patient profile for comparison
+        original_profile = state.get('patientProfile', {}).copy()
+
         # Pass user_input if update tool is selected
         if tool_to_run == 'update_patient_profile':
             new_state['user_input'] = state['input']
@@ -123,6 +226,29 @@ def patient_node(state: AgentState) -> AgentState:
                 new_state['final_answer'] = ""
         else:
             new_state['error'] = f"Patient tool returned unexpected type: {type(result)}"
+
+        # Track changes if patient profile was updated
+        if tool_to_run == 'update_patient_profile':
+            updated_profile = new_state.get('patientProfile', {})
+            changes = deep_compare_dicts(original_profile, updated_profile)
+            
+            if changes:
+                # Generate summary of changes
+                change_summary = generate_change_summary(changes)
+                
+                if change_summary:
+                    # Add to updates field
+                    current_updates = new_state.get('updates', [])
+                    if not isinstance(current_updates, list):
+                        current_updates = []
+                    update_entry = {
+                        "datetime": datetime.now().replace(microsecond=0).isoformat(),
+                        "text": change_summary
+                    }
+                    current_updates.append(update_entry)
+                    new_state['updates'] = current_updates
+                    
+                    print(f"DEBUG - Added update: {change_summary}")
 
         print(f"DEBUG - patient_node returning state keys: {list(new_state.keys())}")
         new_state['source'] = 'patient'

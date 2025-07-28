@@ -31,6 +31,15 @@ def build_default_memory(memory):
         "semantic": memory.get("semantic", [])
     }
 
+def build_default_memory_simple(memory):
+    memory_simple = []
+    for sem in memory.get("semantic", []):
+        mem_entry = {}
+        mem_entry["datetime"] = sem.get("datetime") if sem.get("datetime") else ""
+        mem_entry["text"] = sem.get("content")
+        memory_simple.append(mem_entry)
+    return memory_simple
+
 @app.route("/api/agent", methods=["POST"])
 def agent_endpoint():
     try:
@@ -41,7 +50,7 @@ def agent_endpoint():
         # --- Input Processing and Validation ---
         user_input = data.get("prompt", "")
         memory = data.get("memory", {})
-        updates = data.get("updates", {})
+        updates = data.get("updates", [])
 
         # Validate and sanitize memory structure
         if not isinstance(memory, dict):
@@ -86,6 +95,7 @@ def agent_endpoint():
 
         # --- Memory Transformation ---
         mem = result.get("memory", memory)
+        #transformed_memory = build_default_memory(mem)
         transformed_memory = build_default_memory(mem)
 
         # Prepare response with transformed data
@@ -93,7 +103,7 @@ def agent_endpoint():
         response = {
             "updatedPatientProfile": transformed_profile,
             "updatedMemory": transformed_memory,
-            "updatedUpdates": result.get("updates", updates),
+            "Updates": result.get("updates", updates),
         }
         if "final_answer" in result and result["final_answer"]:
             response["extraInfo"] = result["final_answer"]
