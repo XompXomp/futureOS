@@ -34,12 +34,17 @@ export interface Memory {
 
 export interface Links {
   id: string; // always 'links' for singleton
-  links: any[];
+  links: Record<string, any>;
 }
 
 export interface General {
   id: string; // always 'general' for singleton
   general: any;
+}
+
+export interface Updates {
+  id: string; // always 'updates' for singleton
+  updates: any;
 }
 
 class AppDB extends Dexie {
@@ -48,6 +53,7 @@ class AppDB extends Dexie {
   memory!: Table<Memory, string>; // id as primary key
   links!: Table<Links, string>; // id as primary key
   general!: Table<General, string>; // id as primary key
+  updates!: Table<Updates, string>; // id as primary key
 
   constructor() {
     super('AppDB');
@@ -61,6 +67,9 @@ class AppDB extends Dexie {
     this.version(3).stores({
       links: 'id',
       general: 'id',
+    });
+    this.version(4).stores({
+      updates: 'id',
     });
   }
 }
@@ -115,6 +124,15 @@ export async function updateGeneral(general: General) {
   return db.general.put(general);
 }
 
+// Updates DB functions
+export async function getUpdates() {
+  return db.updates.get('updates');
+}
+
+export async function updateUpdates(updates: Updates) {
+  return db.updates.put(updates);
+}
+
 // Sample data initialization
 export async function initializeSampleData() {
   const existingProfile = await db.patientProfile.toCollection().first();
@@ -150,7 +168,12 @@ export async function initializeSampleData() {
   if (!existingMemory) {
     await db.memory.add({
       id: 'memory',
-      episodes: [],
+      episodes: [
+        {
+          datetime: '2023-04-01T12:00:00',
+          text: 'I occasionally feel tired in the morning.'
+        }
+      ],
       procedural: {},
       semantic: [],
     });
@@ -159,14 +182,37 @@ export async function initializeSampleData() {
   if (!existingLinks) {
     await db.links.add({
       id: 'links',
-      links: [],
+      links: {
+        Sleep: {}
+      },
     });
   }
   const existingGeneral = await db.general.get('general');
   if (!existingGeneral) {
     await db.general.add({
       id: 'general',
-      general: {},
+      general: {
+        EmotionalCues: ["Relieved", "Worried"],
+        Tone: "Reflective",
+        Engagement: "High",
+        Hesitation: "Minimal",
+        NuancedFindings: [
+          "The user is managing stress and anxiety.",
+          "There is a sense of ongoing emotional complexity."
+        ]
+      },
+    });
+  }
+  const existingUpdates = await db.updates.get('updates');
+  if (!existingUpdates) {
+    await db.updates.add({
+      id: 'updates',
+      updates: [
+        {
+          datetime: '2023-04-02T13:00:00',
+          text: 'User update message'
+        }
+      ],
     });
   }
 }

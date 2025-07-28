@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const app = express();
-const PORT = 3001;
+const PORT = 8002;
 
 app.use(cors());
 app.use(express.json());
@@ -11,7 +11,12 @@ let memory = { id: 'memory', episodes: [], procedural: {}, semantic: [] };
 let links = { id: 'links', links: [] };
 let general = { id: 'general', general: {} };
 let conversation = { cid: 'conv-001', tags: [], conversation: [] };
-let updates = { /* define as needed */ };
+let updates = [
+  {
+    datetime: "2023-04-02T13:00:00",
+    text: "Panadol added to medications"
+  }
+];
 
 app.post('/api/llama-bridge', (req, res) => {
   const body = req.body;
@@ -48,6 +53,6 @@ app.post('/api/llama-bridge', (req, res) => {
   return res.status(400).json({ error: 'Invalid request' });
 });
 
-app.listen(PORT, '127.0.0.1', () => {
-  console.log(`Local backend listening at http://127.0.0.1:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Local backend listening at http://0.0.0.0:${PORT}`);
 }); 
