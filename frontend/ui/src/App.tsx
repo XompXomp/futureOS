@@ -102,6 +102,9 @@ const App: React.FC = () => {
   const [links, setLinks] = useState<Record<string, any> | null>(null);
   const [general, setGeneral] = useState<any | null>(null);
   const [audioMode, setAudioMode] = useState(false);
+  
+  // --- Add UI state variables ---
+  const [darkMode, setDarkMode] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
   const audioPlayerRef = useRef<HTMLAudioElement | null>(null);
   const audioChunksRef = useRef<Uint8Array[]>([]);
@@ -298,20 +301,7 @@ const App: React.FC = () => {
     const updatedConv = { ...conversation, conversation: [...conversation.conversation, { sender: 'user' as 'user', text: prompt }] };
     setConversation(updatedConv);
     await updateConversation(updatedConv);
-    // Send to Gemma (Unmute) via WebSocket
-    if (wsRef.current && wsRef.current.readyState === 1) {
-      console.log('Sending message to backend', {
-        type: 'conversation.item.input_text',
-        text: prompt,
-        patientProfile: profile
-      });
-      wsRef.current.send(JSON.stringify({
-        type: 'conversation.item.input_text',
-        text: prompt,
-        patientProfile: profile,
-      }));
-    }
-    // Send to Llama via REST
+    // Send to Llama via REST (ONLY)
     const memory = await getMemory();
     // --- Build request payload with required fields ---
     const requestBody: any = {
@@ -350,16 +340,9 @@ const App: React.FC = () => {
           setGeneral(data.general);
           console.log('[DEBUG] Received general from Llama:', data.general);
         }
-        // Forward extraInfo from Llama to Unmute if present
-        if (data.extraInfo) {
-          console.log('[DEBUG] Received extraInfo from Llama:', data.extraInfo);
-          if (wsRef.current && wsRef.current.readyState === 1) {
-            console.log('[DEBUG] Forwarding extraInfo to Unmute');
-            wsRef.current.send(JSON.stringify({
-              type: 'llama.extra_info',
-              extra_info: data.extraInfo
-            }));
-          }
+        if (data.function) {
+          console.log('[DEBUG] Received function command from Llama:', data.function);
+          processUICommand(data.function);
         }
       })
       .catch(() => {});
@@ -471,6 +454,169 @@ const App: React.FC = () => {
   }, []);
 
   // Function to send prompt to Llama (must be inside App to access wsRef)
+  // Function to process UI commands from Llama
+  const processUICommand = (command: string) => {
+    console.log('[DEBUG] Processing UI command:', command);
+    
+    if (command.startsWith('setMode(') && command.endsWith(')')) {
+      const mode = command.slice(8, -1); // Extract value between parentheses
+      if (mode === 'dark') {
+        if (darkMode) {
+          console.log('[DEBUG] Dark mode already set, skipping');
+        } else {
+          setDarkMode(true);
+          console.log('[DEBUG] Set dark mode: true');
+        }
+      } else if (mode === 'light') {
+        if (!darkMode) {
+          console.log('[DEBUG] Light mode already set, skipping');
+        } else {
+          setDarkMode(false);
+          console.log('[DEBUG] Set dark mode: false');
+        }
+      }
+    }
+    
+    if (command.startsWith('addFitness(') && command.endsWith(')')) {
+      console.log('[DEBUG] Adding fitness treatment');
+      addFitnessTreatment();
+    }
+    
+    if (command.startsWith('removeFitness(') && command.endsWith(')')) {
+      console.log('[DEBUG] Removing fitness treatment');
+      removeFitnessTreatment();
+    }
+    
+    if (command.startsWith('addSleep(') && command.endsWith(')')) {
+      console.log('[DEBUG] Adding sleep treatment');
+      addSleepTreatment();
+    }
+    
+    if (command.startsWith('removeSleep(') && command.endsWith(')')) {
+      console.log('[DEBUG] Removing sleep treatment');
+      removeSleepTreatment();
+    }
+  };
+
+  // Function to add fitness treatment
+  const addFitnessTreatment = async () => {
+    if (!profile) {
+      console.log('[DEBUG] Cannot add fitness treatment: no profile available');
+      return;
+    }
+    
+    // Check if fitness treatment already exists
+    const fitnessExists = profile.treatment.some(treatment => treatment.name === 'Fitness');
+    if (fitnessExists) {
+      console.log('[DEBUG] Fitness treatment already exists, skipping add');
+      return;
+    }
+    
+    const fitnessTreatment = {
+      name: 'Fitness',
+      medicationList: [],
+      dailyChecklist: ['Track calories', 'Track protein', 'Exercise 30 minutes'],
+      appointment: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 1 week from now
+      recommendations: ['Stay hydrated', 'Eat balanced meals', 'Get adequate rest'],
+      dailyCals: 2000,
+      dailyProtein: 150
+    };
+
+    const updatedProfile = {
+      ...profile,
+      treatment: [...profile.treatment, fitnessTreatment]
+    };
+
+    setProfile(updatedProfile);
+    updatePatientProfile(updatedProfile);
+    console.log('[DEBUG] Added fitness treatment:', fitnessTreatment);
+  };
+
+  // Function to remove fitness treatment
+  const removeFitnessTreatment = async () => {
+    if (!profile) {
+      console.log('[DEBUG] Cannot remove fitness treatment: no profile available');
+      return;
+    }
+    
+    // Check if fitness treatment exists
+    const fitnessExists = profile.treatment.some(treatment => treatment.name === 'Fitness');
+    if (!fitnessExists) {
+      console.log('[DEBUG] Fitness treatment does not exist, skipping remove');
+      return;
+    }
+    
+    const updatedProfile = {
+      ...profile,
+      treatment: profile.treatment.filter(treatment => treatment.name !== 'Fitness')
+    };
+
+    setProfile(updatedProfile);
+    updatePatientProfile(updatedProfile);
+    console.log('[DEBUG] Removed fitness treatment');
+  };
+
+  // Function to add sleep treatment
+  const addSleepTreatment = async () => {
+    if (!profile) {
+      console.log('[DEBUG] Cannot add sleep treatment: no profile available');
+      return;
+    }
+    
+    // Check if sleep treatment already exists
+    const sleepExists = profile.treatment.some(treatment => treatment.name === 'Sleep');
+    if (sleepExists) {
+      console.log('[DEBUG] Sleep treatment already exists, skipping add');
+      return;
+    }
+    
+    const sleepTreatment = {
+      name: 'Sleep',
+      medicationList: ['Ibuprofen'],
+      dailyChecklist: ['Take medication', 'Walk 30 minutes'],
+      appointment: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 1 week from now
+      recommendations: ['Stay hydrated', 'Regular exercise'],
+      sleepHours: 8,
+      sleepQuality: 'Excellent'
+    };
+
+    const updatedProfile = {
+      ...profile,
+      treatment: [...profile.treatment, sleepTreatment]
+    };
+
+    setProfile(updatedProfile);
+    updatePatientProfile(updatedProfile);
+    console.log('[DEBUG] Added sleep treatment:', sleepTreatment);
+  };
+
+  // Function to remove sleep treatment
+  const removeSleepTreatment = async () => {
+    if (!profile) {
+      console.log('[DEBUG] Cannot remove sleep treatment: no profile available');
+      return;
+    }
+    
+    // Check if sleep treatment exists
+    const sleepExists = profile.treatment.some(treatment => treatment.name === 'Sleep');
+    if (!sleepExists) {
+      console.log('[DEBUG] Sleep treatment does not exist, skipping remove');
+      return;
+    }
+    
+    const updatedProfile = {
+      ...profile,
+      treatment: profile.treatment.filter(treatment => treatment.name !== 'Sleep')
+    };
+
+    setProfile(updatedProfile);
+    updatePatientProfile(updatedProfile);
+    console.log('[DEBUG] Removed sleep treatment');
+  };
+
+  // Make function globally accessible for testing
+  (window as any).testUICommand = processUICommand;
+
   async function sendPromptToLlama(prompt: string, options: { updates?: any, links?: any[], general?: any } = {}) {
     console.log('[DEBUG] sendPromptToLlama called, profileRef.current:', profileRef.current, 'profile:', profile);
     if (!profileRef.current) {
@@ -532,18 +678,31 @@ const App: React.FC = () => {
   }
 
   return (
-    <div style={{ maxWidth: 1200, margin: '0 auto', padding: 16 }}>
+    <div style={{ 
+      maxWidth: 1200, 
+      margin: '0 auto', 
+      padding: 16,
+      backgroundColor: darkMode ? '#1a1a1a' : '#ffffff',
+      color: darkMode ? '#ffffff' : '#000000',
+      minHeight: '100vh'
+    }}>
       <div style={{ display: 'flex', gap: 24, alignItems: 'flex-start' }}>
         {/* Left side - Chatbot */}
         <div style={{ flex: 1, maxWidth: 600 }}>
           <h2>AI Health Chatbot</h2>
-          <div style={{ minHeight: 300, background: '#f7f7f7', padding: 12, borderRadius: 8, marginBottom: 12 }}>
+          <div style={{ 
+            minHeight: 300, 
+            background: darkMode ? '#2d2d2d' : '#f7f7f7', 
+            padding: 12, 
+            borderRadius: 8, 
+            marginBottom: 12 
+          }}>
             {conversation?.conversation.map((msg, idx) => (
               <div key={idx} style={{ textAlign: msg.sender === 'user' ? 'right' : 'left', margin: '8px 0' }}>
                 <span style={{
                   display: 'inline-block',
-                  background: msg.sender === 'user' ? '#3182ce' : '#fff',
-                  color: msg.sender === 'user' ? '#fff' : '#222',
+                  background: msg.sender === 'user' ? '#3182ce' : (darkMode ? '#404040' : '#fff'),
+                  color: msg.sender === 'user' ? '#fff' : (darkMode ? '#ffffff' : '#222'),
                   borderRadius: 16,
                   padding: '8px 14px',
                   maxWidth: '75%',
@@ -567,7 +726,14 @@ const App: React.FC = () => {
               onKeyDown={e => { if (e.key === 'Enter' && input.trim() && !loading) handleSendPrompt(input.trim()); }}
               disabled={loading}
               placeholder="Type your message..."
-              style={{ flex: 1, padding: '8px 12px', borderRadius: 16, border: '1px solid #ccc' }}
+              style={{ 
+                flex: 1, 
+                padding: '8px 12px', 
+                borderRadius: 16, 
+                border: '1px solid #ccc',
+                backgroundColor: darkMode ? '#404040' : '#ffffff',
+                color: darkMode ? '#ffffff' : '#000000'
+              }}
             />
             <button onClick={() => input.trim() && !loading && handleSendPrompt(input.trim())} disabled={loading || !input.trim()} style={{ background: '#3182ce', color: '#fff', border: 'none', borderRadius: '50%', width: 40, height: 40, fontSize: 18 }}>
               ➤
@@ -578,27 +744,45 @@ const App: React.FC = () => {
         {/* Right side - Patient Profile, Links, and General */}
         <div style={{ width: 400, flexShrink: 0 }}>
           {profile && (
-            <div style={{ background: '#eef', padding: 12, borderRadius: 8, marginBottom: 12 }}>
+            <div style={{ 
+              background: darkMode ? '#2d2d2d' : '#eef', 
+              padding: 12, 
+              borderRadius: 8, 
+              marginBottom: 12,
+              border: darkMode ? '1px solid #404040' : 'none'
+            }}>
               <h4>Patient Profile</h4>
-              <pre style={{ fontSize: 12, whiteSpace: 'pre-wrap', margin: 0 }}>
+              <pre style={{ fontSize: 12, whiteSpace: 'pre-wrap', margin: 0, color: darkMode ? '#ffffff' : '#000000' }}>
                 {JSON.stringify(profile, null, 2)}
               </pre>
             </div>
           )}
-          <div style={{ background: '#efe', padding: 12, borderRadius: 8, marginBottom: 12 }}>
+          <div style={{ 
+            background: darkMode ? '#2d2d2d' : '#efe', 
+            padding: 12, 
+            borderRadius: 8, 
+            marginBottom: 12,
+            border: darkMode ? '1px solid #404040' : 'none'
+          }}>
             <h4>Links</h4>
             {links ? (
-              <pre style={{ fontSize: 12, whiteSpace: 'pre-wrap', margin: 0 }}>{JSON.stringify(links, null, 2)}</pre>
+              <pre style={{ fontSize: 12, whiteSpace: 'pre-wrap', margin: 0, color: darkMode ? '#ffffff' : '#000000' }}>{JSON.stringify(links, null, 2)}</pre>
             ) : (
-              <p style={{ fontSize: 12, color: '#666', margin: 0, fontStyle: 'italic' }}>No links available</p>
+              <p style={{ fontSize: 12, color: darkMode ? '#999' : '#666', margin: 0, fontStyle: 'italic' }}>No links available</p>
             )}
           </div>
-          <div style={{ background: '#ffe', padding: 12, borderRadius: 8, marginBottom: 12 }}>
+          <div style={{ 
+            background: darkMode ? '#2d2d2d' : '#ffe', 
+            padding: 12, 
+            borderRadius: 8, 
+            marginBottom: 12,
+            border: darkMode ? '1px solid #404040' : 'none'
+          }}>
             <h4>General</h4>
             {general ? (
-              <pre style={{ fontSize: 12, whiteSpace: 'pre-wrap', margin: 0 }}>{JSON.stringify(general, null, 2)}</pre>
+              <pre style={{ fontSize: 12, whiteSpace: 'pre-wrap', margin: 0, color: darkMode ? '#ffffff' : '#000000' }}>{JSON.stringify(general, null, 2)}</pre>
             ) : (
-              <p style={{ fontSize: 12, color: '#666', margin: 0, fontStyle: 'italic' }}>No general information available</p>
+              <p style={{ fontSize: 12, color: darkMode ? '#999' : '#666', margin: 0, fontStyle: 'italic' }}>No general information available</p>
             )}
           </div>
         </div>

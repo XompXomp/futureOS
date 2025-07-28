@@ -6,14 +6,16 @@ export interface PatientProfile {
   age: number;
   bloodType: string;
   allergies: string[];
-  treatment: {
+  treatment: Array<{
+    name: string;
     medicationList: string[];
     dailyChecklist: string[];
     appointment: string;
     recommendations: string[];
-    sleepHours: number;
-    sleepQuality: string;
-  };
+    sleepHours?: number;
+    sleepQuality?: string;
+    [key: string]: any; // for treatment-specific metrics
+  }>;
 }
 
 export interface Conversation {
@@ -127,14 +129,17 @@ export async function initializeSampleData() {
       age: 29,
       bloodType: 'A-',
       allergies: ['Peanuts'],
-      treatment: {
-        medicationList: ['Ibuprofen'],
-        dailyChecklist: ['Take medication', 'Walk 30 minutes'],
-        appointment: '2024-08-15T09:00:00',
-        recommendations: ['Stay hydrated', 'Regular exercise'],
-        sleepHours: 8,
-        sleepQuality: 'Excellent',
-      },
+      treatment: [
+        {
+          name: 'Sleep',
+          medicationList: ['Ibuprofen'],
+          dailyChecklist: ['Take medication', 'Walk 30 minutes'],
+          appointment: '2024-08-15T09:00:00',
+          recommendations: ['Stay hydrated', 'Regular exercise'],
+          sleepHours: 8,
+          sleepQuality: 'Excellent',
+        }
+      ],
     });
   }
   const existingConversation = await db.conversation.toCollection().first();
