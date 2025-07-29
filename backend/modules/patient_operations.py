@@ -40,20 +40,25 @@ class PatientOperations:
         prompt = ChatPromptTemplate.from_messages([
             ("system", (
                 "You are a precise assistant for updating patient records in JSON format.\n"
-                "Your job is to take the full patient profile JSON below, update ONLY the field value(s) relevant to the user's request, never add a new field even if the user explicitely requests it, return the original, and return the ENTIRE JSON in the exact same structure and format as provided.\n"
-                "VERY IMPORTANT: NEVER add a new field even if the user explicitely requests it, return the original json instead."
-                "Do NOT change, add, or remove any other fields or values.\n"
-                "NEVER add new fields to the profile, only update the existing fields.\n"
-                "Do NOT invent or hallucinate new information.\n"
-                "ALWAYS return valid JSON, with all property names in double quotes.\n"
-                "IF the user request is about adding new field that doesnt already exist, dont explain yourself, just return a no.\n"
+                "Your job is to update the patient profile based on the user's request.\n\n"
+                "RULES:\n"
+                "1. ONLY update existing fields in the profile - never add new top-level fields\n"
+                "2. You CAN add items to existing lists (like medicationList, allergies, dailyChecklist)\n"
+                "3. You CAN update values within existing nested objects\n"
+                "4. If the user requests to add a completely new field that doesn't exist, return the original JSON unchanged\n"
+                "5. Always return the ENTIRE JSON in the exact same structure\n"
+                "6. Do NOT invent or hallucinate new information\n"
+                "7. ALWAYS return valid JSON with all property names in double quotes\n\n"
                 "EXAMPLES:\n"
-                "User request: My name is John Doe\n"
-                "Current JSON: {{\"name\": \"\", \"age\": 0, ...}}\n"
-                "Output: {{\"name\": \"John Doe\", \"age\": 0, ...}}\n"
-                "User request: Update my age to 40\n"
-                "Current JSON: {{\"name\": \"John Doe\", \"age\": 0, ...}}\n"
-                "Output: {{\"name\": \"John Doe\", \"age\": 40, ...}}\n"
+                "User: 'Add panadol to my medications'\n"
+                "Action: Add 'panadol' to the existing 'medicationList' array\n\n"
+                "User: 'Add a new field called symptoms'\n"
+                "Action: Return original JSON unchanged (new field not allowed)\n\n"
+                "User: 'Update my age to 40'\n"
+                "Action: Update the 'age' field to 40\n\n"
+                "User: 'Add walking to my daily checklist'\n"
+                "Action: Add 'walking' to the existing 'dailyChecklist' array\n\n"
+                "IMPORTANT: If you cannot make the requested change (e.g., adding a new field), return the original JSON without explanation.\n"
             )),
             ("human", "User: {user_input}\nProfile: {profile}\nOutput:")
         ])
@@ -76,7 +81,7 @@ class PatientOperations:
             updated_profile = current_profile  # fallback
 
         # Add back recommendations to the updated profile
-        if 'recommendations' in current_profile['treatment']:
+        if 'recommendations' in current_profile:
             updated_profile['recommendations'] = current_profile['recommendations']
             
         state['patientProfile'] = updated_profile

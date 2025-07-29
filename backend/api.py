@@ -23,14 +23,6 @@ def build_default_profile(profile):
         }
     }
 
-def build_default_memory(memory):
-    return {
-        "id": "memory",
-        "episodes": memory.get("episodes", []),
-        "procedural": memory.get("procedural", None) if memory.get("procedural", {}) else None,
-        "semantic": memory.get("semantic", [])
-    }
-
 @app.route("/api/agent", methods=["POST"])
 def agent_endpoint():
     try:
@@ -40,21 +32,12 @@ def agent_endpoint():
 
         # --- Input Processing and Validation ---
         user_input = data.get("prompt", "")
-        memory = data.get("memory", {})
-        updates = data.get("updates", {})
+        memory = data.get("memory", [])
+        updates = data.get("updates", [])
 
         # Validate and sanitize memory structure
-        if not isinstance(memory, dict):
-            memory = {} # Default to empty dict if memory is not a dict
-        memory.setdefault("episodes", [])
-        memory.setdefault("procedural", {})
-        memory.setdefault("semantic", [])
-        if memory.get("episodes") is None:
-            memory["episodes"] = []
-        if memory.get("procedural") is None:
-            memory["procedural"] = {}
-        if memory.get("semantic") is None:
-            memory["semantic"] = []
+        if not isinstance(memory, list):
+            memory = [] # Default to empty list if memory is not a list
 
         # Flatten incoming patient profile
         patient_profile = data.get("patientProfile", {})
@@ -84,16 +67,15 @@ def agent_endpoint():
         # Ensure all required fields are present
         transformed_profile = build_default_profile(transformed_profile)
 
-        # --- Memory Transformation ---
-        mem = result.get("memory", memory)
-        transformed_memory = build_default_memory(mem)
+        # --- Memory ---
+        memory = result.get("memory", memory)
 
         # Prepare response with transformed data
         
         response = {
             "updatedPatientProfile": transformed_profile,
-            "updatedMemory": transformed_memory,
-            "updatedUpdates": result.get("updates", updates),
+            "updatedMemory": memory,
+            "Updates": result.get("updates", updates),
         }
         if "final_answer" in result and result["final_answer"]:
             response["extraInfo"] = result["final_answer"]
