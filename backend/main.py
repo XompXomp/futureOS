@@ -838,7 +838,7 @@ def unmute_node(state: AgentState) -> AgentState:
                 
                 while time.time() - start_time < 10:
                     try:
-                        chunk = await asyncio.wait_for(websocket.recv(), timeout=5.0)
+                        chunk = await asyncio.wait_for(websocket.recv(), timeout=10.0)
                         #print(f"✓ Received: {chunk}")
                         
                         try:
