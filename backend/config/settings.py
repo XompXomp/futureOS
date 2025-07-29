@@ -67,6 +67,9 @@ class Settings:
 
     # Memory base path for CurorMemorySystem
     MEMORY_BASE_PATH = os.path.join(DOCS_FOLDER, "memory")
+    
+    # Unmute Integration
+    UNMUTE_WEBSOCKET_URL = os.getenv("UNMUTE_WEBSOCKET_URL", "ws://172.22.225.138:11000/v1/realtime")
 
 # Agent mode: set to 'chat' for CLI, 'server' for API integration
 AGENT_MODE = "chat"

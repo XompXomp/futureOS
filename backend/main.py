@@ -13,19 +13,54 @@ from langchain_core.prompts import ChatPromptTemplate
 from langgraph.graph import StateGraph, END
 import requests
 from datetime import datetime
+import websockets
+from langchain_core.runnables.graph_mermaid import draw_mermaid_png
+from IPython.display import Image, display
+import time
+
+# --- Websocket function to send messages to Unmute ---
+def send_message_to_unmute(text: str, patient_profile: dict) -> bool:
+    """
+    Send a message to Unmute via websocket.
+    Returns True if successful, False otherwise.
+    """
+    try:
+        # Get Unmute websocket URL from settings or use default
+        unmute_url = getattr(settings, "UNMUTE_WEBSOCKET_URL", "ws://172.22.225.138:11000/v1/realtime")
+        
+        import asyncio
+        
+        async def send_message():
+            async with websockets.connect(unmute_url, subprotocols=['realtime']) as websocket:
+                message = {
+                    "type": "conversation.item.input_text",
+                    "text": text,
+                    "patientProfile": patient_profile
+                }
+                
+                await websocket.send(json.dumps(message))
+        
+        # Run the async function
+        asyncio.run(send_message())
+        
+        print(f"DEBUG - Successfully sent message to Unmute: {text}")
+        return True
+        
+    except Exception as e:
+        print(f"DEBUG - Failed to send message to Unmute: {str(e)}")
+        return False
 
 # --- Define the state structure properly ---
 class AgentState(TypedDict):
     input: str
-    memory: dict
+    memory: list
     patientProfile: dict
-    updates: list # Only keep this
+    updates: list
     final_answer: Optional[str]
     source: Optional[str]
     error: Optional[str]
     insights: Optional[str]
-    updates: Optional[str]
-    route_tag: Optional[str]  # <-- Add this line
+    route_tag: Optional[str]
 
 def select_tool_llm(user_input: str, tool_metadata: list[dict]) -> str:
     """Use an LLM to select the best tool based on user input and tool descriptions."""
@@ -242,7 +277,8 @@ def patient_node(state: AgentState) -> AgentState:
                     if not isinstance(current_updates, list):
                         current_updates = []
                     update_entry = {
-                        "datetime": datetime.now().replace(microsecond=0).isoformat(),
+                        # Format current time as DD_MM_YY_HH_MM
+                        "datetime": datetime.now().strftime("%d_%m_%y_%H_%M"),
                         "text": change_summary
                     }
                     current_updates.append(update_entry)
@@ -295,8 +331,8 @@ def web_node(state: AgentState) -> AgentState:
         new_state['error'] = f"Web node error: {str(e)}"
         return new_state
 
-# --- Router function for conditional edges ---
-def route_to_agent(state: AgentState) -> str:
+# --- Router function for conditional edges (COMMENTED OUT - NO LONGER NEEDED) ---
+# def route_to_agent(state: AgentState) -> str:
     """
     This function is used specifically for conditional edge routing.
     It receives the state and returns the agent name as a string.
@@ -365,8 +401,8 @@ def route_to_agent(state: AgentState) -> str:
     # print("DEBUG - Default routing to text")
     # return 'text'
 
-    # New logic: use the tag set by the llm_tagger_node
-    return state.get('route_tag', 'text')
+#     # New logic: use the tag set by the llm_tagger_node
+#     return state.get('route_tag', 'text')
 
 def postprocess_response(user_input, tool_output, source: str = None):
     if getattr(settings, "USE_OLLAMA", False):
@@ -487,7 +523,7 @@ def semantic_memory_precheck_node(state: AgentState) -> AgentState:
     print(f"DEBUG - semantic_memory_precheck_node received state keys: {list(state.keys())}")
     user_input = state.get('input', '')
     patient_profile = state.get('patientProfile', {})
-    memory = state.get('memory', {})
+    memory = state.get('memory', [])
     state['source'] = 'memory'
 
     # 1. Flatten patient profile keys and check for match
@@ -525,7 +561,7 @@ def semantic_memory_precheck_node(state: AgentState) -> AgentState:
 
     # 4. If results found, check LLM relevance
     if results:
-        all_contents = "\n- ".join(r.get('content', '') for r in results)
+        all_contents = "\n- ".join(r.get('text', '') for r in results)
         prompt = ChatPromptTemplate.from_template(
             "Is any of the following memory relevant to the user's input? Respond 'true' or 'false'.\nUser: {user_input}\nMemory: {all_contents}\nAnswer:"
         )
@@ -546,8 +582,6 @@ def semantic_memory_precheck_node(state: AgentState) -> AgentState:
         should_store = str(filter_result.content).strip().lower()
         if 'true' in should_store:
             update_state = state.copy()
-            update_state['content'] = user_input
-            update_state['category'] = 'general'
             updated = tools['update_semantic_memory'](update_state)
             state['memory'] = updated.get('memory', memory)
             print("DEBUG - Semantic memory updated with new fact/preference (after LLM filter)")
@@ -564,8 +598,6 @@ def semantic_memory_precheck_node(state: AgentState) -> AgentState:
     should_store = str(filter_result.content).strip().lower()
     if 'true' in should_store:
         update_state = state.copy()
-        update_state['content'] = user_input
-        update_state['category'] = 'general'
         updated = tools['update_semantic_memory'](update_state)
         state['memory'] = updated.get('memory', memory)
         print("DEBUG - Semantic memory updated with new fact/preference (no prior results)")
@@ -597,29 +629,39 @@ def llm_tagger_node(state: AgentState) -> AgentState:
             "You are a strict classifier for a healthcare AI system. "
             "Given a user input, classify it into exactly one of the following tags:\n\n"
             "TAGS:\n"
+            
             "1. WEB: For real-time or fact-based queries that may change over time and require a current search. "
             "Examples: 'Nvidia stock price', 'Current bitcoin value', 'Latest news on diabetes research', "
             "'Weather in Dubai today', 'Population of China', 'COVID-19 cases in US'.\n"
-            "Classify as WEB if the input matches the WEB logic from the router prompt.\n\n"
-            "2. TEXT: For simple greetings, chit-chat, casual conversations, or general questions that don't need tools or requests related to updating or adding recommendations"
-            "Examples: 'Hi', 'Tell me a joke', 'What is your name?', 'Explain photosynthesis'.\n"
-            "Classify as TEXT if the input matches the TEXT logic from the router prompt.\n\n"
+            "Classify as WEB if the input is asking for current information, real-time data, or facts that may change over time.\n\n"
+            
+            "2. TEXT: For simple greetings, chit-chat, casual conversations, or general questions that don't need tools"
+            "VERY IMPORTANT: USE for any requests related to adding, updating, or removing recommendations"
+            "Examples: 'Hi', 'Tell me a joke', 'What is your name?', 'Explain photosynthesis', 'Add a recommendation to eat more iron rich food'.\n"
+            "Classify as TEXT if the input is casual conversation, general knowledge questions, or recommendation-related requests.\n\n"
+            
             "3. PATIENT: For anything related to the patient’s profile, such as their name, age, gender, allergies, medications, routines, appointments, or personal history."
-            "VERY IMPORTANT: DO NOT use for any requests related to recommendations, or anything related to recommendations."
+            "VERY IMPORTANT: DO NOT use for any requests related to adding, updating, or removing recommendations"
             "Examples: 'What medications is the patient taking?', 'Update sleep quality to poor', 'Does John have any allergies?', 'Add walking to daily checklist'.\n"
-            "Classify as PATIENT if the input matches the PATIENT logic from the router prompt.\n\n"
+            "Classify as PATIENT if the input is about reading or updating patient profile information (excluding recommendations).\n\n"
+            
             "4. MEDICAL: For anything that is medical reasoning, verification, or critical treatment suggestions. "
             "This includes requests for medical advice, diagnosis, or complex medical questions that require domain-specific reasoning. "
             "Examples: 'Is this treatment safe for diabetes?', 'What are the contraindications for this drug?', "
             "'Should I combine these two medications?', 'Verify the diagnosis for this patient'.\n"
             "Classify as MEDICAL if the input is about medical reasoning, verification, or critical suggestions.\n\n"
+            
             "5. UI_CHANGE: For requests related to changing the user interface, such as themes, layout, or settings. "
             "Examples: 'Change theme to dark mode', 'Switch to compact view', 'Open settings'.\n"
             "Classify as UI_CHANGE if the input is about UI themes or interface changes.\n\n"
+            
             "6. ADD_TREATMENT: For requests to add a treatment of a particular type (e.g., 'Add physiotherapy to my plan'), "
             "but NOT for adding medications or anything else. "
             "Examples: 'Add physical therapy to my treatment plan', 'Include occupational therapy'. "
             "Do NOT use this tag for medication or general additions.\n\n"
+            
+            
+
             "Respond ONLY with one tag: WEB, TEXT, PATIENT, MEDICAL, UI_CHANGE, or ADD_TREATMENT. "
             "Do not explain your choice. Output only the tag."
         )),
@@ -630,36 +672,12 @@ def llm_tagger_node(state: AgentState) -> AgentState:
     tag = str(result.content).strip().lower()
     state['route_tag'] = tag  # This is what the agent will use
 
-    # --- Prepare tag for Unmute API ---
-    if tag in ['text', 'patient']:
-        unmute_tag = 'NORMAL'
-    else:
-        unmute_tag = tag.upper()
-
-    # --- Notify Unmute and set API response to final_answer ---
-    # try:
-    #     api_response = requests.post(
-    #         "http://unmute-api/notify",
-    #         json={"tag": unmute_tag, "input": user_input},
-    #         timeout=5
-    #     )
-    #     if api_response.ok:
-    #         state['final_answer'] = api_response.text
-    #     else:
-    #         state['final_answer'] = f"API error: {api_response.status_code} {api_response.text}"
-    # except Exception as e:
-    #     state['final_answer'] = f"API request failed: {e}"
-
     return state
 
 # --- Medical Reasoning Node (NEW) ---
 def medical_reasoning_node(state: AgentState) -> AgentState:
     user_input = state.get('input', '')
-    memory = state.get('memory', {})
 
-    # Format current time as DD_MM_YY_HH_MM
-    now = datetime.now()
-    dt_str = now.strftime("%d_%m_%y_%H_%M")
 
     payload = {"prompt": user_input}
 
@@ -685,7 +703,7 @@ def semantic_update_node(state: AgentState) -> AgentState:
     Only updates semantic memory with the user input if appropriate.
     """
     user_input = state.get('input', '')
-    memory = state.get('memory', {})
+    memory = state.get('memory', [])
 
     # Import/create memory tools as in your other nodes
     from tools.memory_tools import create_memory_tools
@@ -714,54 +732,234 @@ def semantic_update_node(state: AgentState) -> AgentState:
     should_store = str(filter_result.content).strip().lower()
     if 'true' in should_store:
         update_state = state.copy()
-        update_state['content'] = user_input
-        update_state['category'] = 'general'
         updated = tools['update_semantic_memory'](update_state)
         state['memory'] = updated.get('memory', memory)
     return state
 
+# --- Unmute Node (NEW) ---
+# Using direct connection approach to avoid event loop conflicts
+
+def unmute_node(state: AgentState) -> AgentState:
+    """
+    Side-effect node that streams to Unmute and frontend.
+    Uses direct connection approach with response.create trigger.
+    """
+    user_input = state.get('input', '')
+    patient_profile = state.get('patientProfile', {})
+    route_tag = state.get('route_tag', '')
+    
+    # Determine text to send based on source
+    source = state.get('source', '')
+    
+    # If source is medical or web, send the extra tag along with the result
+    if source == 'medical' or source == 'web':
+        text_to_send = state.get('final_answer', '')
+        tag = 'extra'
+    # If source is not medical or web, send the route tag along with the user input
+    else:
+        if route_tag in ['TEXT', 'PATIENT']:
+            text_to_send = user_input
+            tag = 'normal'
+        elif route_tag == 'web':
+            text_to_send = user_input
+            tag = 'web'
+        elif route_tag == 'medical':
+            text_to_send = user_input
+            tag = 'med'
+        elif route_tag == 'add_treatment':
+            text_to_send = user_input
+            tag = 'addt'
+        elif route_tag == 'ui_change':
+            text_to_send = user_input
+            tag = 'ui'
+        else:
+            text_to_send = user_input
+            tag = 'normal'
+    
+    print(f"DEBUG - unmute_node: Starting streaming for '{text_to_send}'")
+    
+    # Use direct connection approach with response.create trigger
+    try:
+        import asyncio
+        import websockets
+        
+        async def direct_unmute_connection():
+            unmute_url = getattr(settings, "UNMUTE_WEBSOCKET_URL", "ws://172.22.225.138:11000/v1/realtime")
+            
+            async with websockets.connect(unmute_url, subprotocols=['realtime']) as websocket:
+                print("✓ Connected to Unmute (direct)")
+                
+                # Session initialization
+                session_message = {
+                    "type": "session.update",
+                    "session": {
+                        "instructions": {
+                            "type": "constant",
+                            "text": "You are a helpful health assistant."
+                        },
+                        "voice": "unmute-prod-website/developer-1.mp3",
+                        "allow_recording": True
+                    }
+                }
+                await websocket.send(json.dumps(session_message))
+                print("✓ Sent session initialization")
+                
+                await asyncio.sleep(1)
+                
+                # Send message
+                
+                prompt_message = {
+                    "type": "conversation.item.input_text",
+                    "text": text_to_send,
+                    "patientProfile": patient_profile,
+                    "tag": tag
+                }
+                if tag == 'extra':
+                    prompt_message = {
+                        "type": "conversation.item.input_text",
+                        "text": text_to_send,
+                        "tag": tag
+                    }
+                    
+                await websocket.send(json.dumps(prompt_message))
+                print(f"✓ Sent message: {prompt_message}")
+                
+                # ADD THIS: Send response generation trigger
+                response_create_message = {
+                    "type": "response.create"
+                }
+                await websocket.send(json.dumps(response_create_message))
+                print(f"DEBUG - Sent response.create trigger")
+                
+                # Wait for response
+                text_done = False
+                audio_done = False
+                start_time = time.time()
+                
+                while time.time() - start_time < 10:
+                    try:
+                        chunk = await asyncio.wait_for(websocket.recv(), timeout=5.0)
+                        #print(f"✓ Received: {chunk}")
+                        
+                        try:
+                            msg = json.loads(chunk)
+                            msg_type = msg.get('type', '')
+                            
+                            if msg_type == 'unmute.response.text.delta.ready' and msg.get('delta'):
+                                text_chunk = msg['delta']
+                                print(f"DEBUG - Streaming text chunk: {text_chunk}")
+                                # TODO: Send to frontend immediately
+                                # await send_text_to_frontend(text_chunk)
+                                
+                            elif msg_type == 'response.audio.delta' and msg.get('delta'):
+                                audio_chunk = msg['delta']
+                                #print(f"DEBUG - Streaming audio chunk: {len(audio_chunk)} bytes")
+                                # TODO: Send to frontend immediately
+                                # await send_audio_to_frontend(audio_chunk)
+                            
+                            elif msg_type == 'response.text.done':
+                                text_done = True
+                                print(f"DEBUG - Text response done")
+                            
+                            elif msg_type == 'response.audio.done':
+                                audio_done = True
+                                print(f"DEBUG - Audio response done")
+                            
+                            if text_done and audio_done:
+                                print(f"DEBUG - Response complete")
+                                break
+                                
+                        except json.JSONDecodeError:
+                            print(f"Non-JSON response: {chunk}")
+                            
+                    except asyncio.TimeoutError:
+                        print("Timeout - no response received")
+                        break
+                    except websockets.exceptions.ConnectionClosed as e:
+                        print(f"Connection closed: {e}")
+                        break
+                
+                print("Direct connection completed")
+        
+        # Run the direct connection in a new event loop
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            loop.run_until_complete(direct_unmute_connection())
+        finally:
+            loop.close()
+        
+    except Exception as e:
+        print(f"DEBUG - Direct connection failed: {str(e)}")
+        import traceback
+        traceback.print_exc()
+    
+    # Return None to terminate this branch (side-effect only)
+    return None
+
 # --- UI Change Node (NEW, optional) ---
 def ui_change_node(state: AgentState) -> AgentState:
-    # This node can set a special flag for the frontend to handle
+    # This node can set the function to be called on the frontend to handle the UI change
     state['final_answer'] = "[UI_CHANGE] Action required on frontend."
     state['source'] = 'ui'
     return state
 
-# --- Build the LangGraph workflow (UPDATED) ---
+# --- Processing Router Node (NEW) ---
+def processing_router_node(state: AgentState) -> AgentState:
+    """
+    Routes to the appropriate processing node based on route_tag.
+    This runs in parallel with the unmute livestream.
+    """
+    route_tag = state.get('route_tag', 'text')
+    
+    # Set a flag to indicate this is the processing path
+    state['processing_path'] = True
+    
+    # Route to appropriate processing node
+    if route_tag == 'text':
+        state['next_node'] = 'semantic_precheck'
+    elif route_tag == 'patient':
+        state['next_node'] = 'patient'
+    elif route_tag == 'web':
+        state['next_node'] = 'web'
+    elif route_tag == 'medical':
+        state['next_node'] = 'semantic_update'  # First goes to semantic_update
+    elif route_tag in ('ui_change', 'add_treatment'):
+        state['next_node'] = 'ui_change'
+    else:
+        state['next_node'] = 'semantic_precheck'  # fallback
+    
+    return state
+
+# --- Build the LangGraph workflow (UPDATED with Parallel Execution) ---
 def build_workflow():
     graph = StateGraph(AgentState)
     graph.add_node('llm_tagger', llm_tagger_node)
+    graph.add_node('unmute', unmute_node)
+    graph.add_node('processing_router', processing_router_node)
     graph.add_node('semantic_precheck', semantic_memory_precheck_node)
-    graph.add_node('text', text_node)
     graph.add_node('patient', patient_node)
     graph.add_node('web', web_node)
     graph.add_node('medical', medical_reasoning_node)
-    graph.add_node('semantic_update', semantic_update_node) # Added semantic_update_node
+    graph.add_node('semantic_update', semantic_update_node)
     graph.add_node('ui_change', ui_change_node)
     graph.add_node('postprocess', postprocess_node)
 
     graph.set_entry_point('llm_tagger')
 
-    def tagger_conditional(state):
-        tag = state.get('route_tag', 'text')
-        if tag == 'text':
-            return 'semantic_precheck'
-        elif tag == 'patient':
-            return 'patient'
-        elif tag == 'web':
-            return 'web'
-        elif tag == 'medical':
-            return 'semantic_update' # Changed to semantic_update
-        elif tag in ('ui_change', 'add_treatment'):
-            return 'ui_change'
-        else:
-            return 'semantic_precheck'  # fallback
+    # Direct edges for parallel execution
+    graph.add_edge('llm_tagger', 'unmute')
+    graph.add_edge('llm_tagger', 'processing_router')
 
-    graph.add_conditional_edges('llm_tagger', tagger_conditional, {
+    # Processing router conditional
+    def processing_conditional(state):
+        next_node = state.get('next_node', 'semantic_precheck')
+        return next_node
+
+    graph.add_conditional_edges('processing_router', processing_conditional, {
         'semantic_precheck': 'semantic_precheck',
         'patient': 'patient',
         'web': 'web',
-        'medical': 'medical',
         'semantic_update': 'semantic_update',
         'ui_change': 'ui_change'
     })
@@ -771,34 +969,49 @@ def build_workflow():
         if state.get('final_answer'):
             return 'postprocess'
         else:
-            return route_to_agent(state)
+            return 'end'
 
     graph.add_conditional_edges('semantic_precheck', precheck_conditional, {
-        'text': 'text',
-        'patient': 'patient',
-        'postprocess': 'postprocess'
+        'postprocess': 'postprocess',
+        'end': END
     })
 
-    graph.add_edge('text', END)
-    graph.add_edge('patient', 'postprocess')
+    graph.add_edge('patient', END)
     graph.add_edge('web', 'postprocess')
     graph.add_edge('semantic_update', 'medical')
-    graph.add_edge('medical', END)
+    graph.add_edge('medical', 'unmute')
     graph.add_edge('ui_change', END)
-    graph.add_edge('postprocess', END)
+    
+    # Postprocess conditional - go to unmute if source is web, else END
+    def postprocess_conditional(state):
+        source = state.get('source', '')
+        if source == 'web':
+            return 'unmute'
+        else:
+            return 'end'
+    
+    graph.add_conditional_edges('postprocess', postprocess_conditional, {
+        'unmute': 'unmute',
+        'end': END
+    })
 
     return graph.compile()
+
 
 def run_agent_workflow(user_input, memory, patient_profile, updates=None):
     """
     Run the workflow in 'server' mode: takes user_input, memory, patient_profile, updates and returns the updated result state.
     """
     workflow = build_workflow()
+
+    mermaid_code = workflow.get_graph().draw_mermaid()
+    print(mermaid_code)
+
     initial_state: AgentState = {
         'input': user_input,
         'memory': memory,
         'patientProfile': patient_profile,
-        'updates': updates if updates is not None else {},
+        'updates': updates if updates is not None else [],
         'final_answer': None,
         'source': None,
         'error': None,
