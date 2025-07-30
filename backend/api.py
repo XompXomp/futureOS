@@ -213,7 +213,7 @@ def agent_stream_endpoint():
                     try:
                         # Wait for chunk with timeout - use shorter timeout for real-time streaming
                         print(f"DEBUG - Streaming endpoint: Waiting for chunk (queue size: {request_queue.qsize()})")
-                        chunk = request_queue.get(timeout=0.005)  # 0.005 second timeout for real-time
+                        chunk = request_queue.get(timeout=0.5)  # 0.005 second timeout for real-time
                         print(f"DEBUG - Streaming endpoint: Sending chunk {chunk['type']} to frontend")
                         
                         if chunk["type"] == "final_result":

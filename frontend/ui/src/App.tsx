@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef, RefObject } from 'react';
 import './App.css';
-import { getPatientProfile, getConversation, updatePatientProfile, updateConversation, PatientProfile, Conversation, getMemory, updateMemory, getLinks, updateLinks, getGeneral, updateGeneral } from './db';
+import { getPatientProfile, getConversation, updatePatientProfile, updateConversation, PatientProfile, Conversation, getMemory, updateMemory, getLinks, updateLinks, getGeneral, updateGeneral, updateUpdates, getUpdates } from './db';
 import OpusRecorder from 'opus-recorder';
 // @ts-ignore
 import msgpack from 'msgpack-lite';
@@ -102,10 +102,12 @@ function setupStreamingAudio() {
 }
 
 // Streaming chunk handler for new API
-function handleStreamingChunk(chunk: any, setConversation: any, updateConversation: any, setProfile: any, updatePatientProfile: any, setLinks: any, setGeneral: any, setStreamingText: any, setIsStreaming: any, setStreamingError: any, setStreamingStatus: any, setLoading: any) {
+function handleStreamingChunk(chunk: any, setConversation: any, updateConversation: any, setProfile: any, updatePatientProfile: any, setLinks: any, setGeneral: any, setUpdates: any, setStreamingText: any, setIsStreaming: any, setStreamingError: any, setStreamingStatus: any, setLoading: any) {
   console.log('[DEBUG] Streaming chunk received:', chunk);
   console.log('[DEBUG] Chunk type:', chunk.type);
   console.log('[DEBUG] Chunk data:', chunk.data);
+  console.log('[DEBUG] Chunk data type:', typeof chunk.data);
+  console.log('[DEBUG] Chunk data keys:', chunk.data ? Object.keys(chunk.data) : 'null');
   
   switch (chunk.type) {
     case 'streaming_started':
@@ -197,12 +199,51 @@ function handleStreamingChunk(chunk: any, setConversation: any, updateConversati
       break;
       
     case 'workflow_complete':
+      // Handle workflow completion from agent
+      console.log('Agent workflow complete');
+      const workflowResult = chunk.data;
+      console.log('[DEBUG] workflow_complete - workflowResult:', workflowResult);
+      console.log('[DEBUG] workflow_complete - workflowResult.result:', workflowResult.result);
+      console.log('[DEBUG] workflow_complete - workflowResult.result?.patientProfile:', workflowResult.result?.patientProfile);
+      
+      if (workflowResult.result && workflowResult.result.patientProfile) {
+        console.log('[DEBUG] Updating profile from workflow_complete:', workflowResult.result.patientProfile);
+        setProfile(workflowResult.result.patientProfile);
+        updatePatientProfile(workflowResult.result.patientProfile);
+      }
+      if (workflowResult.result && workflowResult.result.memory) {
+        updateMemory(workflowResult.result.memory);
+      }
+      if (workflowResult.result && workflowResult.result.links) {
+        setLinks(workflowResult.result.links);
+      }
+      if (workflowResult.result && workflowResult.result.general) {
+        setGeneral(workflowResult.result.general);
+      }
+      if (workflowResult.result && workflowResult.result.updates) {
+        console.log('[DEBUG] Updating updates from workflow_complete:', workflowResult.result.updates);
+        // Append new updates to existing ones
+        setUpdates((prevUpdates: any) => {
+          const existingUpdates = prevUpdates || [];
+          const newUpdates = workflowResult.result.updates;
+          return [...existingUpdates, ...newUpdates];
+        });
+        updateUpdates(workflowResult.result.updates);
+      }
+      
+      // Don't clear streaming state here - let the final_result handle it
+      // This allows the audio response to continue streaming
+      break;
+      
     case 'final_result':
       // Handle final result from agent workflow
       console.log('Agent processing complete');
       const result = chunk.data;
+      console.log('[DEBUG] final_result - result:', result);
+      console.log('[DEBUG] final_result - result.updatedPatientProfile:', result.updatedPatientProfile);
       
       if (result.updatedPatientProfile) {
+        console.log('[DEBUG] Updating profile from final_result:', result.updatedPatientProfile);
         setProfile(result.updatedPatientProfile);
         updatePatientProfile(result.updatedPatientProfile);
       }
@@ -214,6 +255,16 @@ function handleStreamingChunk(chunk: any, setConversation: any, updateConversati
       }
       if (result.general) {
         setGeneral(result.general);
+      }
+      if (result.Updates) {
+        console.log('[DEBUG] Updating updates from final_result:', result.Updates);
+        // Append new updates to existing ones
+        setUpdates((prevUpdates: any) => {
+          const existingUpdates = prevUpdates || [];
+          const newUpdates = result.Updates;
+          return [...existingUpdates, ...newUpdates];
+        });
+        updateUpdates(result.Updates);
       }
       
       // Clear streaming state
@@ -263,9 +314,10 @@ const App: React.FC = () => {
   const [profile, setProfile] = useState<PatientProfile | null>(null);
   const [loading, setLoading] = useState(false);
   const [recording, setRecording] = useState(false);
-  // --- Add state for links and general ---
+  // --- Add state for links, general, and updates ---
   const [links, setLinks] = useState<Record<string, any> | null>(null);
   const [general, setGeneral] = useState<any | null>(null);
+  const [updates, setUpdates] = useState<any | null>(null);
   const [audioMode, setAudioMode] = useState(false);
   
   // --- Add streaming state variables ---
@@ -315,6 +367,10 @@ const App: React.FC = () => {
         getGeneral().then(result => {
           console.log('[DEBUG] setGeneral called with (initial load):', result?.general ?? null);
           setGeneral(result?.general ?? null);
+        });
+        getUpdates().then(result => {
+          console.log('[DEBUG] setUpdates called with (initial load):', result?.updates ?? null);
+          setUpdates(result?.updates ?? null);
         });
       }).catch(error => {
         console.error('[DEBUG] Database initialization error:', error);
@@ -853,6 +909,7 @@ const App: React.FC = () => {
                   updatePatientProfile, 
                   setLinks, 
                   setGeneral, 
+                  setUpdates, 
                   setStreamingText, 
                   setIsStreaming, 
                   setStreamingError, 
@@ -1010,6 +1067,20 @@ const App: React.FC = () => {
               <pre style={{ fontSize: 12, whiteSpace: 'pre-wrap', margin: 0, color: darkMode ? '#ffffff' : '#000000' }}>{JSON.stringify(general, null, 2)}</pre>
             ) : (
               <p style={{ fontSize: 12, color: darkMode ? '#999' : '#666', margin: 0, fontStyle: 'italic' }}>No general information available</p>
+            )}
+          </div>
+          <div style={{ 
+            background: darkMode ? '#2d2d2d' : '#fef', 
+            padding: 12, 
+            borderRadius: 8, 
+            marginBottom: 12,
+            border: darkMode ? '1px solid #404040' : 'none'
+          }}>
+            <h4>Updates</h4>
+            {updates ? (
+              <pre style={{ fontSize: 12, whiteSpace: 'pre-wrap', margin: 0, color: darkMode ? '#ffffff' : '#000000' }}>{JSON.stringify(updates, null, 2)}</pre>
+            ) : (
+              <p style={{ fontSize: 12, color: darkMode ? '#999' : '#666', margin: 0, fontStyle: 'italic' }}>No updates available</p>
             )}
           </div>
         </div>

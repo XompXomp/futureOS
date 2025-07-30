@@ -120,8 +120,23 @@ export async function getUpdates() {
   return db.updates.get('updates');
 }
 
-export async function updateUpdates(updates: Updates) {
-  return db.updates.put(updates);
+export async function updateUpdates(updates: Updates | any) {
+  // Get existing updates first
+  const existingUpdates = await db.updates.get('updates');
+  const existingUpdatesArray = existingUpdates?.updates || [];
+  
+  // Prepare new updates to add
+  const newUpdates = Array.isArray(updates) ? updates : (updates?.updates || []);
+  
+  // Combine existing and new updates
+  const combinedUpdates = [...existingUpdatesArray, ...newUpdates];
+  
+  // Ensure updates has the correct structure
+  const updatesObject = {
+    id: 'updates',
+    updates: combinedUpdates
+  };
+  return db.updates.put(updatesObject);
 }
 
 // Sample data initialization
