@@ -12,6 +12,7 @@
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
     "cors": "^2.8.5",
+    "msgpack-lite": "^0.1.26",
     "opus-recorder": "^8.0.5",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
@@ -42,5 +43,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@types/msgpack-lite": "^0.1.11"
   }
 }

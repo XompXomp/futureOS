@@ -81,8 +81,13 @@ export async function getMemory() {
   return db.memory.get('memory');
 }
 
-export async function updateMemory(memory: Memory) {
-  return db.memory.put(memory);
+export async function updateMemory(memory: Memory | any) {
+  // Ensure memory has the correct structure
+  const memoryObject = {
+    id: 'memory',
+    memory: Array.isArray(memory) ? memory : (memory?.memory || [])
+  };
+  return db.memory.put(memoryObject);
 }
 
 export async function addMemoryItem(item: object) {
@@ -226,4 +231,4 @@ export async function updatePatientProfile(profile: PatientProfile) {
 
 export async function updateConversation(conversation: Conversation) {
   return db.conversation.put(conversation);
-} 
+}

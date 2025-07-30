@@ -18,6 +18,16 @@ from langchain_core.runnables.graph_mermaid import draw_mermaid_png
 from IPython.display import Image, display
 import time
 
+# --- Global streaming function ---
+def send_streaming_chunk(chunk_type: str, data: dict):
+    """
+    Send a streaming chunk to the frontend.
+    This function is overridden by the API layer for streaming responses.
+    """
+    # Default implementation - does nothing
+    # The API layer will replace this function during streaming
+    pass
+
 # --- Websocket function to send messages to Unmute ---
 def send_message_to_unmute(text: str, patient_profile: dict) -> bool:
     """
@@ -608,6 +618,16 @@ def semantic_memory_precheck_node(state: AgentState) -> AgentState:
 # --- LLM Tagger Node (NEW) ---
 def llm_tagger_node(state: AgentState) -> AgentState:
     user_input = state.get('input', '')
+    
+    # Start streaming session
+    session_id = f"session_{int(time.time())}"
+    state['session_id'] = session_id
+    
+    # Send initial streaming status
+    send_streaming_chunk("streaming_started", {
+        "message": "Starting agent processing...",
+        "session_id": session_id
+    })
 
     # --- LLM-based classification (web, patient, text, medical, ui_change, add_treatment) ---
     if getattr(settings, "USE_OLLAMA", False):
@@ -778,6 +798,12 @@ def unmute_node(state: AgentState) -> AgentState:
     
     print(f"DEBUG - unmute_node: Starting streaming for '{text_to_send}'")
     
+    # Send streaming status
+    send_streaming_chunk("unmute_connecting", {
+        "message": "Connecting to voice assistant...",
+        "text": text_to_send
+    })
+    
     # Use direct connection approach with response.create trigger
     try:
         import asyncio
@@ -788,6 +814,11 @@ def unmute_node(state: AgentState) -> AgentState:
             
             async with websockets.connect(unmute_url, subprotocols=['realtime']) as websocket:
                 print("✓ Connected to Unmute (direct)")
+                
+                # Send connection status
+                send_streaming_chunk("unmute_connected", {
+                    "message": "Connected to voice assistant"
+                })
                 
                 # Session initialization
                 session_message = {
@@ -831,6 +862,11 @@ def unmute_node(state: AgentState) -> AgentState:
                 await websocket.send(json.dumps(response_create_message))
                 print(f"DEBUG - Sent response.create trigger")
                 
+                # Send streaming started status
+                send_streaming_chunk("unmute_streaming_started", {
+                    "message": "Voice assistant is responding..."
+                })
+                
                 # Wait for response
                 text_done = False
                 audio_done = False
@@ -848,25 +884,46 @@ def unmute_node(state: AgentState) -> AgentState:
                             if msg_type == 'unmute.response.text.delta.ready' and msg.get('delta'):
                                 text_chunk = msg['delta']
                                 print(f"DEBUG - Streaming text chunk: {text_chunk}")
-                                # TODO: Send to frontend immediately
-                                # await send_text_to_frontend(text_chunk)
+                                
+                                # Send text chunk to frontend immediately
+                                send_streaming_chunk("text_chunk", {
+                                    "text": text_chunk,
+                                    "source": "unmute"
+                                })
                                 
                             elif msg_type == 'response.audio.delta' and msg.get('delta'):
                                 audio_chunk = msg['delta']
-                                #print(f"DEBUG - Streaming audio chunk: {len(audio_chunk)} bytes")
-                                # TODO: Send to frontend immediately
-                                # await send_audio_to_frontend(audio_chunk)
+                                print(f"DEBUG - Streaming audio chunk: {len(audio_chunk)} bytes")
+                                
+                                # Send audio chunk to frontend immediately
+                                send_streaming_chunk("audio_chunk", {
+                                    "audio": audio_chunk,
+                                    "source": "unmute"
+                                })
                             
                             elif msg_type == 'response.text.done':
                                 text_done = True
                                 print(f"DEBUG - Text response done")
+                                
+                                # Send text completion status
+                                send_streaming_chunk("text_complete", {
+                                    "message": "Text response complete"
+                                })
                             
                             elif msg_type == 'response.audio.done':
                                 audio_done = True
                                 print(f"DEBUG - Audio response done")
+                                
+                                # Send audio completion status
+                                send_streaming_chunk("audio_complete", {
+                                    "message": "Audio response complete"
+                                })
                             
                             if text_done and audio_done:
                                 print(f"DEBUG - Response complete")
+                                send_streaming_chunk("unmute_complete", {
+                                    "message": "Voice assistant response complete"
+                                })
                                 break
                                 
                         except json.JSONDecodeError:
@@ -874,9 +931,15 @@ def unmute_node(state: AgentState) -> AgentState:
                             
                     except asyncio.TimeoutError:
                         print("Timeout - no response received")
+                        send_streaming_chunk("unmute_timeout", {
+                            "message": "Voice assistant timeout"
+                        })
                         break
                     except websockets.exceptions.ConnectionClosed as e:
                         print(f"Connection closed: {e}")
+                        send_streaming_chunk("unmute_error", {
+                            "message": f"Connection error: {str(e)}"
+                        })
                         break
                 
                 print("Direct connection completed")
@@ -891,6 +954,9 @@ def unmute_node(state: AgentState) -> AgentState:
         
     except Exception as e:
         print(f"DEBUG - Direct connection failed: {str(e)}")
+        send_streaming_chunk("unmute_error", {
+            "message": f"Connection failed: {str(e)}"
+        })
         import traceback
         traceback.print_exc()
     
@@ -1018,5 +1084,21 @@ def run_agent_workflow(user_input, memory, patient_profile, updates=None):
         'insights': None,
         'route_tag': None
     }
-    result = workflow.invoke(initial_state)
-    return result
+    
+    try:
+        result = workflow.invoke(initial_state)
+        
+        # Send final result
+        send_streaming_chunk("workflow_complete", {
+            "message": "Agent processing complete",
+            "result": result
+        })
+        
+        return result
+        
+    except Exception as e:
+        # Send error
+        send_streaming_chunk("workflow_error", {
+            "message": f"Workflow error: {str(e)}"
+        })
+        raise

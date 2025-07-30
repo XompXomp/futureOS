@@ -2,9 +2,18 @@ import React, { useEffect, useState, useRef, RefObject } from 'react';
 import './App.css';
 import { getPatientProfile, getConversation, updatePatientProfile, updateConversation, PatientProfile, Conversation, getMemory, updateMemory, getLinks, updateLinks, getGeneral, updateGeneral } from './db';
 import OpusRecorder from 'opus-recorder';
+// @ts-ignore
+import msgpack from 'msgpack-lite';
 
-const WS_URL = 'ws://172.22.225.138:11000/v1/realtime';
-const LLAMA_ENDPOINT = 'http://192.168.1.47:5100/api/agent'; // Correct endpoint for Llama agent
+// Type declaration for msgpack-lite if types are not available
+declare module 'msgpack-lite' {
+  export function decode(data: Uint8Array): any;
+  export function encode(data: any): Uint8Array;
+}
+
+const LLAMA_ENDPOINT = 'http://localhost:5100/api/agent'; // Local backend endpoint
+const LLAMA_STREAM_ENDPOINT = 'http://localhost:5100/api/agent/stream'; // New streaming endpoint
+const UNMUTE_STT_ENDPOINT = 'ws://172.22.225.138:11004/api/asr-streaming'; // Direct STT endpoint
 
 function base64DecodeOpus(base64String: string): Uint8Array {
   const binaryString = window.atob(base64String);
@@ -92,6 +101,162 @@ function setupStreamingAudio() {
   }
 }
 
+// Streaming chunk handler for new API
+function handleStreamingChunk(chunk: any, setConversation: any, updateConversation: any, setProfile: any, updatePatientProfile: any, setLinks: any, setGeneral: any, setStreamingText: any, setIsStreaming: any, setStreamingError: any, setStreamingStatus: any, setLoading: any) {
+  console.log('[DEBUG] Streaming chunk received:', chunk);
+  console.log('[DEBUG] Chunk type:', chunk.type);
+  console.log('[DEBUG] Chunk data:', chunk.data);
+  
+  switch (chunk.type) {
+    case 'streaming_started':
+      console.log('Agent processing started:', chunk.data.message);
+      setStreamingStatus(chunk.data.message);
+      setIsStreaming(true);
+      setStreamingText('');
+      setStreamingError(null);
+      break;
+      
+    case 'unmute_connecting':
+      console.log('Connecting to voice assistant...');
+      setStreamingStatus('Connecting to voice assistant...');
+      break;
+      
+    case 'unmute_connected':
+      console.log('Connected to voice assistant');
+      setStreamingStatus('Connected to voice assistant');
+      break;
+      
+    case 'unmute_streaming_started':
+      console.log('Voice assistant is responding...');
+      setStreamingStatus('Voice assistant is responding...');
+      break;
+      
+    case 'text_chunk':
+      // Handle real-time text chunks from Unmute
+      const textChunk = chunk.data.text;
+      console.log('Text chunk:', textChunk);
+      
+      // Add to streaming text buffer
+      setStreamingText((prev: string) => prev + textChunk);
+      
+      // Update conversation in real-time
+      setConversation((prev: Conversation | null) => {
+        if (!prev) return prev;
+        const lastMsg = prev.conversation[prev.conversation.length - 1];
+        if (lastMsg && lastMsg.sender === 'ai') {
+          // Update last assistant message
+          const updated = {
+            ...prev,
+            cid: prev.cid || 'conv-001',
+            conversation: [
+              ...prev.conversation.slice(0, -1),
+              { ...lastMsg, text: lastMsg.text + textChunk }
+            ]
+          };
+          updateConversation(updated);
+          return updated;
+        } else {
+          // Start new assistant message
+          const updated = {
+            ...prev,
+            cid: prev.cid || 'conv-001',
+            conversation: [...prev.conversation, { sender: 'ai' as 'ai', text: textChunk }]
+          };
+          updateConversation(updated);
+          return updated;
+        }
+      });
+      break;
+      
+    case 'audio_chunk':
+      // Handle real-time audio chunks from Unmute
+      const audioChunk = chunk.data.audio;
+      console.log('Audio chunk received:', audioChunk.length, 'bytes');
+      
+      // Decode base64 audio and stream to player
+      const audioData = base64DecodeOpus(audioChunk);
+      setupStreamingAudio();
+      if (decoderWorker) {
+        decoderWorker.postMessage({ command: 'decode', pages: audioData }, [audioData.buffer]);
+      }
+      break;
+      
+    case 'text_complete':
+      console.log('Text response complete');
+      setStreamingStatus('Text response complete');
+      break;
+      
+    case 'audio_complete':
+      console.log('Audio response complete');
+      setStreamingStatus('Audio response complete');
+      break;
+      
+    case 'unmute_complete':
+      console.log('Voice assistant response complete');
+      setStreamingStatus('Voice assistant response complete');
+      break;
+      
+    case 'workflow_complete':
+    case 'final_result':
+      // Handle final result from agent workflow
+      console.log('Agent processing complete');
+      const result = chunk.data;
+      
+      if (result.updatedPatientProfile) {
+        setProfile(result.updatedPatientProfile);
+        updatePatientProfile(result.updatedPatientProfile);
+      }
+      if (result.updatedMemory) {
+        updateMemory(result.updatedMemory);
+      }
+      if (result.links) {
+        setLinks(result.links);
+      }
+      if (result.general) {
+        setGeneral(result.general);
+      }
+      
+      // Clear streaming state
+      setIsStreaming(false);
+      setStreamingText('');
+      setStreamingStatus('');
+      setLoading(false);
+      
+      // Clean up streaming connection
+      if ((window as any).cleanupStreaming) {
+        (window as any).cleanupStreaming();
+        (window as any).cleanupStreaming = null;
+      }
+      break;
+      
+    case 'error':
+    case 'unmute_error':
+    case 'unmute_timeout':
+    case 'workflow_error':
+      console.error('Error:', chunk.data.error || chunk.data.message);
+      setStreamingError(chunk.data.error || chunk.data.message);
+      setIsStreaming(false);
+      setStreamingText('');
+      setStreamingStatus('');
+      setLoading(false);
+      
+      // Clean up streaming connection
+      if ((window as any).cleanupStreaming) {
+        (window as any).cleanupStreaming();
+        (window as any).cleanupStreaming = null;
+      }
+      break;
+      
+    case 'keepalive':
+      // Handle keepalive messages
+      console.log('Keepalive received');
+      break;
+      
+    default:
+      console.log('Unknown streaming chunk type:', chunk.type);
+  }
+}
+
 const App: React.FC = () => {
   const [input, setInput] = useState('');
   const [conversation, setConversation] = useState<Conversation | null>(null);
@@ -103,9 +268,14 @@ const App: React.FC = () => {
   const [general, setGeneral] = useState<any | null>(null);
   const [audioMode, setAudioMode] = useState(false);
   
+  // --- Add streaming state variables ---
+  const [streamingText, setStreamingText] = useState('');
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [streamingError, setStreamingError] = useState<string | null>(null);
+  const [streamingStatus, setStreamingStatus] = useState<string>('');
+  
   // --- Add UI state variables ---
   const [darkMode, setDarkMode] = useState(false);
-  const wsRef = useRef<WebSocket | null>(null);
   const audioPlayerRef = useRef<HTMLAudioElement | null>(null);
   const audioChunksRef = useRef<Uint8Array[]>([]);
   const recorderRef = useRef<any>(null);
@@ -127,319 +297,249 @@ const App: React.FC = () => {
   }, [general]);
 
   useEffect(() => {
-    getPatientProfile().then(result => {
-      console.log('[DEBUG] setProfile called with (initial load):', result ?? null);
-      setProfile(result ?? null);
-    });
-    getConversation().then(result => setConversation(result ?? null));
-    getLinks().then(result => {
-      console.log('[DEBUG] setLinks called with (initial load):', result?.links ?? null);
-      setLinks(result?.links ?? null);
-    });
-    getGeneral().then(result => {
-      console.log('[DEBUG] setGeneral called with (initial load):', result?.general ?? null);
-      setGeneral(result?.general ?? null);
+    // Initialize database with sample data first
+    import('./db').then(({ initializeSampleData }) => {
+      initializeSampleData().then(() => {
+        console.log('[DEBUG] Database initialized with sample data');
+        
+        // Now load the data
+        getPatientProfile().then(result => {
+          console.log('[DEBUG] setProfile called with (initial load):', result ?? null);
+          setProfile(result ?? null);
+        });
+        getConversation().then(result => setConversation(result ?? null));
+        getLinks().then(result => {
+          console.log('[DEBUG] setLinks called with (initial load):', result?.links ?? null);
+          setLinks(result?.links ?? null);
+        });
+        getGeneral().then(result => {
+          console.log('[DEBUG] setGeneral called with (initial load):', result?.general ?? null);
+          setGeneral(result?.general ?? null);
+        });
+      }).catch(error => {
+        console.error('[DEBUG] Database initialization error:', error);
+      });
     });
   }, []);
 
-  // WebSocket connection
-  useEffect(() => {
-    const ws = new window.WebSocket(WS_URL, 'realtime');
-    wsRef.current = ws;
-    ws.onopen = () => {
-      // Send session.update with required fields
-      ws.send(JSON.stringify({
-        type: 'session.update',
-        session: {
-          instructions: {
-            type: 'constant',
-            text: 'You are a helpful health assistant.'
-          },
-          voice: 'unmute-prod-website/developer-1.mp3', // Dev (news)
-          allow_recording: true
-        }
-      }));
-    };
-    ws.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        console.log('[DEBUG] WebSocket message received:', data);
-        // Handle text response from server (Unmute protocol: response.text.delta or unmute.response.text.delta.ready)
-        if (
-          (data.type === 'response.text.delta' && data.text) ||
-          (data.type === 'unmute.response.text.delta.ready' && data.delta)
-        ) {
-          const text = data.text || data.delta;
-          setConversation(prev => {
-            if (!prev) return prev;
-            const lastMsg = prev.conversation[prev.conversation.length - 1];
-            if (lastMsg && lastMsg.sender === 'ai' && !justAddedUserMessageRef.current) {
-              // Update last assistant message
-              const updated = {
-                ...prev,
-                conversation: [
-                  ...prev.conversation.slice(0, -1),
-                  { ...lastMsg, text: lastMsg.text + text }
-                ]
-              };
-              updateConversation(updated);
-              return updated;
-            } else {
-              // Start new assistant message
-              justAddedUserMessageRef.current = false;
-              const updated = {
-                ...prev,
-                conversation: [...prev.conversation, { sender: 'ai' as 'ai', text }]
-              };
-              updateConversation(updated);
-              return updated;
-            }
-          });
-        }
-        // --- BEGIN BUFFERED FLUSH TRANSCRIPTION LOGIC (NO CLEAR ON SPEECH_STARTED) ---
-        // Do NOT clear the buffer on speech_started
-        if (data.type === 'input_audio_buffer.speech_started') {
-          console.log('[DEBUG] [speech_started] Begin new utterance (buffer NOT cleared).');
-          isRecordingRef.current = true;
-          if (flushTimeoutRef.current) {
-            clearTimeout(flushTimeoutRef.current);
-            flushTimeoutRef.current = null;
-          }
-        }
-
-        if (data.type === 'conversation.item.input_audio_transcription.delta' && data.delta) {
-          transcriptionBufferRef.current += (transcriptionBufferRef.current ? ' ' : '') + data.delta;
-          console.log('[DEBUG] [delta] Appended:', data.delta, '| Buffer now:', transcriptionBufferRef.current);
-        }
-
-        if (data.type === 'input_audio_buffer.speech_stopped') {
-          isRecordingRef.current = false;
-          // Start a short timer to catch any late deltas
-          if (flushTimeoutRef.current) clearTimeout(flushTimeoutRef.current);
-          console.log('[DEBUG] flushTimeoutRef set, profile at creation:', profile, 'profileRef.current:', profileRef.current);
-          flushTimeoutRef.current = setTimeout(() => {
-            console.log('[DEBUG] [speech_stopped] Buffer before flush:', transcriptionBufferRef.current);
-            const bufferedText = transcriptionBufferRef.current.trim();
-            console.log('[DEBUG] profileRef.current at flush:', profileRef.current);
-            console.log('[DEBUG] profile state at flush:', profile);
-            if (bufferedText) {
-              setConversation(prev => {
-                if (!prev) return prev;
-                console.log('[DEBUG] [flush] Adding user message to chat:', bufferedText);
-                const updated = {
-                  ...prev,
-                  conversation: [...prev.conversation, { sender: 'user' as 'user', text: bufferedText }]
-                };
-                updateConversation(updated);
-                return updated;
-              });
-              // --- SEND TO UNMUTE BACKEND ---
-              if (wsRef.current && wsRef.current.readyState === 1) {
-                wsRef.current.send(JSON.stringify({
-                  type: 'conversation.item.input_text',
-                  text: bufferedText,
-                  patientProfile: profileRef.current,
-                }));
-              }
-              // --- (Removed) SEND TO LLAMA ---
-              // if (profileRef.current) {
-              //   sendPromptToLlama(bufferedText);
-              // } else {
-              //   console.warn('[DEBUG] [flush] Not sending to Llama: patientProfile is null');
-              // }
-            } else {
-              console.log('[DEBUG] [flush] Buffer empty, nothing to add to chat.');
-            }
-            transcriptionBufferRef.current = "";
-            console.log('[DEBUG] [speech_stopped] Buffer cleared after flush.');
-            flushTimeoutRef.current = null;
-          }, 150); // 150ms buffer window
-        }
-        // --- END BUFFERED FLUSH TRANSCRIPTION LOGIC (NO CLEAR ON SPEECH_STARTED) ---
-        // Streaming audio playback
-        if (data.type === 'response.audio.delta' && data.delta) {
-          setupStreamingAudio();
-          const opusChunk = base64DecodeOpus(data.delta);
-          if (decoderWorker) {
-            decoderWorker.postMessage({ command: 'decode', pages: opusChunk }, [opusChunk.buffer]);
-          }
-        }
-        // No need to handle response.audio.done for streaming playback
-      } catch (e: any) {
-        // Ignore parse errors
-        console.error('WebSocket message handling error:', e);
-      }
-    };
-    ws.onerror = () => {};
-    ws.onclose = () => {};
-    return () => {
-      ws.close();
-      // Clean up streaming audio resources
-      if (audioContext) { audioContext.close(); audioContext = null; }
-      if (decoderWorker) { decoderWorker.terminate(); decoderWorker = null; }
-      audioWorkletNode = null;
-    };
-  }, []);
+  // Loading timeout reference for streaming
+  const loadingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Send text input as a message
   const handleSendPrompt = async (prompt: string, options: { updates?: any, links?: any[], general?: any } = {}) => {
     console.log('handleSendPrompt called', {
-      wsReadyState: wsRef.current?.readyState,
       hasProfile: !!profile,
       hasConversation: !!conversation,
       prompt
     });
     if (!profile || !conversation) {
       console.log('Not sending: missing profile or conversation', {
-        wsReadyState: wsRef.current?.readyState,
         hasProfile: !!profile,
         hasConversation: !!conversation
       });
       return;
     }
     setLoading(true);
-    const updatedConv = { ...conversation, conversation: [...conversation.conversation, { sender: 'user' as 'user', text: prompt }] };
+    const updatedConv = { 
+      ...conversation, 
+      cid: conversation.cid || 'conv-001', // Ensure cid exists
+      conversation: [...conversation.conversation, { sender: 'user' as 'user', text: prompt }] 
+    };
     setConversation(updatedConv);
     await updateConversation(updatedConv);
-    // Send to Llama via REST (ONLY)
-    const memory = await getMemory();
-    // --- Build request payload with required fields ---
-    const requestBody: any = {
-      prompt,
-      patientProfile: profile,
-      memory: memory || { id: 'memory', memory: [] }
-    };
-    if (options.updates) requestBody.updates = options.updates;
-    // Note: conversation, links, general are accessed via local backend bridge
-    fetch('http://172.22.225.47:5100/api/agent', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(requestBody),
-    })
-      .then(res => res.json())
-      .then(data => {
-        if (data.updatedPatientProfile || data.patientProfile) {
-          const newProfile = data.updatedPatientProfile || data.patientProfile;
-          console.log('[DEBUG] setProfile called with (Llama/Unmute response):', newProfile);
-          setProfile(newProfile);
-          updatePatientProfile(newProfile);
-        }
-        if (data.updatedMemory || data.memory) {
-          const newMemory = data.updatedMemory || data.memory;
-          updateMemory(newMemory);
-        }
-        if (data.updates) {
-          // handle updates if needed
-          console.log('[DEBUG] Received updates from Llama:', data.updates);
-        }
-        if (data.links) {
-          setLinks(data.links);
-          console.log('[DEBUG] Received links from Llama:', data.links);
-        }
-        if (data.general) {
-          setGeneral(data.general);
-          console.log('[DEBUG] Received general from Llama:', data.general);
-        }
-        if (data.function) {
-          console.log('[DEBUG] Received function command from Llama:', data.function);
-          processUICommand(data.function);
-        }
-      })
-      .catch(() => {});
+    
+    // Set a timeout to prevent loading state from getting stuck
+    if (loadingTimeoutRef.current) {
+      clearTimeout(loadingTimeoutRef.current);
+    }
+    loadingTimeoutRef.current = setTimeout(() => {
+      console.log('[DEBUG] Loading timeout reached, setting loading to false');
+      setLoading(false);
+    }, 30000); // 30 second timeout
+    
+    // Send to Llama via new streaming API
+    await sendPromptToLlamaStream(prompt, options);
     setInput('');
-    setLoading(false);
+    // Don't set loading to false here - let the streaming response completion handle it
   };
 
-  // Audio recording logic (streaming)
-  const handleAudioRecord = async () => {
+  // New function to handle audio input via direct STT connection
+  const handleAudioInputViaSTT = async () => {
     if (recording) {
       recorderRef.current?.stop();
       setRecording(false);
       return;
     }
+
     try {
+      // Create STT WebSocket connection
+      const sttWs = new WebSocket(UNMUTE_STT_ENDPOINT);
+      
+      sttWs.onopen = () => {
+        console.log('[DEBUG] Connected to Unmute STT endpoint');
+      };
+
+      sttWs.onerror = (error) => {
+        console.error('[DEBUG] STT WebSocket error:', error);
+        alert('Failed to connect to STT service');
+      };
+
+      let transcribedText = '';
+      let currentSentence = '';
+      let pausePrediction = 1.0; // Similar to Unmute's pause prediction
+      let lastMessageTime = 0;
+      let sentSamples = 0;
+      let isTranscribing = false;
+      let sentenceTimeout: NodeJS.Timeout | null = null;
+
+      // Function to determine if we should send the sentence (Unmute's logic)
+      const determinePause = () => {
+        const timeSinceLastMessage = (sentSamples / 24000) - lastMessageTime;
+        console.log('[DEBUG] determinePause: pause_prediction=', pausePrediction, 'time_since_last_message=', timeSinceLastMessage);
+        
+        // Unmute uses threshold of 0.4 for pause detection
+        if (pausePrediction > 0.4) {
+          console.log('[DEBUG] determinePause: PAUSE DETECTED');
+          return true;
+        }
+        return false;
+      };
+
+      // Function to add transcribed text to conversation and display
+      const addTranscribedTextToConversation = async (text: string) => {
+        if (!conversation || !text.trim()) return;
+        
+        console.log('[DEBUG] Adding transcribed text to conversation:', text);
+        
+        // Add to conversation immediately (like regular text input)
+        const updatedConv = { 
+          ...conversation, 
+          conversation: [...conversation.conversation, { sender: 'user' as 'user', text: text.trim() }] 
+        };
+        setConversation(updatedConv);
+        await updateConversation(updatedConv);
+        
+        console.log('[DEBUG] Transcribed text added to conversation and database');
+      };
+
+      sttWs.onmessage = (event) => {
+        try {
+          // STT sends msgpack data - decode it properly
+          const data = msgpack.decode(new Uint8Array(event.data));
+          console.log('[DEBUG] STT message received:', data);
+          
+          if (data.type === 'Word' && data.text) {
+            // Add word to current sentence
+            currentSentence += (currentSentence ? ' ' : '') + data.text;
+            transcribedText += (transcribedText ? ' ' : '') + data.text;
+            isTranscribing = true;
+            lastMessageTime = data.start_time;
+            
+            console.log('[DEBUG] Word received:', data.text);
+            console.log('[DEBUG] Current sentence:', currentSentence);
+            console.log('[DEBUG] Full transcribed text:', transcribedText);
+            
+            // Clear any existing timeout since we got a new word
+            if (sentenceTimeout) {
+              clearTimeout(sentenceTimeout);
+              sentenceTimeout = null;
+            }
+            
+          } else if (data.type === 'Step') {
+            // Update pause prediction (similar to Unmute's logic)
+            // data.prs[2] contains the pause prediction value
+            if (data.prs && data.prs.length >= 3) {
+              pausePrediction = data.prs[2];
+              console.log('[DEBUG] Pause prediction updated:', pausePrediction);
+              
+              // Use Unmute's pause detection logic
+              if (determinePause() && currentSentence.trim()) {
+                console.log('[DEBUG] Sentence appears complete (Unmute logic), sending to Llama:', currentSentence);
+                
+                // Add transcribed text to conversation and display it
+                addTranscribedTextToConversation(currentSentence.trim());
+                
+                // Send current sentence to Llama
+                handleSendPrompt(currentSentence.trim());
+                currentSentence = ''; // Reset for next sentence
+                pausePrediction = 0.0; // Reset pause prediction like Unmute does
+              }
+            }
+            
+          } else if (data.type === 'Ready') {
+            console.log('[DEBUG] STT service ready');
+          } else if (data.type === 'Error') {
+            console.error('[DEBUG] STT error:', data.message);
+            alert(`STT Error: ${data.message}`);
+          }
+        } catch (e) {
+          console.error('[DEBUG] Error parsing STT message:', e);
+        }
+      };
+
+      // Create audio recorder
       const recorder = new OpusRecorder({
         numberOfChannels: 1,
         encoderSampleRate: 24000,
         maxFramesPerPage: 2,
         streamPages: true,
       });
+
       recorder.ondataavailable = (opusChunk: Uint8Array) => {
-        console.log('Audio chunk sent', opusChunk);
-        if (wsRef.current && wsRef.current.readyState === 1) {
-          // Encode the Opus chunk as base64 before sending
-          const base64Audio = btoa(String.fromCharCode(...Array.from(opusChunk)));
-          wsRef.current.send(JSON.stringify({
-            type: 'input_audio_buffer.append',
-            audio: base64Audio,
-            patientProfile: profile,
-          }));
+        console.log('[DEBUG] Audio chunk sent to STT', opusChunk);
+        if (sttWs.readyState === WebSocket.OPEN) {
+          // Send audio data to STT endpoint
+          sttWs.send(opusChunk);
+          // Update sent samples count (approximate)
+          sentSamples += opusChunk.length * 2; // Rough approximation
         }
       };
+
       recorder.onstop = () => {
-        if (wsRef.current && wsRef.current.readyState === 1) {
-          wsRef.current.send(JSON.stringify({ type: 'input_audio_buffer.stop' }));
+        console.log('[DEBUG] Audio recording stopped');
+        if (sttWs.readyState === WebSocket.OPEN) {
+          // Send end marker to STT (null byte to signal end)
+          sttWs.send(new Uint8Array([0]));
         }
         setRecording(false);
+        
+        // Clear any pending sentence timeout
+        if (sentenceTimeout) {
+          clearTimeout(sentenceTimeout);
+        }
+        
+        // Wait a bit for final transcription, then send any remaining text to Llama
+        setTimeout(async () => {
+          if (currentSentence.trim()) {
+            console.log('[DEBUG] Final sentence from recording:', currentSentence);
+            // Add final transcribed text to conversation
+            await addTranscribedTextToConversation(currentSentence.trim());
+            handleSendPrompt(currentSentence.trim());
+          } else if (transcribedText.trim()) {
+            console.log('[DEBUG] Final transcribed text (no sentence breaks):', transcribedText);
+            // Add final transcribed text to conversation
+            await addTranscribedTextToConversation(transcribedText.trim());
+            handleSendPrompt(transcribedText.trim());
+          }
+          sttWs.close();
+        }, 1000);
       };
+
       recorderRef.current = recorder;
       recorder.start();
       setRecording(true);
+      
     } catch (err) {
+      console.error('[DEBUG] Audio recording error:', err);
       alert('Audio recording error');
     }
   };
 
-  // Stop recording when backend signals end of audio response
-  useEffect(() => {
-    if (!recording) return;
-    const ws = wsRef.current;
-    if (!ws) return;
-    const stopHandler = (event: MessageEvent) => {
-      try {
-        const data = JSON.parse(event.data);
-        if (data.type === 'response.audio.stop') {
-          recorderRef.current?.stop();
-        }
-        // Handle updated patient profile and conversation from Llama
-        if (data.updatedPatientProfile) {
-          setProfile(data.updatedPatientProfile);
-          updatePatientProfile(data.updatedPatientProfile);
-        }
-        if (data.updatedConversation) {
-          setConversation(data.updatedConversation);
-          updateConversation(data.updatedConversation);
-        }
-      } catch {}
-    };
-    ws.addEventListener('message', stopHandler);
-    return () => {
-      ws.removeEventListener('message', stopHandler);
-    };
-  }, [recording]);
-
-  // Also handle updated patient profile and conversation on any message
-  useEffect(() => {
-    const ws = wsRef.current;
-    if (!ws) return;
-    const updateHandler = (event: MessageEvent) => {
-      try {
-        const data = JSON.parse(event.data);
-        if (data.updatedPatientProfile) {
-          setProfile(data.updatedPatientProfile);
-          updatePatientProfile(data.updatedPatientProfile);
-        }
-        if (data.updatedConversation) {
-          setConversation(data.updatedConversation);
-          updateConversation(data.updatedConversation);
-        }
-      } catch {}
-    };
-    ws.addEventListener('message', updateHandler);
-    return () => {
-      ws.removeEventListener('message', updateHandler);
-    };
-  }, []);
+  // Audio recording logic (streaming) - MODIFIED to use direct STT
+  const handleAudioRecord = async () => {
+    // Use the new STT-based approach instead of the old WebSocket approach
+    await handleAudioInputViaSTT();
+  };
 
   useEffect(() => {
     if (!audioPlayerRef.current) return;
@@ -453,7 +553,7 @@ const App: React.FC = () => {
     };
   }, []);
 
-  // Function to send prompt to Llama (must be inside App to access wsRef)
+  // Function to send prompt to Llama
   // Function to process UI commands from Llama
   const processUICommand = (command: string) => {
     console.log('[DEBUG] Processing UI command:', command);
@@ -633,7 +733,7 @@ const App: React.FC = () => {
     };
     if (options.updates) requestBody.updates = options.updates;
     // Note: conversation, links, general are accessed via local backend bridge
-    fetch('http://172.22.225.47:5100/api/agent', {
+    fetch(LLAMA_ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(requestBody),
@@ -665,16 +765,114 @@ const App: React.FC = () => {
         }
         if (data.extraInfo) {
           console.log('[DEBUG] Received extraInfo from Llama:', data.extraInfo);
-          if (wsRef.current && wsRef.current.readyState === 1) {
-            console.log('[DEBUG] Forwarding extraInfo to Unmute');
-            wsRef.current.send(JSON.stringify({
-              type: 'llama.extra_info',
-              extra_info: data.extraInfo
-            }));
-          }
+          // Note: No longer forwarding to Unmute WebSocket since we removed it
         }
       })
       .catch(err => console.error('[DEBUG] Llama error:', err));
+  }
+
+  // New streaming API function
+  async function sendPromptToLlamaStream(prompt: string, options: { updates?: any, links?: any[], general?: any } = {}) {
+    console.log('[DEBUG] sendPromptToLlamaStream called');
+    if (!profileRef.current) {
+      console.warn('[DEBUG] sendPromptToLlamaStream: patientProfile is null');
+      return;
+    }
+    
+    const memory = await getMemory();
+    const requestBody: any = {
+      prompt,
+      patientProfile: profileRef.current,
+      memory: memory || { id: 'memory', memory: [] }
+    };
+    if (options.updates) requestBody.updates = options.updates;
+
+    try {
+      // Use fetch with streaming response instead of EventSource
+      const response = await fetch(LLAMA_STREAM_ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'text/event-stream',
+          'Cache-Control': 'no-cache',
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      if (!response.body) {
+        throw new Error('No response body');
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+
+      // Set timeout for streaming
+      const timeout = setTimeout(() => {
+        console.log('[DEBUG] Streaming timeout reached');
+        reader.cancel();
+        setStreamingError('Streaming timeout');
+        setIsStreaming(false);
+        setLoading(false);
+      }, 30000); // 30 second timeout
+
+      // Store cleanup function
+      const cleanupTimeout = () => {
+        clearTimeout(timeout);
+        reader.cancel();
+      };
+      (window as any).cleanupStreaming = cleanupTimeout;
+
+      // Read streaming response
+      while (true) {
+        const { done, value } = await reader.read();
+        
+        if (done) {
+          console.log('[DEBUG] Streaming complete');
+          cleanupTimeout();
+          break;
+        }
+
+        const chunk = decoder.decode(value);
+        const lines = chunk.split('\n');
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            try {
+              const data = line.slice(6); // Remove 'data: ' prefix
+              if (data.trim()) {
+                const parsedChunk = JSON.parse(data);
+                handleStreamingChunk(
+                  parsedChunk, 
+                  setConversation, 
+                  updateConversation, 
+                  setProfile, 
+                  updatePatientProfile, 
+                  setLinks, 
+                  setGeneral, 
+                  setStreamingText, 
+                  setIsStreaming, 
+                  setStreamingError, 
+                  setStreamingStatus, 
+                  setLoading
+                );
+              }
+            } catch (error) {
+              console.error('[DEBUG] Error parsing streaming chunk:', error);
+            }
+          }
+        }
+      }
+
+    } catch (error) {
+      console.error('[DEBUG] Error setting up streaming:', error);
+      setStreamingError('Failed to start streaming');
+      setIsStreaming(false);
+      setLoading(false);
+    }
   }
 
   return (
@@ -710,6 +908,35 @@ const App: React.FC = () => {
               </div>
             ))}
           </div>
+          
+          {/* Streaming status display */}
+          {(isStreaming || streamingStatus || streamingError) && (
+            <div style={{ 
+              background: darkMode ? '#2d2d2d' : '#f0f8ff', 
+              padding: 8, 
+              borderRadius: 4, 
+              marginBottom: 8,
+              border: darkMode ? '1px solid #404040' : '1px solid #ddd',
+              fontSize: 12
+            }}>
+              {streamingError && (
+                <div style={{ color: '#e53e3e', marginBottom: 4 }}>
+                  ❌ Error: {streamingError}
+                </div>
+              )}
+              {streamingStatus && (
+                <div style={{ color: darkMode ? '#90cdf4' : '#3182ce', marginBottom: 4 }}>
+                  🔄 {streamingStatus}
+                </div>
+              )}
+              {isStreaming && (
+                <div style={{ color: darkMode ? '#9ae6b4' : '#38a169' }}>
+                  ⚡ Streaming in progress...
+                </div>
+              )}
+            </div>
+          )}
+          
           <div style={{ display: 'flex', gap: 8 }}>
             <button
               onClick={handleAudioRecord}

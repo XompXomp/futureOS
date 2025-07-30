@@ -1,9 +1,26 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, Response
 from flask_cors import CORS
 from main import run_agent_workflow
+import json
+import queue
+import threading
+import time
 
 app = Flask(__name__)
 CORS(app)
+
+# Global streaming queue
+streaming_queue = queue.Queue()
+
+def send_streaming_chunk(chunk_type: str, data: dict):
+    """Send a chunk to the frontend via the streaming queue"""
+    chunk = {
+        "type": chunk_type,
+        "data": data,
+        "timestamp": time.time()
+    }
+    streaming_queue.put(chunk)
+    print(f"DEBUG - Sent streaming chunk: {chunk_type} (queue size: {streaming_queue.qsize()})")
 
 def build_default_profile(profile):
     # Fill with defaults if missing
@@ -83,6 +100,164 @@ def agent_endpoint():
             response["extraInfo"] = result["response"]
         print("Response:-\n",jsonify(response))
         return jsonify(response)
+    except Exception as e:
+        return jsonify({"error": f"Internal server error: {str(e)}"}), 500
+
+# New streaming endpoint
+@app.route("/api/agent/stream", methods=["POST", "OPTIONS"])
+def agent_stream_endpoint():
+    # Handle preflight OPTIONS request
+    if request.method == "OPTIONS":
+        return Response(
+            status=200,
+            headers={
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Headers': 'Content-Type, Cache-Control',
+                'Access-Control-Allow-Methods': 'POST, OPTIONS',
+                'Access-Control-Allow-Credentials': 'true'
+            }
+        )
+    
+    # Handle actual POST request
+    """Streaming endpoint that sends chunks in real-time"""
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "No JSON payload received."}), 400
+
+        # --- Input Processing and Validation ---
+        user_input = data.get("prompt", "")
+        memory = data.get("memory", [])
+        updates = data.get("updates", [])
+
+        # Validate and sanitize memory structure
+        if not isinstance(memory, list):
+            memory = []
+
+        # Flatten incoming patient profile
+        patient_profile = data.get("patientProfile", {})
+        if "treatment" in patient_profile and isinstance(patient_profile["treatment"], dict):
+            treatment_data = patient_profile.pop("treatment")
+            patient_profile.update(treatment_data)
+
+        if not user_input:
+            return jsonify({"error": "Missing 'prompt' in request."}), 400
+
+        def generate_stream():
+            """Generator function for Server-Sent Events"""
+            try:
+                # Create a new queue for this specific request
+                request_queue = queue.Queue()
+                
+                # Override the global send_streaming_chunk function for this request
+                def send_streaming_chunk_local(chunk_type: str, data: dict):
+                    """Send a chunk to the frontend via the request-specific queue"""
+                    chunk = {
+                        "type": chunk_type,
+                        "data": data,
+                        "timestamp": time.time()
+                    }
+                    request_queue.put(chunk)
+                    print(f"DEBUG - Sent streaming chunk: {chunk_type} (queue size: {request_queue.qsize()})")
+                
+                # Start workflow in background thread FIRST
+                def run_workflow():
+                    try:
+                        # Temporarily replace the global send_streaming_chunk
+                        import main
+                        original_send_chunk = main.send_streaming_chunk
+                        main.send_streaming_chunk = send_streaming_chunk_local
+                        
+                        try:
+                            result = run_agent_workflow(
+                                user_input, memory, patient_profile,
+                                updates=updates
+                            )
+                            
+                            # Send final result
+                            final_response = {
+                                "type": "final_result",
+                                "data": {
+                                    "updatedPatientProfile": build_default_profile(result.get("patientProfile", patient_profile)),
+                                    "updatedMemory": result.get("memory", memory),
+                                    "Updates": result.get("updates", updates),
+                                    "extraInfo": result.get("final_answer", "")
+                                }
+                            }
+                            request_queue.put(final_response)
+                            
+                        finally:
+                            # Restore the original function
+                            main.send_streaming_chunk = original_send_chunk
+                        
+                    except Exception as e:
+                        error_response = {
+                            "type": "error",
+                            "data": {"error": str(e)}
+                        }
+                        request_queue.put(error_response)
+                
+                # Start workflow thread BEFORE starting streaming loop
+                workflow_thread = threading.Thread(target=run_workflow)
+                workflow_thread.daemon = True
+                workflow_thread.start()
+                
+                # Give workflow a moment to start and send first chunk
+                import time
+                time.sleep(0.5)
+                
+                # Stream chunks as they arrive
+                print(f"DEBUG - Streaming endpoint: Starting to read chunks from queue")
+                keepalive_count = 0
+                while True:
+                    try:
+                        # Wait for chunk with timeout - use shorter timeout for real-time streaming
+                        print(f"DEBUG - Streaming endpoint: Waiting for chunk (queue size: {request_queue.qsize()})")
+                        chunk = request_queue.get(timeout=0.005)  # 0.005 second timeout for real-time
+                        print(f"DEBUG - Streaming endpoint: Sending chunk {chunk['type']} to frontend")
+                        
+                        if chunk["type"] == "final_result":
+                            # Send final result and end stream
+                            yield f"data: {json.dumps(chunk)}\n\n"
+                            print(f"DEBUG - Streaming endpoint: Sent final_result, ending stream")
+                            break
+                        elif chunk["type"] == "error":
+                            # Send error and end stream
+                            yield f"data: {json.dumps(chunk)}\n\n"
+                            print(f"DEBUG - Streaming endpoint: Sent error, ending stream")
+                            break
+                        else:
+                            # Send streaming chunk immediately
+                            yield f"data: {json.dumps(chunk)}\n\n"
+                            print(f"DEBUG - Streaming endpoint: Sent {chunk['type']} chunk")
+                            
+                    except queue.Empty:
+                        # Send keepalive less frequently
+                        keepalive_count += 1
+                        if keepalive_count % 10 == 0:  # Only log every 10th keepalive
+                            print(f"DEBUG - Streaming endpoint: Sent keepalive (count: {keepalive_count})")
+                        yield f"data: {json.dumps({'type': 'keepalive'})}\n\n"
+                        
+            except Exception as e:
+                error_response = {
+                    "type": "error",
+                    "data": {"error": f"Streaming error: {str(e)}"}
+                }
+                yield f"data: {json.dumps(error_response)}\n\n"
+
+        return Response(
+            generate_stream(),
+            mimetype='text/event-stream',
+            headers={
+                'Cache-Control': 'no-cache',
+                'Connection': 'keep-alive',
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Headers': 'Content-Type, Cache-Control',
+                'Access-Control-Allow-Methods': 'POST, OPTIONS',
+                'Access-Control-Allow-Credentials': 'true'
+            }
+        )
+        
     except Exception as e:
         return jsonify({"error": f"Internal server error: {str(e)}"}), 500
 

@@ -29,6 +29,187 @@
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
+    
+    <script>
+      function startStreaming() {
+        const userInput = document.getElementById('user-input').value;
+        const output = document.getElementById('streaming-output');
+        output.innerHTML = '';
+        
+        // Mock data for testing - matches the format from db.ts
+        const requestData = {
+          prompt: userInput,
+          memory: [
+            {
+              datetime: '2024-07-28T10:30:00',
+              text: "Patient reports difficulty falling asleep and staying asleep"
+            },
+            {
+              datetime: '2024-07-28T11:15:00',
+              text: "Patient mentioned work stress affecting sleep quality"
+            },
+            {
+              datetime: '2024-07-28T14:20:00',
+              text: "Patient prefers room temperature at 68°F for optimal sleep"
+            },
+            {
+              datetime: '2024-07-28T16:45:00',
+              text: "Patient has been exercising regularly but sometimes too close to bedtime"
+            },
+            {
+              datetime: '2024-07-29T09:30:00',
+              text: "Patient is allergic to penicillin, shellfish, and dairy products"
+            },
+            {
+              datetime: '2024-07-29T12:00:00',
+              text: "Patient takes melatonin 5mg and zolpidem 10mg for sleep"
+            },
+            {
+              datetime: '2024-07-29T15:30:00',
+              text: "Patient enjoys cardio exercises and strength training"
+            },
+            {
+              datetime: '2024-07-29T18:00:00',
+              text: "Patient has upcoming sleep specialist appointment on August 20th"
+            }
+          ],
+          patientProfile: {
+            uid: "user-001",
+            name: "John Doe",
+            age: 35,
+            bloodType: "O+",
+            allergies: ["Penicillin", "Shellfish", "Dairy"],
+            medicationList: ["Melatonin 5mg", "Zolpidem 10mg", "Multivitamin", "Omega-3 supplements"],
+            dailyChecklist: ["Take melatonin at 9 PM", "Avoid screens 1 hour before bed", "Keep room temperature at 68°F", "30 minutes cardio", "Strength training 3x/week", "Stretching routine"],
+            appointment: "2024-08-20T14:00:00",
+            recommendations: ["Practice sleep hygiene", "Limit caffeine after 2 PM", "Exercise regularly but not close to bedtime", "Gradual increase in exercise intensity", "Stay hydrated during workouts", "Listen to body signals"],
+            sleepHours: 7,
+            sleepQuality: "Fair"
+          },
+          updates: [
+            {
+              datetime: '2024-07-28T10:30:00',
+              text: 'Patient reported sleep difficulties and work stress'
+            },
+            {
+              datetime: '2024-07-28T11:15:00',
+              text: 'Added stress management recommendations to sleep treatment plan'
+            },
+            {
+              datetime: '2024-07-28T14:20:00',
+              text: 'Updated room temperature preference in sleep checklist'
+            },
+            {
+              datetime: '2024-07-28T16:45:00',
+              text: 'Modified exercise timing recommendations to avoid late workouts'
+            },
+            {
+              datetime: '2024-07-29T09:30:00',
+              text: 'Confirmed allergy list: penicillin, shellfish, dairy'
+            },
+            {
+              datetime: '2024-07-29T12:00:00',
+              text: 'Reviewed current medication list: melatonin 5mg, zolpidem 10mg'
+            }
+          ]
+        };
+        
+        // Send POST request to start streaming
+        fetch('/api/agent/stream', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(requestData)
+        })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          
+          // Create EventSource for streaming
+          const eventSource = new EventSource('/api/agent/stream');
+          
+          eventSource.onmessage = function(event) {
+            const data = JSON.parse(event.data);
+            console.log('Received chunk:', data);
+            
+            // Add to output
+            const timestamp = new Date().toLocaleTimeString();
+            output.innerHTML += `[${timestamp}] ${data.type}: ${JSON.stringify(data.data, null, 2)}\n`;
+            output.scrollTop = output.scrollHeight;
+            
+            // Handle different chunk types
+            switch(data.type) {
+              case 'streaming_started':
+                output.innerHTML += `[${timestamp}] 🚀 Started streaming session\n`;
+                break;
+                
+              case 'unmute_connecting':
+                output.innerHTML += `[${timestamp}] 🔗 Connecting to voice assistant...\n`;
+                break;
+                
+              case 'unmute_connected':
+                output.innerHTML += `[${timestamp}] ✅ Connected to voice assistant\n`;
+                break;
+                
+              case 'unmute_streaming_started':
+                output.innerHTML += `[${timestamp}] 🎤 Voice assistant responding...\n`;
+                break;
+                
+              case 'text_chunk':
+                output.innerHTML += `[${timestamp}] 📝 Text: "${data.data.text}"\n`;
+                break;
+                
+              case 'audio_chunk':
+                output.innerHTML += `[${timestamp}] 🔊 Audio chunk: ${data.data.audio.length} bytes\n`;
+                break;
+                
+              case 'text_complete':
+                output.innerHTML += `[${timestamp}] ✅ Text complete\n`;
+                break;
+                
+              case 'audio_complete':
+                output.innerHTML += `[${timestamp}] ✅ Audio complete\n`;
+                break;
+                
+              case 'unmute_complete':
+                output.innerHTML += `[${timestamp}] ✅ Voice assistant complete\n`;
+                break;
+                
+              case 'workflow_complete':
+                output.innerHTML += `[${timestamp}] 🎉 Workflow complete!\n`;
+                eventSource.close();
+                break;
+                
+              case 'error':
+              case 'workflow_error':
+              case 'unmute_error':
+              case 'unmute_timeout':
+                output.innerHTML += `[${timestamp}] ❌ Error: ${data.data.message}\n`;
+                eventSource.close();
+                break;
+                
+              case 'keepalive':
+                // Keep connection alive
+                break;
+            }
+          };
+          
+          eventSource.onerror = function(error) {
+            console.error('EventSource failed:', error);
+            output.innerHTML += `[${new Date().toLocaleTimeString()}] ❌ Connection error\n`;
+            eventSource.close();
+          };
+          
+          console.log('Starting streaming with data:', requestData);
+        })
+        .catch(error => {
+          console.error('Error starting streaming:', error);
+          output.innerHTML += `[${new Date().toLocaleTimeString()}] ❌ Failed to start streaming: ${error.message}\n`;
+        });
+      }
+    </script>
     <!--
       This HTML file is a template.
       If you open it directly in the browser, you will see an empty page.
