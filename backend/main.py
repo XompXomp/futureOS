@@ -872,9 +872,9 @@ def unmute_node(state: AgentState) -> AgentState:
                 audio_done = False
                 start_time = time.time()
                 
-                while time.time() - start_time < 10:
+                while True:#time.time() - start_time < 50:
                     try:
-                        chunk = await asyncio.wait_for(websocket.recv(), timeout=10.0)
+                        chunk = await asyncio.wait_for(websocket.recv(), timeout=5)
                         #print(f"✓ Received: {chunk}")
                         
                         try:
@@ -1088,12 +1088,15 @@ def run_agent_workflow(user_input, memory, patient_profile, updates=None):
     try:
         result = workflow.invoke(initial_state)
         
+        print("DEBUG - Sleeping for 10 seconds after workflow retuns result")
+        #time.sleep(50)
+        
         # Send final result
         send_streaming_chunk("workflow_complete", {
             "message": "Agent processing complete",
             "result": result
         })
-        
+
         return result
         
     except Exception as e:

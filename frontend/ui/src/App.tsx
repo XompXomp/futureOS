@@ -101,6 +101,9 @@ function setupStreamingAudio() {
   }
 }
 
+// Track received chunk types for streaming state management
+const receivedChunkTypesRef = { current: new Set<string>() };
+
 // Streaming chunk handler for new API
 function handleStreamingChunk(chunk: any, setConversation: any, updateConversation: any, setProfile: any, updatePatientProfile: any, setLinks: any, setGeneral: any, setUpdates: any, setStreamingText: any, setIsStreaming: any, setStreamingError: any, setStreamingStatus: any, setLoading: any) {
   console.log('[DEBUG] Streaming chunk received:', chunk);
@@ -109,6 +112,10 @@ function handleStreamingChunk(chunk: any, setConversation: any, updateConversati
   console.log('[DEBUG] Chunk data type:', typeof chunk.data);
   console.log('[DEBUG] Chunk data keys:', chunk.data ? Object.keys(chunk.data) : 'null');
   
+  // Track this chunk type
+  receivedChunkTypesRef.current.add(chunk.type);
+  console.log('[DEBUG] Received chunk types so far:', Array.from(receivedChunkTypesRef.current));
+  
   switch (chunk.type) {
     case 'streaming_started':
       console.log('Agent processing started:', chunk.data.message);
@@ -116,11 +123,17 @@ function handleStreamingChunk(chunk: any, setConversation: any, updateConversati
       setIsStreaming(true);
       setStreamingText('');
       setStreamingError(null);
+      // Reset chunk type tracking for new streaming session
+      receivedChunkTypesRef.current.clear();
+      console.log('[DEBUG] Reset chunk type tracking for new streaming session');
       break;
       
     case 'unmute_connecting':
       console.log('Connecting to voice assistant...');
       setStreamingStatus('Connecting to voice assistant...');
+      // Reset chunk type tracking for new Unmute connection
+      receivedChunkTypesRef.current.clear();
+      console.log('[DEBUG] Reset chunk type tracking for new Unmute connection');
       break;
       
     case 'unmute_connected':
@@ -196,44 +209,68 @@ function handleStreamingChunk(chunk: any, setConversation: any, updateConversati
     case 'unmute_complete':
       console.log('Voice assistant response complete');
       setStreamingStatus('Voice assistant response complete');
+      
+      // Check if final_result has also been received before clearing streaming state
+      const hasFinalResult = receivedChunkTypesRef.current.has('final_result');
+      console.log('[DEBUG] unmute_complete received. Has final_result:', hasFinalResult);
+      
+      if (hasFinalResult) {
+        console.log('[DEBUG] Both unmute_complete and final_result received, clearing streaming state');
+        // Clear streaming state
+        setIsStreaming(false);
+        setStreamingText('');
+        setStreamingStatus('');
+        setLoading(false);
+        
+        // Clean up streaming connection
+        if ((window as any).cleanupStreaming) {
+          (window as any).cleanupStreaming();
+          (window as any).cleanupStreaming = null;
+        }
+        
+        // Reset chunk type tracking
+        receivedChunkTypesRef.current.clear();
+      } else {
+        console.log('[DEBUG] unmute_complete received but final_result not yet received, keeping streaming state active');
+      }
       break;
       
-    case 'workflow_complete':
-      // Handle workflow completion from agent
-      console.log('Agent workflow complete');
-      const workflowResult = chunk.data;
-      console.log('[DEBUG] workflow_complete - workflowResult:', workflowResult);
-      console.log('[DEBUG] workflow_complete - workflowResult.result:', workflowResult.result);
-      console.log('[DEBUG] workflow_complete - workflowResult.result?.patientProfile:', workflowResult.result?.patientProfile);
+    // case 'workflow_complete':
+    //   // Handle workflow completion from agent
+    //   console.log('Agent workflow complete');
+    //   const workflowResult = chunk.data;
+    //   console.log('[DEBUG] workflow_complete - workflowResult:', workflowResult);
+    //   console.log('[DEBUG] workflow_complete - workflowResult.result:', workflowResult.result);
+    //   console.log('[DEBUG] workflow_complete - workflowResult.result?.patientProfile:', workflowResult.result?.patientProfile);
       
-      if (workflowResult.result && workflowResult.result.patientProfile) {
-        console.log('[DEBUG] Updating profile from workflow_complete:', workflowResult.result.patientProfile);
-        setProfile(workflowResult.result.patientProfile);
-        updatePatientProfile(workflowResult.result.patientProfile);
-      }
-      if (workflowResult.result && workflowResult.result.memory) {
-        updateMemory(workflowResult.result.memory);
-      }
-      if (workflowResult.result && workflowResult.result.links) {
-        setLinks(workflowResult.result.links);
-      }
-      if (workflowResult.result && workflowResult.result.general) {
-        setGeneral(workflowResult.result.general);
-      }
-      if (workflowResult.result && workflowResult.result.updates) {
-        console.log('[DEBUG] Updating updates from workflow_complete:', workflowResult.result.updates);
-        // Append new updates to existing ones
-        setUpdates((prevUpdates: any) => {
-          const existingUpdates = prevUpdates || [];
-          const newUpdates = workflowResult.result.updates;
-          return [...existingUpdates, ...newUpdates];
-        });
-        updateUpdates(workflowResult.result.updates);
-      }
+    //   if (workflowResult.result && workflowResult.result.patientProfile) {
+    //     console.log('[DEBUG] Updating profile from workflow_complete:', workflowResult.result.patientProfile);
+    //     setProfile(workflowResult.result.patientProfile);
+    //     updatePatientProfile(workflowResult.result.patientProfile);
+    //   }
+    //   if (workflowResult.result && workflowResult.result.memory) {
+    //     updateMemory(workflowResult.result.memory);
+    //   }
+    //   if (workflowResult.result && workflowResult.result.links) {
+    //     setLinks(workflowResult.result.links);
+    //   }
+    //   if (workflowResult.result && workflowResult.result.general) {
+    //     setGeneral(workflowResult.result.general);
+    //   }
+    //   if (workflowResult.result && workflowResult.result.updates) {
+    //     console.log('[DEBUG] Updating updates from workflow_complete:', workflowResult.result.updates);
+    //     // Append new updates to existing ones
+    //     setUpdates((prevUpdates: any) => {
+    //       const existingUpdates = prevUpdates || [];
+    //       const newUpdates = workflowResult.result.updates;
+    //       return [...existingUpdates, ...newUpdates];
+    //     });
+    //     updateUpdates(workflowResult.result.updates);
+    //   }
       
-      // Don't clear streaming state here - let the final_result handle it
-      // This allows the audio response to continue streaming
-      break;
+    //   // Don't clear streaming state here - let the final_result handle it
+    //   // This allows the audio response to continue streaming
+    //   break;
       
     case 'final_result':
       // Handle final result from agent workflow
@@ -267,16 +304,28 @@ function handleStreamingChunk(chunk: any, setConversation: any, updateConversati
         updateUpdates(result.Updates);
       }
       
-      // Clear streaming state
-      setIsStreaming(false);
-      setStreamingText('');
-      setStreamingStatus('');
-      setLoading(false);
+      // Check if unmute_complete has also been received before clearing streaming state
+      const hasUnmuteComplete = receivedChunkTypesRef.current.has('unmute_complete');
+      console.log('[DEBUG] final_result received. Has unmute_complete:', hasUnmuteComplete);
       
-      // Clean up streaming connection
-      if ((window as any).cleanupStreaming) {
-        (window as any).cleanupStreaming();
-        (window as any).cleanupStreaming = null;
+      if (hasUnmuteComplete) {
+        console.log('[DEBUG] Both final_result and unmute_complete received, clearing streaming state');
+        // Clear streaming state
+        setIsStreaming(false);
+        setStreamingText('');
+        setStreamingStatus('');
+        setLoading(false);
+        
+        // Clean up streaming connection
+        if ((window as any).cleanupStreaming) {
+          (window as any).cleanupStreaming();
+          (window as any).cleanupStreaming = null;
+        }
+        
+        // Reset chunk type tracking
+        receivedChunkTypesRef.current.clear();
+      } else {
+        console.log('[DEBUG] final_result received but unmute_complete not yet received, keeping streaming state active');
       }
       break;
       
@@ -866,18 +915,8 @@ const App: React.FC = () => {
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
 
-      // Set timeout for streaming
-      const timeout = setTimeout(() => {
-        console.log('[DEBUG] Streaming timeout reached');
-        reader.cancel();
-        setStreamingError('Streaming timeout');
-        setIsStreaming(false);
-        setLoading(false);
-      }, 30000); // 30 second timeout
-
       // Store cleanup function
       const cleanupTimeout = () => {
-        clearTimeout(timeout);
         reader.cancel();
       };
       (window as any).cleanupStreaming = cleanupTimeout;

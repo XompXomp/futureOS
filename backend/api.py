@@ -175,13 +175,27 @@ def agent_stream_endpoint():
                             )
                             
                             # Send final result
+                            # Add defensive type checking for result
+                            if isinstance(result, dict):
+                                patient_profile_result = result.get("patientProfile", patient_profile)
+                                memory_result = result.get("memory", memory)
+                                updates_result = result.get("updates", updates)
+                                final_answer_result = result.get("final_answer", "")
+                            else:
+                                print(f"WARNING: result is not a dict, it's {type(result)}: {result}")
+                                # Fallback to original values if result is not a dict
+                                patient_profile_result = patient_profile
+                                memory_result = memory
+                                updates_result = updates
+                                final_answer_result = ""
+                            
                             final_response = {
                                 "type": "final_result",
                                 "data": {
-                                    "updatedPatientProfile": build_default_profile(result.get("patientProfile", patient_profile)),
-                                    "updatedMemory": result.get("memory", memory),
-                                    "Updates": result.get("updates", updates),
-                                    "extraInfo": result.get("final_answer", "")
+                                    "updatedPatientProfile": patient_profile_result, #build_default_profile(patient_profile_result),
+                                    "updatedMemory": memory_result,
+                                    "Updates": updates_result,
+                                    "extraInfo": final_answer_result
                                 }
                             }
                             request_queue.put(final_response)
@@ -193,7 +207,7 @@ def agent_stream_endpoint():
                     except Exception as e:
                         error_response = {
                             "type": "error",
-                            "data": {"error": str(e)}
+                            "data": {"error from here": str(e)}
                         }
                         request_queue.put(error_response)
                 
@@ -203,8 +217,8 @@ def agent_stream_endpoint():
                 workflow_thread.start()
                 
                 # Give workflow a moment to start and send first chunk
-                import time
-                time.sleep(0.5)
+                #import time
+                #time.sleep(0.5)
                 
                 # Stream chunks as they arrive
                 print(f"DEBUG - Streaming endpoint: Starting to read chunks from queue")
