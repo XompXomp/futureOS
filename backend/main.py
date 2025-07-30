@@ -71,6 +71,7 @@ class AgentState(TypedDict):
     error: Optional[str]
     insights: Optional[str]
     route_tag: Optional[str]
+    function: Optional[str]
 
 def select_tool_llm(user_input: str, tool_metadata: list[dict]) -> str:
     """Use an LLM to select the best tool based on user input and tool descriptions."""
@@ -675,9 +676,9 @@ def llm_tagger_node(state: AgentState) -> AgentState:
             "Examples: 'Change theme to dark mode', 'Switch to compact view', 'Open settings'.\n"
             "Classify as UI_CHANGE if the input is about UI themes or interface changes.\n\n"
             
-            "6. ADD_TREATMENT: For requests to add a treatment of a particular type (e.g., 'Add physiotherapy to my plan'), "
+            "6. ADD_TREATMENT: For requests to add or remove a treatment of a particular type (e.g., 'Add physiotherapy to my plan'), "
             "but NOT for adding medications or anything else. "
-            "Examples: 'Add physical therapy to my treatment plan', 'Include occupational therapy'. "
+            "Examples: 'Add/Remove sleep treatment', 'Add/Remove fitness treatment', 'Add/Remove treatment plan for sleep issues', 'Add/Remove treatment plan for fitness issues'" #'Add physical therapy to my treatment plan', 'Include occupational therapy'. "
             "Do NOT use this tag for medication or general additions.\n\n"
             
             
@@ -965,9 +966,81 @@ def unmute_node(state: AgentState) -> AgentState:
 
 # --- UI Change Node (NEW, optional) ---
 def ui_change_node(state: AgentState) -> AgentState:
-    # This node can set the function to be called on the frontend to handle the UI change
-    state['final_answer'] = "[UI_CHANGE] Action required on frontend."
-    state['source'] = 'ui'
+    """
+    Use LLM to determine which UI command to execute based on user input.
+    """
+    user_input = state.get('input', '')
+    
+    # Choose model
+    if hasattr(settings, 'LLM_MODEL') and settings.LLM_MODEL:
+        llm = ChatGroq(
+            model=settings.LLM_MODEL,
+            temperature=0
+        )
+    else:
+        llm = ChatGroq(
+            model="llama3-8b-8192",
+            temperature=0
+        )
+
+    # Define available UI commands
+    available_commands = [
+        "setMode(dark)",
+        "addFitness()", 
+        "addSleep()",
+        "removeFitness()",
+        "removeSleep()",
+        "setMode(light)"
+    ]
+
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", (
+            "You are a UI command classifier. Based on the user's input, determine which UI command should be executed.\n\n"
+            "Available commands:\n"
+            "- setMode(dark) - Switch to dark mode\n"
+            "- addFitness() - Switch to light mode\n"
+            "- addSleep() - Add fitness treatment to patient profile\n"
+            "- removeFitness() - Remove fitness treatment from patient profile\n"
+            "- removeSleep() - Add sleep treatment to patient profile\n"
+            "- setMode(light) - Remove sleep treatment from patient profile\n\n"
+            "Analyze the user's intent and respond with ONLY the exact command string that should be executed.\n"
+            "If no command matches the user's intent, respond with 'NONE'.\n\n"
+            "Examples:\n"
+            "- 'Switch to dark mode' → setMode(dark)\n"
+            "- 'Add fitness treatment' → addFitness()\n"
+            "- 'Remove sleep treatment' → removeSleep()\n"
+            "- 'Turn on light mode' → setMode(light)\n"
+        )),
+        ("human", "User input: {user_input}")
+    ])
+
+    chain = prompt | llm
+    
+    try:
+        result = chain.invoke({"user_input": user_input})
+        command = result.content.strip()
+        
+        print(f"DEBUG - UI Change Node: User input: '{user_input}'")
+        print(f"DEBUG - UI Change Node: LLM response: '{command}'")
+        
+        # Validate the command
+        if command in available_commands:
+            state['function'] = command
+            print(f"DEBUG - UI Change Node: Setting function to: {command}")
+        elif command == 'NONE':
+            state['final_answer'] = "I don't understand what UI change you want me to make. Please be more specific."
+            print(f"DEBUG - UI Change Node: No matching command found")
+        else:
+            state['final_answer'] = f"Invalid command generated: {command}. Please try again."
+            print(f"DEBUG - UI Change Node: Invalid command generated: {command}")
+        
+        state['source'] = 'ui'
+        
+    except Exception as e:
+        print(f"DEBUG - UI Change Node: Error processing command: {str(e)}")
+        state['final_answer'] = f"Error processing UI command: {str(e)}"
+        state['source'] = 'ui'
+    
     return state
 
 # --- Processing Router Node (NEW) ---
@@ -1087,9 +1160,6 @@ def run_agent_workflow(user_input, memory, patient_profile, updates=None):
     
     try:
         result = workflow.invoke(initial_state)
-        
-        print("DEBUG - Sleeping for 10 seconds after workflow retuns result")
-        #time.sleep(50)
         
         # Send final result
         send_streaming_chunk("workflow_complete", {

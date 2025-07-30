@@ -181,6 +181,7 @@ def agent_stream_endpoint():
                                 memory_result = result.get("memory", memory)
                                 updates_result = result.get("updates", updates)
                                 final_answer_result = result.get("final_answer", "")
+                                function_result = result.get("function", "")
                             else:
                                 print(f"WARNING: result is not a dict, it's {type(result)}: {result}")
                                 # Fallback to original values if result is not a dict
@@ -188,6 +189,7 @@ def agent_stream_endpoint():
                                 memory_result = memory
                                 updates_result = updates
                                 final_answer_result = ""
+                                function_result = ""
                             
                             final_response = {
                                 "type": "final_result",
@@ -195,7 +197,8 @@ def agent_stream_endpoint():
                                     "updatedPatientProfile": patient_profile_result, #build_default_profile(patient_profile_result),
                                     "updatedMemory": memory_result,
                                     "Updates": updates_result,
-                                    "extraInfo": final_answer_result
+                                    "extraInfo": final_answer_result,
+                                    "function": function_result
                                 }
                             }
                             request_queue.put(final_response)

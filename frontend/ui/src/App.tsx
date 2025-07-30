@@ -303,6 +303,10 @@ function handleStreamingChunk(chunk: any, setConversation: any, updateConversati
         });
         updateUpdates(result.Updates);
       }
+      if (result.function){
+        console.log('[DEBUG] Updating function from final_result:', result.function);
+        (window as any).processUICommand(result.function);
+      }
       
       // Check if unmute_complete has also been received before clearing streaming state
       const hasUnmuteComplete = receivedChunkTypesRef.current.has('unmute_complete');
@@ -820,7 +824,7 @@ const App: React.FC = () => {
   };
 
   // Make function globally accessible for testing
-  (window as any).testUICommand = processUICommand;
+  (window as any).processUICommand = processUICommand;
 
   async function sendPromptToLlama(prompt: string, options: { updates?: any, links?: any[], general?: any } = {}) {
     console.log('[DEBUG] sendPromptToLlama called, profileRef.current:', profileRef.current, 'profile:', profile);
