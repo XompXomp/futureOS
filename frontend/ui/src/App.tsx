@@ -11,12 +11,12 @@ declare module 'msgpack-lite' {
   export function encode(data: any): Uint8Array;
 }
 
-const LLAMA_ENDPOINT = 'http://localhost:5100/api/agent'; // Local backend endpoint
-const LLAMA_STREAM_ENDPOINT = 'http://localhost:5100/api/agent/stream'; // New streaming endpoint
+const LLAMA_ENDPOINT = 'http://172.22.225.47:5100/api/agent'; // Local backend endpoint
+const LLAMA_STREAM_ENDPOINT = 'http://172.22.225.47:5100/api/agent/stream'; // New streaming endpoint
 const UNMUTE_STT_ENDPOINT = 'ws://172.22.225.138:11004/api/asr-streaming'; // Direct STT endpoint
 
 // === STT ADD-ON: Proxy endpoint for STT ===
-const STT_PROXY_URL = 'ws://localhost:8080'; // STT proxy endpoint
+const STT_PROXY_URL = 'ws://172.22.225.47:8080'; // STT proxy endpoint
 
 function base64DecodeOpus(base64String: string): Uint8Array {
   const binaryString = window.atob(base64String);

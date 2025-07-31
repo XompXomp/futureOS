@@ -4,7 +4,7 @@ const http = require('http');
 // Create WebSocket server
 const wss = new WebSocket.Server({ port: 8080 });
 
-console.log('STT Proxy Server running on ws://localhost:8080');
+console.log('STT Proxy Server running on ws://172.22.225.47:8080');
 
 wss.on('connection', (ws) => {
   console.log('Client connected to proxy');
