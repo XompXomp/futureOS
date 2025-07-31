@@ -18,6 +18,7 @@ wss.on('connection', (ws) => {
   
   sttWs.on('open', () => {
     console.log('Connected to STT server');
+    console.log('Number of clients connected:', wss.clients.size);
   });
   
   sttWs.on('message', (data) => {

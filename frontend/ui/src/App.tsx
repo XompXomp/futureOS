@@ -15,6 +15,9 @@ const LLAMA_ENDPOINT = 'http://localhost:5100/api/agent'; // Local backend endpo
 const LLAMA_STREAM_ENDPOINT = 'http://localhost:5100/api/agent/stream'; // New streaming endpoint
 const UNMUTE_STT_ENDPOINT = 'ws://172.22.225.138:11004/api/asr-streaming'; // Direct STT endpoint
 
+// === STT ADD-ON: Proxy endpoint for STT ===
+const STT_PROXY_URL = 'ws://localhost:8080'; // STT proxy endpoint
+
 function base64DecodeOpus(base64String: string): Uint8Array {
   const binaryString = window.atob(base64String);
   const len = binaryString.length;
@@ -268,7 +271,7 @@ function handleStreamingChunk(chunk: any, setConversation: any, updateConversati
     //     updateUpdates(workflowResult.result.updates);
     //   }
       
-    //   // Don't clear streaming state here - let the final_result handle it
+    //   // Don't clear streaming state here - let the audio response to continue streaming
     //   // This allows the audio response to continue streaming
     //   break;
       
@@ -392,10 +395,31 @@ const App: React.FC = () => {
   const flushTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isRecordingRef = useRef(false);
   const profileRef = useRef<PatientProfile | null>(null);
+  
+  // === STT ADD-ON: STT-related state and refs ===
+  const [speechDetected, setSpeechDetected] = useState(false);  // Track when speech is detected
+  const sttWsRef = useRef<WebSocket | null>(null);  // Direct STT WebSocket
+  // Track sentence buffer and timing
+  const currentSentenceBufferRef = useRef<string>("");
+  const sentenceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const conversationRef = useRef<Conversation | null>(null);
+  
+  // Keep conversation ref in sync with state
+  useEffect(() => {
+    conversationRef.current = conversation;
+  }, [conversation]);
   useEffect(() => {
     profileRef.current = profile;
     console.log('[DEBUG] profileRef.current updated:', profileRef.current);
   }, [profile]);
+
+  // === STT ADD-ON: Cleanup STT connection on component unmount ===
+  useEffect(() => {
+    return () => {
+      // Cleanup STT WebSocket connection when component unmounts
+      closeSTTConnection();
+    };
+  }, []);
 
   useEffect(() => {
     console.log('[DEBUG] General state changed:', general);
@@ -434,28 +458,202 @@ const App: React.FC = () => {
   // Loading timeout reference for streaming
   const loadingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Send text input as a message
-  const handleSendPrompt = async (prompt: string, options: { updates?: any, links?: any[], general?: any } = {}) => {
-    console.log('handleSendPrompt called', {
-      hasProfile: !!profile,
-      hasConversation: !!conversation,
-      prompt
-    });
-    if (!profile || !conversation) {
-      console.log('Not sending: missing profile or conversation', {
-        hasProfile: !!profile,
-        hasConversation: !!conversation
-      });
+  // === STT ADD-ON: STT WebSocket connection management ===
+  // Remove the automatic WebSocket connection - we'll create it on demand
+  
+  // Function to create and setup STT WebSocket connection
+  const createSTTConnection = () => {
+    if (sttWsRef.current && sttWsRef.current.readyState === WebSocket.OPEN) {
+      console.log('[DEBUG] STT WebSocket already connected');
       return;
     }
-    setLoading(true);
-    const updatedConv = { 
-      ...conversation, 
-      cid: conversation.cid || 'conv-001', // Ensure cid exists
-      conversation: [...conversation.conversation, { sender: 'user' as 'user', text: prompt }] 
+    
+    console.log('[DEBUG] Creating new STT WebSocket connection');
+    const sttWs = new window.WebSocket(STT_PROXY_URL);
+    sttWsRef.current = sttWs;
+    
+    sttWs.onopen = () => {
+      console.log('[DEBUG] STT WebSocket connected');
+      // Try sending authentication token as a message
+      try {
+        const authMessage = {
+          type: "Auth",
+          token: "public_token"
+        };
+        const encoded = msgpack.encode(authMessage);
+        sttWs.send(encoded);
+        console.log('[DEBUG] Sent authentication message');
+      } catch (e) {
+        console.log('[DEBUG] Could not send auth message:', e);
+      }
     };
-    setConversation(updatedConv);
-    await updateConversation(updatedConv);
+    
+    sttWs.onmessage = (event) => {
+      try {
+        // STT uses MessagePack format
+        let data;
+        if (event.data instanceof Blob) {
+          // Handle binary MessagePack data
+          event.data.arrayBuffer().then(buffer => {
+            try {
+              const uint8Array = new Uint8Array(buffer);
+              data = msgpack.decode(uint8Array);
+              console.log('[DEBUG] STT MessagePack decoded:', data);
+              handleSTTMessage(data);
+            } catch (e) {
+              console.error('[DEBUG] Failed to decode MessagePack:', e);
+            }
+          });
+        } else {
+          // Handle text messages (if any)
+          console.log('[DEBUG] STT text message:', event.data);
+        }
+      } catch (e: any) {
+        console.error('STT WebSocket message handling error:', e);
+      }
+    };
+    
+    sttWs.onerror = (error) => {
+      console.error('[DEBUG] STT WebSocket error:', error);
+    };
+    
+    sttWs.onclose = () => {
+      console.log('[DEBUG] STT WebSocket closed');
+      sttWsRef.current = null;
+    };
+  };
+  
+  // Function to close STT WebSocket connection
+  const closeSTTConnection = () => {
+    if (sttWsRef.current && sttWsRef.current.readyState === WebSocket.OPEN) {
+      console.log('[DEBUG] Closing STT WebSocket connection');
+      sttWsRef.current.close();
+      sttWsRef.current = null;
+    }
+  };
+
+  // === STT ADD-ON: Handle STT messages - detect sentence completion and send to LLM ===
+  const handleSTTMessage = (data: any) => {
+    console.log('[DEBUG] Processing STT message:', data);
+    console.log('[DEBUG] Message type:', data.type);
+    console.log('[DEBUG] Full message data:', JSON.stringify(data, null, 2));
+    
+    if (data.type === 'Word' && data.text) {
+      // Clear any existing sentence timeout
+      if (sentenceTimeoutRef.current) {
+        clearTimeout(sentenceTimeoutRef.current);
+        sentenceTimeoutRef.current = null;
+      }
+      
+      // Add word to sentence buffer
+      currentSentenceBufferRef.current += (currentSentenceBufferRef.current ? ' ' : '') + data.text;
+      
+      // Don't add to conversation display yet - wait for sentence completion
+      
+      // Set timeout to detect sentence completion and send to LLM
+      sentenceTimeoutRef.current = setTimeout(() => {
+        const completedSentence = currentSentenceBufferRef.current.trim();
+        if (completedSentence && profileRef.current && conversationRef.current) {
+          console.log('[DEBUG] Sentence completed, sending to LLM:', completedSentence);
+          
+          // Close STT WebSocket connection before sending to workflow
+          closeSTTConnection();
+          
+          // Add completed sentence to conversation display
+          setConversation(prev => {
+            if (!prev) return prev;
+            const updated = {
+              ...prev,
+              conversation: [...prev.conversation, { sender: 'user' as 'user', text: completedSentence }]
+            };
+            updateConversation(updated);
+            return updated;
+          });
+          
+          // Send to LLM using existing handleSendPrompt function
+          handleSendPrompt(completedSentence);
+          
+          // Clear buffer
+          currentSentenceBufferRef.current = "";
+        } else if (completedSentence) {
+          console.log('[DEBUG] Sentence completed but profile/conversation not ready, retrying in 1 second');
+          // Retry in 1 second if profile/conversation not ready
+          setTimeout(() => {
+            if (profileRef.current && conversationRef.current) {
+              // Close STT WebSocket connection before sending to workflow
+              closeSTTConnection();
+              
+              // Add completed sentence to conversation display
+              setConversation(prev => {
+                if (!prev) return prev;
+                const updated = {
+                  ...prev,
+                  conversation: [...prev.conversation, { sender: 'user' as 'user', text: completedSentence }]
+                };
+                updateConversation(updated);
+                return updated;
+              });
+              
+              handleSendPrompt(completedSentence);
+              currentSentenceBufferRef.current = "";
+            }
+          }, 1000);
+        }
+      }, 2000); // 2 seconds timeout
+      
+      console.log('[DEBUG] STT Word added to conversation:', data.text);
+      setSpeechDetected(true);
+      
+    } else if (data.type === 'Marker') {
+      // Ignore markers (like Unmute backend does)
+      console.log('[DEBUG] STT Marker received - ignoring');
+      
+    } else if (data.type === 'EndWord') {
+      console.log('[DEBUG] STT Word ended at time:', data.stop_time);
+      
+    } else if (data.type === 'Step') {
+      // Just log step data for debugging
+      console.log('[DEBUG] STT Step received:', data.step_idx, 'pause prediction:', data.prs);
+      
+      // Check if speech has stopped (for UI feedback only)
+      if (data.prs && data.prs.length > 0) {
+        const pausePrediction = data.prs[0];
+        if (pausePrediction > 0.95) {
+          setSpeechDetected(false);
+        }
+      }
+      
+    } else if (data.type === 'Ready') {
+      console.log('[DEBUG] STT Ready message received');
+    } else if (data.type === 'Error') {
+      console.error('[DEBUG] STT Error:', data.message);
+    } else {
+      console.log('[DEBUG] Unknown message type:', data.type);
+    }
+  };
+
+  // Send text input as a message
+  const handleSendPrompt = async (prompt: string, options: { updates?: any, links?: any[], general?: any } = {}) => {
+    // console.log('handleSendPrompt called', {
+    //   hasProfile: !!profile,
+    //   hasConversation: !!conversation,
+    //   prompt
+    // });
+    // if (!profile || !conversation) {
+    //   console.log('Not sending: missing profile or conversation', {
+    //     hasProfile: !!profile,
+    //     hasConversation: !!conversation
+    //   });
+    //   return;
+    // }
+    // setLoading(true);
+    // const updatedConv = { 
+    //   ...conversation, 
+    //   cid: conversation.cid || 'conv-001', // Ensure cid exists
+    //   conversation: [...conversation.conversation, { sender: 'user' as 'user', text: prompt }] 
+    // };
+    // setConversation(updatedConv);
+    // await updateConversation(updatedConv);
     
     // Set a timeout to prevent loading state from getting stuck
     if (loadingTimeoutRef.current) {
@@ -472,182 +670,82 @@ const App: React.FC = () => {
     // Don't set loading to false here - let the streaming response completion handle it
   };
 
-  // New function to handle audio input via direct STT connection
-  const handleAudioInputViaSTT = async () => {
+
+
+  // === STT ADD-ON: Audio recording logic using Web Audio API for raw PCM ===
+  const handleAudioRecord = async () => {
     if (recording) {
-      recorderRef.current?.stop();
+      // Stop Web Audio API recording
+      if (recorderRef.current) {
+        const processor = recorderRef.current as any;
+        if (processor.disconnect) {
+          processor.disconnect();
+        }
+      }
       setRecording(false);
+      setSpeechDetected(false);
+      
+      // Close STT WebSocket connection when manually stopping recording
+      closeSTTConnection();
       return;
     }
-
     try {
-      // Create STT WebSocket connection
-      const sttWs = new WebSocket(UNMUTE_STT_ENDPOINT);
+      // Create STT WebSocket connection when recording starts
+      createSTTConnection();
       
-      sttWs.onopen = () => {
-        console.log('[DEBUG] Connected to Unmute STT endpoint');
-      };
-
-      sttWs.onerror = (error) => {
-        console.error('[DEBUG] STT WebSocket error:', error);
-        alert('Failed to connect to STT service');
-      };
-
-      let transcribedText = '';
-      let currentSentence = '';
-      let pausePrediction = 1.0; // Similar to Unmute's pause prediction
-      let lastMessageTime = 0;
-      let sentSamples = 0;
-      let isTranscribing = false;
-      let sentenceTimeout: NodeJS.Timeout | null = null;
-
-      // Function to determine if we should send the sentence (Unmute's logic)
-      const determinePause = () => {
-        const timeSinceLastMessage = (sentSamples / 24000) - lastMessageTime;
-        console.log('[DEBUG] determinePause: pause_prediction=', pausePrediction, 'time_since_last_message=', timeSinceLastMessage);
-        
-        // Unmute uses threshold of 0.4 for pause detection
-        if (pausePrediction > 0.4) {
-          console.log('[DEBUG] determinePause: PAUSE DETECTED');
-          return true;
-        }
-        return false;
-      };
-
-      // Function to add transcribed text to conversation and display
-      const addTranscribedTextToConversation = async (text: string) => {
-        if (!conversation || !text.trim()) return;
-        
-        console.log('[DEBUG] Adding transcribed text to conversation:', text);
-        
-        // Add to conversation immediately (like regular text input)
-        const updatedConv = { 
-          ...conversation, 
-          conversation: [...conversation.conversation, { sender: 'user' as 'user', text: text.trim() }] 
-        };
-        setConversation(updatedConv);
-        await updateConversation(updatedConv);
-        
-        console.log('[DEBUG] Transcribed text added to conversation and database');
-      };
-
-      sttWs.onmessage = (event) => {
-        try {
-          // STT sends msgpack data - decode it properly
-          const data = msgpack.decode(new Uint8Array(event.data));
-          console.log('[DEBUG] STT message received:', data);
+      // Use Web Audio API to get raw PCM data
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const audioContext = new AudioContext({ sampleRate: 24000 });
+      const source = audioContext.createMediaStreamSource(stream);
+      const processor = audioContext.createScriptProcessor(1024, 1, 1);
+      
+      processor.onaudioprocess = (event) => {
+        if (sttWsRef.current && sttWsRef.current.readyState === 1) {
+          // Get raw PCM data
+          const inputData = event.inputBuffer.getChannelData(0);
+          const pcmData = Array.from(inputData); // Convert to regular array
           
-          if (data.type === 'Word' && data.text) {
-            // Add word to current sentence
-            currentSentence += (currentSentence ? ' ' : '') + data.text;
-            transcribedText += (transcribedText ? ' ' : '') + data.text;
-            isTranscribing = true;
-            lastMessageTime = data.start_time;
-            
-            console.log('[DEBUG] Word received:', data.text);
-            console.log('[DEBUG] Current sentence:', currentSentence);
-            console.log('[DEBUG] Full transcribed text:', transcribedText);
-            
-            // Clear any existing timeout since we got a new word
-            if (sentenceTimeout) {
-              clearTimeout(sentenceTimeout);
-              sentenceTimeout = null;
-            }
-            
-          } else if (data.type === 'Step') {
-            // Update pause prediction (similar to Unmute's logic)
-            // data.prs[2] contains the pause prediction value
-            if (data.prs && data.prs.length >= 3) {
-              pausePrediction = data.prs[2];
-              console.log('[DEBUG] Pause prediction updated:', pausePrediction);
-              
-              // Use Unmute's pause detection logic
-              if (determinePause() && currentSentence.trim()) {
-                console.log('[DEBUG] Sentence appears complete (Unmute logic), sending to Llama:', currentSentence);
-                
-                // Add transcribed text to conversation and display it
-                addTranscribedTextToConversation(currentSentence.trim());
-                
-                // Send current sentence to Llama
-                handleSendPrompt(currentSentence.trim());
-                currentSentence = ''; // Reset for next sentence
-                pausePrediction = 0.0; // Reset pause prediction like Unmute does
-              }
-            }
-            
-          } else if (data.type === 'Ready') {
-            console.log('[DEBUG] STT service ready');
-          } else if (data.type === 'Error') {
-            console.error('[DEBUG] STT error:', data.message);
-            alert(`STT Error: ${data.message}`);
-          }
-        } catch (e) {
-          console.error('[DEBUG] Error parsing STT message:', e);
+          // Send PCM data to STT
+          const message = {
+            type: 'Audio',
+            pcm: pcmData
+          };
+          const encoded = msgpack.encode(message);
+          sttWsRef.current.send(encoded);
+          console.log('Sent PCM data to STT, length:', pcmData.length);
         }
       };
-
-      // Create audio recorder
-      const recorder = new OpusRecorder({
-        numberOfChannels: 1,
-        encoderSampleRate: 24000,
-        maxFramesPerPage: 2,
-        streamPages: true,
-      });
-
-      recorder.ondataavailable = (opusChunk: Uint8Array) => {
-        console.log('[DEBUG] Audio chunk sent to STT', opusChunk);
-        if (sttWs.readyState === WebSocket.OPEN) {
-          // Send audio data to STT endpoint
-          sttWs.send(opusChunk);
-          // Update sent samples count (approximate)
-          sentSamples += opusChunk.length * 2; // Rough approximation
-        }
-      };
-
-      recorder.onstop = () => {
-        console.log('[DEBUG] Audio recording stopped');
-        if (sttWs.readyState === WebSocket.OPEN) {
-          // Send end marker to STT (null byte to signal end)
-          sttWs.send(new Uint8Array([0]));
+      
+      source.connect(processor);
+      processor.connect(audioContext.destination);
+      recorderRef.current = processor;
+      setRecording(true);
+      setSpeechDetected(true);
+      
+      const onEnded = () => {
+        if (processor) {
+          processor.disconnect();
+          source.disconnect();
+          stream.getTracks().forEach(track => track.stop());
         }
         setRecording(false);
+        setSpeechDetected(false);
         
-        // Clear any pending sentence timeout
-        if (sentenceTimeout) {
-          clearTimeout(sentenceTimeout);
-        }
-        
-        // Wait a bit for final transcription, then send any remaining text to Llama
-        setTimeout(async () => {
-          if (currentSentence.trim()) {
-            console.log('[DEBUG] Final sentence from recording:', currentSentence);
-            // Add final transcribed text to conversation
-            await addTranscribedTextToConversation(currentSentence.trim());
-            handleSendPrompt(currentSentence.trim());
-          } else if (transcribedText.trim()) {
-            console.log('[DEBUG] Final transcribed text (no sentence breaks):', transcribedText);
-            // Add final transcribed text to conversation
-            await addTranscribedTextToConversation(transcribedText.trim());
-            handleSendPrompt(transcribedText.trim());
-          }
-          sttWs.close();
-        }, 1000);
+        // Close STT WebSocket connection when recording stops
+        closeSTTConnection();
       };
-
-      recorderRef.current = recorder;
-      recorder.start();
-      setRecording(true);
       
-    } catch (err) {
-      console.error('[DEBUG] Audio recording error:', err);
+      // Stop recording after 10 seconds or when user clicks again
+      setTimeout(() => {
+        if (recording) {
+          onEnded();
+        }
+      }, 10000);
+      
+    } catch (error) {
+      console.error('Audio recording error:', error);
       alert('Audio recording error');
     }
-  };
-
-  // Audio recording logic (streaming) - MODIFIED to use direct STT
-  const handleAudioRecord = async () => {
-    // Use the new STT-based approach instead of the old WebSocket approach
-    await handleAudioInputViaSTT();
   };
 
   useEffect(() => {
@@ -1039,10 +1137,18 @@ const App: React.FC = () => {
             <button
               onClick={handleAudioRecord}
               disabled={loading || !profile}
-              style={{ background: recording ? '#e53e3e' : '#3182ce', color: '#fff', border: 'none', borderRadius: '50%', width: 40, height: 40, fontSize: 18 }}
+              style={{ 
+                background: recording ? '#e53e3e' : speechDetected ? '#f6ad55' : '#3182ce', 
+                color: '#fff', 
+                border: 'none', 
+                borderRadius: '50%', 
+                width: 40, 
+                height: 40, 
+                fontSize: 18 
+              }}
               aria-label={recording ? 'Stop recording' : 'Record audio'}
             >
-              {recording ? '■' : '🎤'}
+              {recording ? '■' : speechDetected ? '🎤' : '🎤'}
             </button>
             <input
               type="text"

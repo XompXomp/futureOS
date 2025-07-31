@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "dexie": "^4.0.11",
-    "opus-recorder": "^8.0.5"
+    "opus-recorder": "^8.0.5",
+    "ws": "^8.18.3"
   }
 }
