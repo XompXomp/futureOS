@@ -418,6 +418,12 @@ const App: React.FC = () => {
     return () => {
       // Cleanup STT WebSocket connection when component unmounts
       closeSTTConnection();
+      
+      // Clear any remaining recording timeout
+      if ((window as any).recordingTimeoutId) {
+        clearTimeout((window as any).recordingTimeoutId);
+        (window as any).recordingTimeoutId = null;
+      }
     };
   }, []);
 
@@ -634,26 +640,26 @@ const App: React.FC = () => {
 
   // Send text input as a message
   const handleSendPrompt = async (prompt: string, options: { updates?: any, links?: any[], general?: any } = {}) => {
-    // console.log('handleSendPrompt called', {
-    //   hasProfile: !!profile,
-    //   hasConversation: !!conversation,
-    //   prompt
-    // });
-    // if (!profile || !conversation) {
-    //   console.log('Not sending: missing profile or conversation', {
-    //     hasProfile: !!profile,
-    //     hasConversation: !!conversation
-    //   });
-    //   return;
-    // }
-    // setLoading(true);
-    // const updatedConv = { 
-    //   ...conversation, 
-    //   cid: conversation.cid || 'conv-001', // Ensure cid exists
-    //   conversation: [...conversation.conversation, { sender: 'user' as 'user', text: prompt }] 
-    // };
-    // setConversation(updatedConv);
-    // await updateConversation(updatedConv);
+    console.log('handleSendPrompt called', {
+      hasProfile: !!profileRef.current,
+      hasConversation: !!conversationRef.current,
+      prompt
+    });
+    if (!profileRef.current || !conversationRef.current) {
+      console.log('Not sending: missing profile or conversation', {
+        hasProfile: !!profileRef.current,
+        hasConversation: !!conversationRef.current
+      });
+      return;
+    }
+    setLoading(true);
+    const updatedConv = { 
+      ...conversationRef.current, 
+      cid: conversationRef.current.cid || 'conv-001', // Ensure cid exists
+      conversation: [...conversationRef.current.conversation, { sender: 'user' as 'user', text: prompt }] 
+    };
+    setConversation(updatedConv);
+    await updateConversation(updatedConv);
     
     // Set a timeout to prevent loading state from getting stuck
     if (loadingTimeoutRef.current) {
@@ -674,13 +680,25 @@ const App: React.FC = () => {
 
   // === STT ADD-ON: Audio recording logic using Web Audio API for raw PCM ===
   const handleAudioRecord = async () => {
+    console.log('[DEBUG] handleAudioRecord called, current recording state:', recording);
+    
     if (recording) {
+      console.log('[DEBUG] Stopping recording manually');
+      
+      // Clear the auto-stop timeout
+      if ((window as any).recordingTimeoutId) {
+        clearTimeout((window as any).recordingTimeoutId);
+        (window as any).recordingTimeoutId = null;
+      }
+      
       // Stop Web Audio API recording
       if (recorderRef.current) {
         const processor = recorderRef.current as any;
         if (processor.disconnect) {
           processor.disconnect();
         }
+        // Clear the ref
+        recorderRef.current = null;
       }
       setRecording(false);
       setSpeechDetected(false);
@@ -689,7 +707,9 @@ const App: React.FC = () => {
       closeSTTConnection();
       return;
     }
+    
     try {
+      console.log('[DEBUG] Starting recording');
       // Create STT WebSocket connection when recording starts
       createSTTConnection();
       
@@ -723,6 +743,14 @@ const App: React.FC = () => {
       setSpeechDetected(true);
       
       const onEnded = () => {
+        console.log('[DEBUG] onEnded called');
+        
+        // Clear the auto-stop timeout
+        if ((window as any).recordingTimeoutId) {
+          clearTimeout((window as any).recordingTimeoutId);
+          (window as any).recordingTimeoutId = null;
+        }
+        
         if (processor) {
           processor.disconnect();
           source.disconnect();
@@ -735,16 +763,22 @@ const App: React.FC = () => {
         closeSTTConnection();
       };
       
-      // Stop recording after 10 seconds or when user clicks again
-      setTimeout(() => {
+      // Store the timeout ID so we can clear it if user manually stops
+      const timeoutId = setTimeout(() => {
+        console.log('[DEBUG] Auto-stop timeout triggered');
         if (recording) {
           onEnded();
         }
       }, 10000);
       
+      // Store timeout ID in ref so we can clear it
+      (window as any).recordingTimeoutId = timeoutId;
+      
     } catch (error) {
       console.error('Audio recording error:', error);
       alert('Audio recording error');
+      setRecording(false);
+      setSpeechDetected(false);
     }
   };
 
@@ -1136,7 +1170,7 @@ const App: React.FC = () => {
           <div style={{ display: 'flex', gap: 8 }}>
             <button
               onClick={handleAudioRecord}
-              disabled={loading || !profile}
+              disabled={!profile || (loading && !recording)}
               style={{ 
                 background: recording ? '#e53e3e' : speechDetected ? '#f6ad55' : '#3182ce', 
                 color: '#fff', 
