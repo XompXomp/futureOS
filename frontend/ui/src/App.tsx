@@ -407,6 +407,7 @@ const App: React.FC = () => {
   // Keep conversation ref in sync with state
   useEffect(() => {
     conversationRef.current = conversation;
+    console.log('[DEBUG] conversationRef.current updated:', conversationRef.current);
   }, [conversation]);
   useEffect(() => {
     profileRef.current = profile;
@@ -634,26 +635,26 @@ const App: React.FC = () => {
 
   // Send text input as a message
   const handleSendPrompt = async (prompt: string, options: { updates?: any, links?: any[], general?: any } = {}) => {
-    // console.log('handleSendPrompt called', {
-    //   hasProfile: !!profile,
-    //   hasConversation: !!conversation,
-    //   prompt
-    // });
-    // if (!profile || !conversation) {
-    //   console.log('Not sending: missing profile or conversation', {
-    //     hasProfile: !!profile,
-    //     hasConversation: !!conversation
-    //   });
-    //   return;
-    // }
-    // setLoading(true);
-    // const updatedConv = { 
-    //   ...conversation, 
-    //   cid: conversation.cid || 'conv-001', // Ensure cid exists
-    //   conversation: [...conversation.conversation, { sender: 'user' as 'user', text: prompt }] 
-    // };
-    // setConversation(updatedConv);
-    // await updateConversation(updatedConv);
+    console.log('handleSendPrompt called', {
+      hasProfile: !!profileRef.current,
+      hasConversation: !!conversationRef.current,
+      prompt
+    });
+    if (!profileRef.current || !conversationRef.current) {
+      console.log('Not sending: missing profile or conversation', {
+        hasProfile: !!profileRef.current,
+        hasConversation: !!conversationRef.current
+      });
+      return;
+    }
+    setLoading(true);
+    const updatedConv = { 
+      ...conversationRef.current, 
+      cid: conversationRef.current.cid || 'conv-001', // Ensure cid exists
+      conversation: [...conversationRef.current.conversation, { sender: 'user' as 'user', text: prompt }] 
+    };
+    setConversation(updatedConv);
+    await updateConversation(updatedConv);
     
     // Set a timeout to prevent loading state from getting stuck
     if (loadingTimeoutRef.current) {
