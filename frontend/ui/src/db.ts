@@ -82,10 +82,20 @@ export async function getMemory() {
 }
 
 export async function updateMemory(memory: Memory | any) {
+  // Get existing memory first
+  const existingMemory = await db.memory.get('memory');
+  const existingMemoryArray = existingMemory?.memory || [];
+  
+  // Prepare new updates to add
+  const newMemory = Array.isArray(memory) ? memory : (memory?.memory || []);
+  
+  // Combine existing and new updates
+  const combinedMemory = [...existingMemoryArray, ...newMemory];
+  
   // Ensure memory has the correct structure
   const memoryObject = {
     id: 'memory',
-    memory: Array.isArray(memory) ? memory : (memory?.memory || [])
+    memory: combinedMemory
   };
   return db.memory.put(memoryObject);
 }

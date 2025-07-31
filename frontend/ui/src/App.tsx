@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef, RefObject } from 'react';
 import './App.css';
-import { getPatientProfile, getConversation, updatePatientProfile, updateConversation, PatientProfile, Conversation, getMemory, updateMemory, getLinks, updateLinks, getGeneral, updateGeneral, updateUpdates, getUpdates } from './db';
+import { getPatientProfile, getConversation, updatePatientProfile, updateConversation, PatientProfile, Conversation, Memory, getMemory, updateMemory, getLinks, updateLinks, getGeneral, updateGeneral, Updates, getUpdates, updateUpdates } from './db';
 import OpusRecorder from 'opus-recorder';
 // @ts-ignore
 import msgpack from 'msgpack-lite';
@@ -108,7 +108,7 @@ function setupStreamingAudio() {
 const receivedChunkTypesRef = { current: new Set<string>() };
 
 // Streaming chunk handler for new API
-function handleStreamingChunk(chunk: any, setConversation: any, updateConversation: any, setProfile: any, updatePatientProfile: any, setLinks: any, setGeneral: any, setUpdates: any, setStreamingText: any, setIsStreaming: any, setStreamingError: any, setStreamingStatus: any, setLoading: any) {
+function handleStreamingChunk(chunk: any, setConversation: any, updateConversation: any, setProfile: any, updatePatientProfile: any, setLinks: any, setGeneral: any, setUpdates: any, updateUpdates: any, setStreamingText: any, setIsStreaming: any, setStreamingError: any, setStreamingStatus: any, setLoading: any, setMemory: any, updateMemory: any) {
   console.log('[DEBUG] Streaming chunk received:', chunk);
   console.log('[DEBUG] Chunk type:', chunk.type);
   console.log('[DEBUG] Chunk data:', chunk.data);
@@ -238,43 +238,6 @@ function handleStreamingChunk(chunk: any, setConversation: any, updateConversati
       }
       break;
       
-    // case 'workflow_complete':
-    //   // Handle workflow completion from agent
-    //   console.log('Agent workflow complete');
-    //   const workflowResult = chunk.data;
-    //   console.log('[DEBUG] workflow_complete - workflowResult:', workflowResult);
-    //   console.log('[DEBUG] workflow_complete - workflowResult.result:', workflowResult.result);
-    //   console.log('[DEBUG] workflow_complete - workflowResult.result?.patientProfile:', workflowResult.result?.patientProfile);
-      
-    //   if (workflowResult.result && workflowResult.result.patientProfile) {
-    //     console.log('[DEBUG] Updating profile from workflow_complete:', workflowResult.result.patientProfile);
-    //     setProfile(workflowResult.result.patientProfile);
-    //     updatePatientProfile(workflowResult.result.patientProfile);
-    //   }
-    //   if (workflowResult.result && workflowResult.result.memory) {
-    //     updateMemory(workflowResult.result.memory);
-    //   }
-    //   if (workflowResult.result && workflowResult.result.links) {
-    //     setLinks(workflowResult.result.links);
-    //   }
-    //   if (workflowResult.result && workflowResult.result.general) {
-    //     setGeneral(workflowResult.result.general);
-    //   }
-    //   if (workflowResult.result && workflowResult.result.updates) {
-    //     console.log('[DEBUG] Updating updates from workflow_complete:', workflowResult.result.updates);
-    //     // Append new updates to existing ones
-    //     setUpdates((prevUpdates: any) => {
-    //       const existingUpdates = prevUpdates || [];
-    //       const newUpdates = workflowResult.result.updates;
-    //       return [...existingUpdates, ...newUpdates];
-    //     });
-    //     updateUpdates(workflowResult.result.updates);
-    //   }
-      
-    //   // Don't clear streaming state here - let the audio response to continue streaming
-    //   // This allows the audio response to continue streaming
-    //   break;
-      
     case 'final_result':
       // Handle final result from agent workflow
       console.log('Agent processing complete');
@@ -288,6 +251,12 @@ function handleStreamingChunk(chunk: any, setConversation: any, updateConversati
         updatePatientProfile(result.updatedPatientProfile);
       }
       if (result.updatedMemory) {
+        // Append new memories to existing ones
+        setMemory((prevMemories: any) => {
+          const existingMemories = prevMemories || [];
+          const newMemories = result.updatedMemory;
+          return [...existingMemories, ...newMemories];
+        });
         updateMemory(result.updatedMemory);
       }
       if (result.links) {
@@ -370,10 +339,11 @@ const App: React.FC = () => {
   const [profile, setProfile] = useState<PatientProfile | null>(null);
   const [loading, setLoading] = useState(false);
   const [recording, setRecording] = useState(false);
-  // --- Add state for links, general, and updates ---
+  // --- Add state for links, general, updates, and memory ---
   const [links, setLinks] = useState<Record<string, any> | null>(null);
   const [general, setGeneral] = useState<any | null>(null);
-  const [updates, setUpdates] = useState<any | null>(null);
+  const [updates, setUpdates] = useState<Updates | null>(null);
+  const [memory, setMemory] = useState<Memory | null>(null);
   const [audioMode, setAudioMode] = useState(false);
   
   // --- Add streaming state variables ---
@@ -432,6 +402,10 @@ const App: React.FC = () => {
   }, [general]);
 
   useEffect(() => {
+    console.log('[DEBUG] Memory state changed:', memory);
+  }, [memory]);
+
+  useEffect(() => {
     // Initialize database with sample data first
     import('./db').then(({ initializeSampleData }) => {
       initializeSampleData().then(() => {
@@ -454,6 +428,10 @@ const App: React.FC = () => {
         getUpdates().then(result => {
           console.log('[DEBUG] setUpdates called with (initial load):', result?.updates ?? null);
           setUpdates(result?.updates ?? null);
+        });
+        getMemory().then(result => {
+          console.log('[DEBUG] setMemory called with (initial load):', result?.memory ?? null);
+          setMemory(result?.memory ?? null);
         });
       }).catch(error => {
         console.error('[DEBUG] Database initialization error:', error);
@@ -1085,11 +1063,14 @@ const App: React.FC = () => {
                   setLinks, 
                   setGeneral, 
                   setUpdates, 
+                  updateUpdates,
                   setStreamingText, 
                   setIsStreaming, 
                   setStreamingError, 
                   setStreamingStatus, 
-                  setLoading
+                  setLoading,
+                  setMemory,
+                  updateMemory
                 );
               }
             } catch (error) {
@@ -1261,6 +1242,20 @@ const App: React.FC = () => {
                 <pre style={{ fontSize: 12, whiteSpace: 'pre-wrap', margin: 0, color: darkMode ? '#ffffff' : '#000000' }}>{JSON.stringify(updates, null, 2)}</pre>
               ) : (
                 <p style={{ fontSize: 12, color: darkMode ? '#999' : '#666', margin: 0, fontStyle: 'italic' }}>No updates available</p>
+              )}
+            </div>
+            <div style={{
+              background: darkMode ? '#2d2d2d' : '#fef',
+              padding: 12,
+              borderRadius: 8,
+              marginBottom: 12,
+              border: darkMode ? '1px solid #404040' : 'none'
+            }}>
+              <h4>Memory</h4>
+              {memory ? (
+                <pre style={{ fontSize: 12, whiteSpace: 'pre-wrap', margin: 0, color: darkMode ? '#ffffff' : '#000000' }}>{JSON.stringify(memory, null, 2)}</pre>
+              ) : (
+                <p style={{ fontSize: 12, color: darkMode ? '#999' : '#666', margin: 0, fontStyle: 'italic' }}>No memory available</p>
               )}
             </div>
           </div>
