@@ -976,9 +976,9 @@ const App: React.FC = () => {
   }
 
   return (
-    <div style={{ 
-      maxWidth: 1200, 
-      margin: '0 auto', 
+    <div style={{
+      maxWidth: 2000,
+      margin: '0 auto',
       padding: 16,
       backgroundColor: darkMode ? '#1a1a1a' : '#ffffff',
       color: darkMode ? '#ffffff' : '#000000',
@@ -986,14 +986,14 @@ const App: React.FC = () => {
     }}>
       <div style={{ display: 'flex', gap: 24, alignItems: 'flex-start' }}>
         {/* Left side - Chatbot */}
-        <div style={{ flex: 1, maxWidth: 600 }}>
+        <div style={{ flex: 1, maxWidth: 700 }}>
           <h2>AI Health Chatbot</h2>
-          <div style={{ 
-            minHeight: 300, 
-            background: darkMode ? '#2d2d2d' : '#f7f7f7', 
-            padding: 12, 
-            borderRadius: 8, 
-            marginBottom: 12 
+          <div style={{
+            minHeight: 300,
+            background: darkMode ? '#2d2d2d' : '#f7f7f7',
+            padding: 12,
+            borderRadius: 8,
+            marginBottom: 12
           }}>
             {conversation?.conversation.map((msg, idx) => (
               <div key={idx} style={{ textAlign: msg.sender === 'user' ? 'right' : 'left', margin: '8px 0' }}>
@@ -1008,13 +1008,12 @@ const App: React.FC = () => {
               </div>
             ))}
           </div>
-          
           {/* Streaming status display */}
           {(isStreaming || streamingStatus || streamingError) && (
-            <div style={{ 
-              background: darkMode ? '#2d2d2d' : '#f0f8ff', 
-              padding: 8, 
-              borderRadius: 4, 
+            <div style={{
+              background: darkMode ? '#2d2d2d' : '#f0f8ff',
+              padding: 8,
+              borderRadius: 4,
               marginBottom: 8,
               border: darkMode ? '1px solid #404040' : '1px solid #ddd',
               fontSize: 12
@@ -1036,7 +1035,6 @@ const App: React.FC = () => {
               )}
             </div>
           )}
-          
           <div style={{ display: 'flex', gap: 8 }}>
             <button
               onClick={handleAudioRecord}
@@ -1053,10 +1051,10 @@ const App: React.FC = () => {
               onKeyDown={e => { if (e.key === 'Enter' && input.trim() && !loading) handleSendPrompt(input.trim()); }}
               disabled={loading}
               placeholder="Type your message..."
-              style={{ 
-                flex: 1, 
-                padding: '8px 12px', 
-                borderRadius: 16, 
+              style={{
+                flex: 1,
+                padding: '8px 12px',
+                borderRadius: 16,
                 border: '1px solid #ccc',
                 backgroundColor: darkMode ? '#404040' : '#ffffff',
                 color: darkMode ? '#ffffff' : '#000000'
@@ -1067,63 +1065,82 @@ const App: React.FC = () => {
             </button>
           </div>
         </div>
-
-        {/* Right side - Patient Profile, Links, and General */}
-        <div style={{ width: 400, flexShrink: 0 }}>
-          {profile && (
-            <div style={{ 
-              background: darkMode ? '#2d2d2d' : '#eef', 
-              padding: 12, 
-              borderRadius: 8, 
+        {/* Right side - Patient Profile and other info */}
+        <div style={{
+          width: 750,
+          flexShrink: 0,
+          display: 'flex',
+          gap: 12
+        }}>
+          <div style={{
+            flex: 0.5
+          }}>
+            {/* Links, General */}
+            <div style={{
+              background: darkMode ? '#2d2d2d' : '#eef',
+              padding: 12,
+              borderRadius: 8,
               marginBottom: 12,
               border: darkMode ? '1px solid #404040' : 'none'
             }}>
-              <h4>Patient Profile</h4>
-              <pre style={{ fontSize: 12, whiteSpace: 'pre-wrap', margin: 0, color: darkMode ? '#ffffff' : '#000000' }}>
-                {JSON.stringify(profile, null, 2)}
-              </pre>
+              <h4>Links</h4>
+              {links ? (
+                <pre style={{ fontSize: 12, whiteSpace: 'pre-wrap', margin: 0, color: darkMode ? '#ffffff' : '#000000' }}>{JSON.stringify(links, null, 2)}</pre>
+              ) : (
+                <p style={{ fontSize: 12, color: darkMode ? '#999' : '#666', margin: 0, fontStyle: 'italic' }}>No links available</p>
+              )}
             </div>
-          )}
-          <div style={{ 
-            background: darkMode ? '#2d2d2d' : '#efe', 
-            padding: 12, 
-            borderRadius: 8, 
-            marginBottom: 12,
-            border: darkMode ? '1px solid #404040' : 'none'
-          }}>
-            <h4>Links</h4>
-            {links ? (
-              <pre style={{ fontSize: 12, whiteSpace: 'pre-wrap', margin: 0, color: darkMode ? '#ffffff' : '#000000' }}>{JSON.stringify(links, null, 2)}</pre>
-            ) : (
-              <p style={{ fontSize: 12, color: darkMode ? '#999' : '#666', margin: 0, fontStyle: 'italic' }}>No links available</p>
-            )}
+            <div style={{
+              background: darkMode ? '#2d2d2d' : '#efe',
+              padding: 12,
+              borderRadius: 8,
+              marginBottom: 12,
+              border: darkMode ? '1px solid #404040' : 'none'
+            }}>
+              <h4>General</h4>
+              {general ? (
+                <pre style={{ fontSize: 12, whiteSpace: 'pre-wrap', margin: 0, color: darkMode ? '#ffffff' : '#000000' }}>{JSON.stringify(general, null, 2)}</pre>
+              ) : (
+                <p style={{ fontSize: 12, color: darkMode ? '#999' : '#666', margin: 0, fontStyle: 'italic' }}>No general information available</p>
+              )}
+            </div>
           </div>
-          <div style={{ 
-            background: darkMode ? '#2d2d2d' : '#ffe', 
-            padding: 12, 
-            borderRadius: 8, 
-            marginBottom: 12,
-            border: darkMode ? '1px solid #404040' : 'none'
+          {/* Updates */}
+          <div style={{
+            flex: 0.7
           }}>
-            <h4>General</h4>
-            {general ? (
-              <pre style={{ fontSize: 12, whiteSpace: 'pre-wrap', margin: 0, color: darkMode ? '#ffffff' : '#000000' }}>{JSON.stringify(general, null, 2)}</pre>
-            ) : (
-              <p style={{ fontSize: 12, color: darkMode ? '#999' : '#666', margin: 0, fontStyle: 'italic' }}>No general information available</p>
-            )}
+            <div style={{
+              background: darkMode ? '#2d2d2d' : '#ffe',
+              padding: 12,
+              borderRadius: 8,
+              marginBottom: 12,
+              border: darkMode ? '1px solid #404040' : 'none'
+            }}>
+              <h4>Updates</h4>
+              {updates ? (
+                <pre style={{ fontSize: 12, whiteSpace: 'pre-wrap', margin: 0, color: darkMode ? '#ffffff' : '#000000' }}>{JSON.stringify(updates, null, 2)}</pre>
+              ) : (
+                <p style={{ fontSize: 12, color: darkMode ? '#999' : '#666', margin: 0, fontStyle: 'italic' }}>No updates available</p>
+              )}
+            </div>
           </div>
-          <div style={{ 
-            background: darkMode ? '#2d2d2d' : '#fef', 
-            padding: 12, 
-            borderRadius: 8, 
-            marginBottom: 12,
-            border: darkMode ? '1px solid #404040' : 'none'
+          {/* Patient Profile */}
+          <div style={{
+            flex: 1
           }}>
-            <h4>Updates</h4>
-            {updates ? (
-              <pre style={{ fontSize: 12, whiteSpace: 'pre-wrap', margin: 0, color: darkMode ? '#ffffff' : '#000000' }}>{JSON.stringify(updates, null, 2)}</pre>
-            ) : (
-              <p style={{ fontSize: 12, color: darkMode ? '#999' : '#666', margin: 0, fontStyle: 'italic' }}>No updates available</p>
+            {profile && (
+              <div style={{
+                background: darkMode ? '#2d2d2d' : '#eef',
+                padding: 12,
+                borderRadius: 8,
+                marginBottom: 12,
+                border: darkMode ? '1px solid #404040' : 'none'
+              }}>
+                <h4>Patient Profile</h4>
+                <pre style={{ fontSize: 12, whiteSpace: 'pre-wrap', margin: 0, color: darkMode ? '#ffffff' : '#000000' }}>
+                  {JSON.stringify(profile, null, 2)}
+                </pre>
+              </div>
             )}
           </div>
         </div>
