@@ -67,6 +67,7 @@ class AgentState(TypedDict):
     patientProfile: dict
     updates: list
     conversation: dict
+    conversational_context: dict
     final_answer: Optional[str]
     source: Optional[str]
     error: Optional[str]
@@ -553,6 +554,121 @@ def semantic_memory_precheck_node(state: AgentState) -> AgentState:
         print("DEBUG - User input not meaningful for semantic memory, not storing (no prior results).")
     return state
 
+# --- Conversational Context Node (NEW) ---
+def conversational_context_node(state: AgentState) -> AgentState:
+    """
+    First node in the workflow that analyzes conversation history and modifies the user prompt
+    to include proper conversational context.
+    """
+    user_input = state.get('input', '')
+    conversation = state.get('conversation', {})
+    conversation_history = conversation.get('conversation', [])
+    
+    # If no conversation history, just pass through
+    if not conversation_history or len(conversation_history) < 2:
+        return state
+    
+    # Get the last few messages for context (last 6 messages: 3 user, 3 AI)
+    recent_messages = conversation_history#[-6:]
+    
+    # Prepare LLM for context analysis
+    if getattr(settings, "USE_OLLAMA", False):
+        llm = ChatOllama(
+            model=settings.OLLAMA_MODEL,
+            base_url=settings.OLLAMA_BASE_URL,
+            temperature=0.3
+        )
+    else:
+        llm = ChatGroq(
+            model=settings.LLM_MODEL,
+            temperature=0.3
+        )
+    
+    from langchain_core.prompts import ChatPromptTemplate
+    
+    # Build conversation context string
+    context_messages = []
+    for msg in recent_messages:
+        sender = "User" if msg.get('sender') == 'user' else "AI"
+        text = msg.get('text', '')
+        context_messages.append(f"{sender}: {text}")
+    
+    conversation_context = "\n".join(context_messages)
+    
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", (
+            "You are a conversational context analyzer. Your job is to understand if the current user input "
+            "needs additional context from the conversation history to be properly understood.\n\n"
+            "ANALYZE the user's current input and the recent conversation history.\n\n"
+            "DETECT if the user input is:\n"
+            "1. A follow-up question (e.g., 'Tell me more', 'What about...', 'How about...', 'And?', 'So?', 'Then?', 'What else?', 'Can you elaborate?', 'Explain further')\n"
+            "2. A clarification request (e.g., 'What do you mean?', 'I don't understand', 'Can you rephrase?')\n"
+            "3. A reference to previous topics (e.g., 'What about that thing you mentioned?', 'Tell me more about it')\n"
+            "4. A standalone question that doesn't need context\n\n"
+            "If the user input IS a follow-up or needs context:\n"
+            "- Identify what topic/issue the user is referring to from the conversation history\n"
+            "- Find the most recent relevant AI response\n"
+            "- Modify the user input to be more specific\n"
+            "- Include the previous AI response as context\n\n"
+            "RESPONSE FORMAT:\n"
+            "If context is needed, respond with:\n"
+            "CONTEXT_NEEDED\n"
+            "Modified user input: [specific question with context]\n"
+            "Previous response: [the relevant previous AI response]\n\n"
+            "If no context is needed, respond with:\n"
+            "NO_CONTEXT_NEEDED\n\n"
+            "Examples:\n"
+            "User: 'Tell me more'\n"
+            "AI: 'Insomnia is a sleep disorder...'\n"
+            "Response: CONTEXT_NEEDED\nModified user input: Tell me more about insomnia\nPrevious response: Insomnia is a sleep disorder...\n\n"
+            "User: 'What is diabetes?'\n"
+            "Response: NO_CONTEXT_NEEDED\n"
+        )),
+        ("human", (
+            "Recent conversation:\n{conversation_context}\n\n"
+            "Current user input: {user_input}\n\n"
+            "Analysis:"
+        ))
+    ])
+    
+    chain = prompt | llm
+    result = chain.invoke({
+        "conversation_context": conversation_context,
+        "user_input": user_input
+    })
+    
+    analysis = str(result.content).strip()
+    
+    # Parse the analysis
+    if "CONTEXT_NEEDED" in analysis and "NO_CONTEXT_NEEDED" not in analysis:
+        # Extract modified input and previous response
+        lines = analysis.split('\n')
+        modified_input = ""
+        previous_response = ""
+        
+        for line in lines:
+            if line.startswith("Modified user input:"):
+                modified_input = line.replace("Modified user input:", "").strip()
+            elif line.startswith("Previous response:"):
+                previous_response = line.replace("Previous response:", "").strip()
+        
+        if modified_input:
+            # Update the state with modified input and context
+            new_state = state.copy()
+            new_state['input'] = modified_input
+            new_state['conversational_context'] = {
+                'original_input': user_input,
+                'modified_input': modified_input,
+                'previous_response': previous_response
+            }
+            
+            print(f"DEBUG - conversational_context_node: Modified input from '{user_input}' to '{modified_input}'")
+            return new_state
+    
+    # No context needed, pass through unchanged
+    print(f"DEBUG - conversational_context_node: No context needed for '{user_input}'")
+    return state
+
 # --- LLM Tagger Node (NEW) ---
 def llm_tagger_node(state: AgentState) -> AgentState:
     user_input = state.get('input', '')
@@ -638,9 +754,15 @@ def llm_tagger_node(state: AgentState) -> AgentState:
 # --- Medical Reasoning Node (NEW) ---
 def medical_reasoning_node(state: AgentState) -> AgentState:
     user_input = state.get('input', '')
+    conversational_context = state.get('conversational_context', {})
 
+    # If we have conversational context, include the previous response
+    if conversational_context and conversational_context.get('previous_response'):
+        enhanced_prompt = f"{user_input}\n\nYou previously said these (DO NOT MENTION THESE AGAIN): {conversational_context['previous_response']}\n\nPlease provide additional information or elaboration on this topic."
+    else:
+        enhanced_prompt = user_input
 
-    payload = {"prompt": user_input}
+    payload = {"prompt": enhanced_prompt}
 
     try:
         response = requests.post(
@@ -649,7 +771,7 @@ def medical_reasoning_node(state: AgentState) -> AgentState:
             timeout=5
         )
         if response.ok:
-            state['final_answer'] = response.text
+            state['final_answer'] = f"Use this information to answer the user's question: {response.text}"
         else:
             state['final_answer'] = f"API error: {response.status_code} {response.text}"
     except Exception as e:
@@ -1013,6 +1135,7 @@ def processing_router_node(state: AgentState) -> AgentState:
 # --- Build the LangGraph workflow (UPDATED with Parallel Execution) ---
 def build_workflow():
     graph = StateGraph(AgentState)
+    graph.add_node('conversational_context', conversational_context_node)
     graph.add_node('llm_tagger', llm_tagger_node)
     graph.add_node('unmute', unmute_node)
     graph.add_node('processing_router', processing_router_node)
@@ -1024,7 +1147,10 @@ def build_workflow():
     graph.add_node('ui_change', ui_change_node)
     graph.add_node('postprocess', postprocess_node)
 
-    graph.set_entry_point('llm_tagger')
+    graph.set_entry_point('conversational_context')
+
+    # First edge: conversational_context to llm_tagger
+    graph.add_edge('conversational_context', 'llm_tagger')
 
     # Direct edges for parallel execution
     graph.add_edge('llm_tagger', 'unmute')

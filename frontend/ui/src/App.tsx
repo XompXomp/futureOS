@@ -1112,11 +1112,13 @@ const App: React.FC = () => {
         <div style={{ flex: 1, maxWidth: 700 }}>
           <h2>AI Health Chatbot</h2>
           <div style={{
-            minHeight: 300,
+            height: 400,
             background: darkMode ? '#2d2d2d' : '#f7f7f7',
             padding: 12,
             borderRadius: 8,
-            marginBottom: 12
+            marginBottom: 12,
+            overflowY: 'auto',
+            border: darkMode ? '1px solid #404040' : '1px solid #ddd'
           }}>
             {conversation?.conversation.map((msg, idx) => (
               <div key={idx} style={{ textAlign: msg.sender === 'user' ? 'right' : 'left', margin: '8px 0' }}>
@@ -1293,11 +1295,13 @@ const App: React.FC = () => {
             flex: 0.7
           }}>
                          <div style={{
+               height: 300,
                background: darkMode ? '#2d2d2d' : '#ffe',
                padding: 12,
                borderRadius: 8,
                marginBottom: 12,
-               border: darkMode ? '1px solid #404040' : 'none'
+               border: darkMode ? '1px solid #404040' : 'none',
+               overflowY: 'auto'
              }}>
                <h4>Updates</h4>
                {updates ? (
@@ -1330,11 +1334,13 @@ const App: React.FC = () => {
                )}
              </div>
                          <div style={{
+               height: 300,
                background: darkMode ? '#2d2d2d' : '#fef',
                padding: 12,
                borderRadius: 8,
                marginBottom: 12,
-               border: darkMode ? '1px solid #404040' : 'none'
+               border: darkMode ? '1px solid #404040' : 'none',
+               overflowY: 'auto'
              }}>
                <h4>Memory</h4>
                {memory ? (
@@ -1479,9 +1485,9 @@ const App: React.FC = () => {
               border: darkMode ? '1px solid #404040' : 'none'
             }}>
                <h4>Last 3 Conversations</h4>
-               {conversation?.conversation?.slice(-3) ? (
+               {conversation?.conversation?.slice(-6) ? (
                  <div style={{ fontSize: 12, color: darkMode ? '#ffffff' : '#000000' }}>
-                   {conversation.conversation.slice(-3).map((msg, idx) => (
+                   {conversation.conversation.slice(-6).map((msg, idx) => (
                     <div key={idx} style={{ 
                       marginBottom: 8, 
                       padding: 4, 
