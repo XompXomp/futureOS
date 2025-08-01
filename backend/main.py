@@ -337,7 +337,7 @@ def web_node(state: AgentState) -> AgentState:
             new_state.update(result)
             results = new_state.get('results')
             if results and isinstance(results, list) and len(results) > 0:
-                new_state['final_answer'] = results[0].get('snippet', '')
+                new_state['final_answer'] = f"Use this information to answer the user's question: {results[0].get('snippet', '')}"
             else:
                 new_state['final_answer'] = ""
         else:
@@ -607,14 +607,14 @@ def conversational_context_node(state: AgentState) -> AgentState:
             "4. A standalone question that doesn't need context\n\n"
             "If the user input IS a follow-up or needs context:\n"
             "- Identify what topic/issue the user is referring to from the conversation history\n"
-            "- Find the most recent relevant AI response\n"
+            "- Find the most recent relevant AI or User response\n"
             "- Modify the user input to be more specific\n"
-            "- Include the previous AI response as context\n\n"
+            "- Include the previous AI or User response as context\n\n"
             "RESPONSE FORMAT:\n"
             "If context is needed, respond with:\n"
             "CONTEXT_NEEDED\n"
             "Modified user input: [specific question with context]\n"
-            "Previous response: [the relevant previous AI response]\n\n"
+            "Previous response: [the relevant previous AI or User response]\n\n"
             "If no context is needed, respond with:\n"
             "NO_CONTEXT_NEEDED\n\n"
             "Examples:\n"
@@ -732,14 +732,14 @@ def llm_tagger_node(state: AgentState) -> AgentState:
             "Examples: 'Change theme to dark mode', 'Switch to compact view', 'Open settings'.\n"
             "Classify as UI_CHANGE if the input is about UI themes or interface changes.\n\n"
             
-            "6. ADD_TREATMENT: For requests to add or remove a treatment of a particular type (e.g., 'Add physiotherapy to my plan'), "
+            "6. MODIFY_TREATMENT: For requests to add or remove a treatment of a particular type (e.g., 'Add physiotherapy to my plan'), "
             "but NOT for adding medications or anything else. "
-            "Examples: 'Add/Remove sleep treatment', 'Add/Remove fitness treatment', 'Add/Remove treatment plan for sleep issues', 'Add/Remove treatment plan for fitness issues'" #'Add physical therapy to my treatment plan', 'Include occupational therapy'. "
+            "Examples: 'Add sleep treatment', 'Remove sleep treatment', 'Remove sleep from my treatments', 'Add fitness treatment', 'Remove fitness treatment', 'Remove fitness from my treatments', 'Add treatment plan for sleep issues', 'Remove treatment plan for sleep issues', 'Add treatment plan for fitness issues', 'Remove treatment plan for fitness issues'" #'Add physical therapy to my treatment plan', 'Include occupational therapy'. "
             "Do NOT use this tag for medication or general additions."
             "Do NOT use this tag for general things related to treatments.\n"
             "VERY IMPORTANT: DO NOT use for requests related to modifying or updating content of treatments\n\n"
             
-            "Respond ONLY with one tag: WEB, TEXT, PATIENT, MEDICAL, UI_CHANGE, or ADD_TREATMENT. "
+            "Respond ONLY with one tag: WEB, TEXT, PATIENT, MEDICAL, UI_CHANGE, or MODIFY_TREATMENT. "
             "Do not explain your choice. Output only the tag."
         )),
         ("human", "User input: {user_input}")
@@ -849,7 +849,7 @@ def unmute_node(state: AgentState) -> AgentState:
         elif route_tag == 'medical':
             text_to_send = user_input
             tag = 'med'
-        elif route_tag == 'add_treatment':
+        elif route_tag == 'modify_treatment':
             text_to_send = user_input
             tag = 'addt'
         elif route_tag == 'ui_change':
@@ -1125,7 +1125,7 @@ def processing_router_node(state: AgentState) -> AgentState:
         state['next_node'] = 'web'
     elif route_tag == 'medical':
         state['next_node'] = 'semantic_update'  # First goes to semantic_update
-    elif route_tag in ('ui_change', 'add_treatment'):
+    elif route_tag in ('ui_change', 'modify_treatment'):
         state['next_node'] = 'ui_change'
     else:
         state['next_node'] = 'semantic_precheck'  # fallback
