@@ -515,15 +515,15 @@ const App: React.FC = () => {
             console.log('[DEBUG] Current backend links state:', backendData.links);
             console.log('[DEBUG] Current frontend links state:', links);
             
-            // Check if backend has links data that frontend doesn't have
-            if (backendData.links && Object.keys(backendData.links).length > 0) {
-              const frontendLinksKeys = links ? Object.keys(links) : [];
+            // Only update if frontend has data (don't overwrite intentionally cleared data)
+            if (links !== null && backendData.links && Object.keys(backendData.links).length > 0) {
+              const frontendLinksKeys = Object.keys(links);
               const backendLinksKeys = Object.keys(backendData.links);
               
               // Check if backend has more data than frontend
               const hasNewData = backendLinksKeys.some(key => {
                 const backendValue = backendData.links[key];
-                const frontendValue = links ? links[key] : null;
+                const frontendValue = links[key];
                 return JSON.stringify(backendValue) !== JSON.stringify(frontendValue);
               });
               
@@ -1169,6 +1169,86 @@ const App: React.FC = () => {
 
   // Make sync function globally accessible
   (window as any).syncToLocalBackend = syncToLocalBackend;
+  
+  // Global function to clear links (for console use)
+  (window as any).clearLinks = async () => {
+    console.log('[DEBUG] Clearing links via global function');
+    setLinks(null);
+    const { updateLinks } = await import('./db');
+    await updateLinks({ id: 'links', links: {} });
+    console.log('[DEBUG] Links cleared from frontend and IndexedDB');
+    
+    // Also clear from backend
+    try {
+      const response = await fetch('http://localhost:8002/api/sync-from-frontend', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          links: { links: {} }
+        })
+      });
+      if (response.ok) {
+        console.log('[DEBUG] Successfully cleared links from backend');
+      } else {
+        console.error('[DEBUG] Failed to clear links from backend');
+      }
+    } catch (error) {
+      console.error('[DEBUG] Error clearing links from backend:', error);
+    }
+  };
+  
+  // Global function to set links to any value (for console use)
+  (window as any).setLinksValue = async (newLinks: Record<string, any>) => {
+    console.log('[DEBUG] Setting links via global function:', newLinks);
+    setLinks(newLinks);
+    const { updateLinks } = await import('./db');
+    await updateLinks({ id: 'links', links: newLinks });
+    console.log('[DEBUG] Links set in frontend and IndexedDB');
+  };
+  
+  // Global function to completely reset everything (for when IndexedDB is cleared)
+  (window as any).resetEverything = async () => {
+    console.log('[DEBUG] Resetting everything - clearing all data');
+    
+    // Clear frontend state
+    setLinks(null);
+    setGeneral(null);
+    setUpdates(null);
+    setMemory(null);
+    
+    // Clear backend
+    try {
+      const response = await fetch('http://localhost:8002/api/sync-from-frontend', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          links: { links: {} },
+          general: { general: {} },
+          updates: { updates: {} },
+          memory: { memory: {} }
+        })
+      });
+      if (response.ok) {
+        console.log('[DEBUG] Successfully reset backend data');
+      } else {
+        console.error('[DEBUG] Failed to reset backend data');
+      }
+    } catch (error) {
+      console.error('[DEBUG] Error resetting backend data:', error);
+    }
+    
+    console.log('[DEBUG] Everything reset - refresh the page to reload from shared-data.js');
+  };
+
+  // Auto-sync effect: whenever links state changes, sync to backend
+  useEffect(() => {
+    if (links !== null) { // Only sync if links has been initialized
+      console.log('[DEBUG] Links state changed, auto-syncing to backend:', links);
+      syncToLocalBackend();
+    } else {
+      console.log('[DEBUG] Links state is null (cleared), not syncing to backend');
+    }
+  }, [links]);
 
   async function sendPromptToLlama(prompt: string, options: { updates?: any, links?: any[], general?: any } = {}) {
     console.log('[DEBUG] sendPromptToLlama called, profileRef.current:', profileRef.current, 'profile:', profile);

@@ -9,20 +9,21 @@ const sharedPatientProfile = {
   allergies: ['Peanuts'],
   treatment: [
     {
-      /*name: 'Sleep',
+      name: 'Sleep',
       medicationList: ['Ibuprofen'],
       dailyChecklist: ['Take medication', 'Walk 30 minutes'],
       appointment: '2024-08-15T09:00:00',
       recommendations: ['Stay hydrated', 'Regular exercise'],
       sleepHours: 8,
-      sleepQuality: 'Excellent',*/
+      sleepQuality: 'Excellent',
+      /*
       name: 'Fitness',
       medicationList: [],
       dailyChecklist: ['Track calories', 'Track protein', 'Exercise 30 minutes'],
       appointment: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 1 week from now
       recommendations: ['Stay hydrated', 'Eat balanced meals', 'Get adequate rest'],
       dailyCals: 2000,
-      dailyProtein: 150
+      dailyProtein: 150 */
     }
   ],
 };
