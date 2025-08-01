@@ -66,6 +66,7 @@ class AgentState(TypedDict):
     memory: list
     patientProfile: dict
     updates: list
+    conversation: dict
     final_answer: Optional[str]
     source: Optional[str]
     error: Optional[str]
@@ -207,10 +208,19 @@ def generate_change_summary(changes: list) -> str:
             model=settings.LLM_MODEL,
             temperature=0.3
         )
-    
-    # Format changes for LLM
+
+    import re
+
+    def escape_curly_braces(text):
+        return re.sub(r'({|})', r'\1\1', text)
+
     changes_text = "\n".join([
-        f"Field: {change['path']}\nBefore: {change['before']}\nAfter: {change['after']}\nType: {change['type']}\n"
+        "Field: {}\nBefore: {}\nAfter: {}\nType: {}".format(
+            change['path'],
+            escape_curly_braces(json.dumps(change['before'], ensure_ascii=False)),
+            escape_curly_braces(json.dumps(change['after'], ensure_ascii=False)),
+            change['type']
+        )
         for change in changes
     ])
     
@@ -231,7 +241,7 @@ def generate_change_summary(changes: list) -> str:
     ])
     
     chain = prompt | llm
-    result = chain.invoke({"changes": changes_text})
+    result = chain.invoke({"changes_text": changes_text})
     return str(result.content).strip()
 
 # --- Tool node wrappers with LLM-based tool selection ---
@@ -341,79 +351,6 @@ def web_node(state: AgentState) -> AgentState:
         new_state = state.copy()
         new_state['error'] = f"Web node error: {str(e)}"
         return new_state
-
-# --- Router function for conditional edges (COMMENTED OUT - NO LONGER NEEDED) ---
-# def route_to_agent(state: AgentState) -> str:
-    """
-    This function is used specifically for conditional edge routing.
-    It receives the state and returns the agent name as a string.
-    """
-    # print(f"DEBUG - route_to_agent received state keys: {list(state.keys())}")
-    # print(f"DEBUG - route_to_agent input: {state.get('input', 'NO INPUT')}")
-    
-    # user_input = state.get('input', '')
-    # user_lower = user_input.lower()
-        
-    # # Fall back to LLM routing for ambiguous cases
-    # try:
-    #     if getattr(settings, "USE_OLLAMA", False):
-    #         llm = ChatOllama(
-    #             model=settings.OLLAMA_MODEL,
-    #             base_url=settings.OLLAMA_BASE_URL,
-    #             temperature=0.3
-    #         )
-    #     else:
-    #         llm = ChatGroq(
-    #             model=settings.LLM_MODEL,
-    #             temperature=0.3
-    #         )
-    #     
-    #     prompt = ChatPromptTemplate.from_messages([
-    #         ("system", (
-    #             "You are a strict router for a healthcare AI system. Based on the user's input, choose exactly one agent to handle the request.\n"
-    #             "Available agents: text, patient, web\n\n"
-    #             "Routing rules:\n"
-    #             "1. Use 'text' for simple greetings, chit-chat, casual conversations, or general questions that don't need tools.\n"
-    #             "   Examples:\n"
-    #             "   - 'Hi'\n"
-    #             "   - 'Tell me a joke'\n"
-    #             "   - 'What is your name?'\n"
-    #             "   - 'Explain photosynthesis'\n\n"
-    #             "2. Use 'patient' for anything related to the patient’s profile, such as their name, age, gender, allergies, medications, routines, appointments, health recommendations, or personal history.\n"
-    #             "   Examples:\n"
-    #             "   - 'What medications is the patient taking?'\n"
-    #             "   - 'Update sleep quality to poor'\n"
-    #             "   - 'Does John have any allergies?'\n"
-    #             "   - 'Add walking to daily checklist'\n\n"
-    #             "3. Use 'web' for real-time or fact-based queries that may change over time and require a current search.\n"
-    #             "   Examples:\n"
-    #             "   - 'Nvidia stock price'\n"
-    #             "   - 'Current bitcoin value'\n"
-    #             "   - 'Latest news on diabetes research'\n"
-    #             "   - 'Weather in Dubai today'\n"
-    #             "   - 'Population of China'\n"
-    #             "   - 'COVID-19 cases in US'\n\n"
-    #             "Output ONLY one of: text, patient, web — and nothing else."
-    #         ))
-    #         ,
-    #         ("human", "User input: {user_input}")
-    #     ])
-    #     
-    #     chain = prompt | llm
-    #     result = chain.invoke({"user_input": user_input})
-    #     agent_name = str(result.content).strip().lower()
-    #     if agent_name in ['text', 'patient', 'web']:
-    #         print(f"DEBUG - LLM routing to {agent_name}")
-    #         return agent_name
-    # except Exception as e:
-    #     logger.error(f"Error in LLM routing: {str(e)}")
-    # 
-    # # Default fallback to text for safety
-    # print("DEBUG - Default routing to text")
-    # return 'text'
-
-#     # New logic: use the tag set by the llm_tagger_node
-#     return state.get('route_tag', 'text')
 
 def postprocess_response(user_input, tool_output, source: str = None):
     if getattr(settings, "USE_OLLAMA", False):
@@ -619,6 +556,7 @@ def semantic_memory_precheck_node(state: AgentState) -> AgentState:
 # --- LLM Tagger Node (NEW) ---
 def llm_tagger_node(state: AgentState) -> AgentState:
     user_input = state.get('input', '')
+    patient_profile = state.get('patientProfile', {})
     
     # Start streaming session
     session_id = f"session_{int(time.time())}"
@@ -648,7 +586,8 @@ def llm_tagger_node(state: AgentState) -> AgentState:
     prompt = ChatPromptTemplate.from_messages([
         ("system", (
             "You are a strict classifier for a healthcare AI system. "
-            "Given a user input, classify it into exactly one of the following tags:\n\n"
+            "This is the user's patient profile: {patient_profile}\n\n"
+            "Given a user input and content of their patient profile, classify it into exactly one of the following tags:\n\n"
             "TAGS:\n"
             
             "1. WEB: For real-time or fact-based queries that may change over time and require a current search. "
@@ -661,9 +600,10 @@ def llm_tagger_node(state: AgentState) -> AgentState:
             "Examples: 'Hi', 'Tell me a joke', 'What is your name?', 'Explain photosynthesis', 'Add a recommendation to eat more iron rich food'.\n"
             "Classify as TEXT if the input is casual conversation, general knowledge questions, or recommendation-related requests.\n\n"
             
-            "3. PATIENT: For anything related to the patient’s profile, such as their name, age, gender, allergies, medications, routines, appointments, or personal history."
+            "3. PATIENT: For anything related to the patient’s profile, such as their name, age, gender, allergies, medications, routines, appointments, treatments or personal history."
+            "Examples: 'What medications is the patient taking?', 'Update sleep quality to poor', 'Does John have any allergies?', 'Add walking to daily checklist'."
             "VERY IMPORTANT: DO NOT use for any requests related to adding, updating, or removing recommendations"
-            "Examples: 'What medications is the patient taking?', 'Update sleep quality to poor', 'Does John have any allergies?', 'Add walking to daily checklist'.\n"
+            "VERY IMPORTANT: Can be used for any requests related to modifying content of treatments\n"
             "Classify as PATIENT if the input is about reading or updating patient profile information (excluding recommendations).\n\n"
             
             "4. MEDICAL: For anything that is medical reasoning, verification, or critical treatment suggestions. "
@@ -679,17 +619,17 @@ def llm_tagger_node(state: AgentState) -> AgentState:
             "6. ADD_TREATMENT: For requests to add or remove a treatment of a particular type (e.g., 'Add physiotherapy to my plan'), "
             "but NOT for adding medications or anything else. "
             "Examples: 'Add/Remove sleep treatment', 'Add/Remove fitness treatment', 'Add/Remove treatment plan for sleep issues', 'Add/Remove treatment plan for fitness issues'" #'Add physical therapy to my treatment plan', 'Include occupational therapy'. "
-            "Do NOT use this tag for medication or general additions.\n\n"
+            "Do NOT use this tag for medication or general additions."
+            "Do NOT use this tag for general things related to treatments.\n"
+            "VERY IMPORTANT: DO NOT use for requests related to modifying or updating content of treatments\n\n"
             
-            
-
             "Respond ONLY with one tag: WEB, TEXT, PATIENT, MEDICAL, UI_CHANGE, or ADD_TREATMENT. "
             "Do not explain your choice. Output only the tag."
         )),
         ("human", "User input: {user_input}")
     ])
     chain = prompt | llm
-    result = chain.invoke({"user_input": user_input})
+    result = chain.invoke({"user_input": user_input, "patient_profile": patient_profile})
     tag = str(result.content).strip().lower()
     state['route_tag'] = tag  # This is what the agent will use
 
@@ -998,11 +938,11 @@ def ui_change_node(state: AgentState) -> AgentState:
             "You are a UI command classifier. Based on the user's input, determine which UI command should be executed.\n\n"
             "Available commands:\n"
             "- setMode(dark) - Switch to dark mode\n"
-            "- addFitness() - Switch to light mode\n"
-            "- addSleep() - Add fitness treatment to patient profile\n"
+            "- addFitness() - Add fitness treatment to patient profile\n"
+            "- addSleep() - Add sleep treatment to patient profile\n"
             "- removeFitness() - Remove fitness treatment from patient profile\n"
-            "- removeSleep() - Add sleep treatment to patient profile\n"
-            "- setMode(light) - Remove sleep treatment from patient profile\n\n"
+            "- removeSleep() - Remove sleep treatment from patient profile\n"
+            "- setMode(light) - Switch to light mode\n\n"
             "Analyze the user's intent and respond with ONLY the exact command string that should be executed.\n"
             "If no command matches the user's intent, respond with 'NONE'.\n\n"
             "Examples:\n"
@@ -1137,9 +1077,9 @@ def build_workflow():
     return graph.compile()
 
 
-def run_agent_workflow(user_input, memory, patient_profile, updates=None):
+def run_agent_workflow(user_input, memory, patient_profile, updates=None, conversation=None):
     """
-    Run the workflow in 'server' mode: takes user_input, memory, patient_profile, updates and returns the updated result state.
+    Run the workflow in 'server' mode: takes user_input, memory, patient_profile, updates, conversation and returns the updated result state.
     """
     workflow = build_workflow()
 
@@ -1151,6 +1091,7 @@ def run_agent_workflow(user_input, memory, patient_profile, updates=None):
         'memory': memory,
         'patientProfile': patient_profile,
         'updates': updates if updates is not None else [],
+        'conversation': conversation if conversation is not None else {"cid": "conv-001", "tags": [], "conversation": []},
         'final_answer': None,
         'source': None,
         'error': None,

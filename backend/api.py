@@ -51,10 +51,15 @@ def agent_endpoint():
         user_input = data.get("prompt", "")
         memory = data.get("memory", [])
         updates = data.get("updates", [])
+        conversation = data.get("conversation", {})
 
         # Validate and sanitize memory structure
         if not isinstance(memory, list):
             memory = [] # Default to empty list if memory is not a list
+
+        # Validate conversation structure
+        if not isinstance(conversation, dict):
+            conversation = {"cid": "conv-001", "tags": [], "conversation": []}
 
         # Flatten incoming patient profile
         patient_profile = data.get("patientProfile", {})
@@ -68,7 +73,7 @@ def agent_endpoint():
         # --- Call backend.main.run_agent_workflow ---
         result = run_agent_workflow(
             user_input, memory, patient_profile,
-            updates=updates
+            updates=updates, conversation=conversation
         )
 
         # --- Patient Profile Transformation ---
@@ -129,10 +134,15 @@ def agent_stream_endpoint():
         user_input = data.get("prompt", "")
         memory = data.get("memory", [])
         updates = data.get("updates", [])
+        conversation = data.get("conversation", {})
 
         # Validate and sanitize memory structure
         if not isinstance(memory, list):
             memory = []
+
+        # Validate conversation structure
+        if not isinstance(conversation, dict):
+            conversation = {"cid": "conv-001", "tags": [], "conversation": []}
 
         # Flatten incoming patient profile
         patient_profile = data.get("patientProfile", {})
@@ -171,7 +181,7 @@ def agent_stream_endpoint():
                         try:
                             result = run_agent_workflow(
                                 user_input, memory, patient_profile,
-                                updates=updates
+                                updates=updates, conversation=conversation
                             )
                             
                             # Send final result

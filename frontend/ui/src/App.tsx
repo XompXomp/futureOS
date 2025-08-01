@@ -999,10 +999,20 @@ const App: React.FC = () => {
     }
     
     const memory = await getMemory();
+    
+    // Get the last 10 conversations from the current conversation
+    const conversation = conversationRef.current;
+    const last10Conversations = conversation?.conversation?.slice(-10) || [];
+    
     const requestBody: any = {
       prompt,
       patientProfile: profileRef.current,
-      memory: memory || { id: 'memory', memory: [] }
+      memory: memory || { id: 'memory', memory: [] },
+      conversation: {
+        cid: conversation?.cid || 'conv-001',
+        tags: conversation?.tags || [],
+        conversation: last10Conversations
+      }
     };
     if (options.updates) requestBody.updates = options.updates;
 
@@ -1188,7 +1198,7 @@ const App: React.FC = () => {
         </div>
         {/* Right side - Patient Profile and other info */}
         <div style={{
-          width: 750,
+          width: 1000,
           flexShrink: 0,
           display: 'flex',
           gap: 12
@@ -1197,86 +1207,301 @@ const App: React.FC = () => {
             flex: 0.5
           }}>
             {/* Links, General */}
-            <div style={{
-              background: darkMode ? '#2d2d2d' : '#eef',
-              padding: 12,
-              borderRadius: 8,
-              marginBottom: 12,
-              border: darkMode ? '1px solid #404040' : 'none'
-            }}>
-              <h4>Links</h4>
-              {links ? (
-                <pre style={{ fontSize: 12, whiteSpace: 'pre-wrap', margin: 0, color: darkMode ? '#ffffff' : '#000000' }}>{JSON.stringify(links, null, 2)}</pre>
-              ) : (
-                <p style={{ fontSize: 12, color: darkMode ? '#999' : '#666', margin: 0, fontStyle: 'italic' }}>No links available</p>
-              )}
-            </div>
-            <div style={{
-              background: darkMode ? '#2d2d2d' : '#efe',
-              padding: 12,
-              borderRadius: 8,
-              marginBottom: 12,
-              border: darkMode ? '1px solid #404040' : 'none'
-            }}>
-              <h4>General</h4>
-              {general ? (
-                <pre style={{ fontSize: 12, whiteSpace: 'pre-wrap', margin: 0, color: darkMode ? '#ffffff' : '#000000' }}>{JSON.stringify(general, null, 2)}</pre>
-              ) : (
-                <p style={{ fontSize: 12, color: darkMode ? '#999' : '#666', margin: 0, fontStyle: 'italic' }}>No general information available</p>
-              )}
-            </div>
+                         <div style={{
+               background: darkMode ? '#2d2d2d' : '#eef',
+               padding: 12,
+               borderRadius: 8,
+               marginBottom: 12,
+               border: darkMode ? '1px solid #404040' : 'none'
+             }}>
+               <h4>Links</h4>
+               {links ? (
+                 <div style={{ fontSize: 12, color: darkMode ? '#ffffff' : '#000000' }}>
+                   {Object.entries(links as Record<string, any>).map(([key, value]) => (
+                     <div key={key} style={{ 
+                       marginBottom: 8, 
+                       padding: 8, 
+                       borderRadius: 4,
+                       background: darkMode ? '#404040' : '#f0f8ff',
+                       borderLeft: '3px solid #3182ce'
+                     }}>
+                       <strong style={{ color: '#3182ce' }}>{key}:</strong>
+                       <div style={{ marginTop: 4 }}>
+                         {typeof value === 'object' ? (
+                           Object.entries(value).map(([subKey, subValue]) => (
+                             <div key={subKey} style={{ marginLeft: 8, marginBottom: 2 }}>
+                               <span style={{ color: darkMode ? '#90cdf4' : '#2b6cb0' }}>{subKey}:</span> {String(subValue)}
+                             </div>
+                           ))
+                         ) : (
+                           <span>{String(value)}</span>
+                         )}
+                       </div>
+                     </div>
+                   ))}
+                 </div>
+               ) : (
+                 <p style={{ fontSize: 12, color: darkMode ? '#999' : '#666', margin: 0, fontStyle: 'italic' }}>No links available</p>
+               )}
+             </div>
+                         <div style={{
+               background: darkMode ? '#2d2d2d' : '#efe',
+               padding: 12,
+               borderRadius: 8,
+               marginBottom: 12,
+               border: darkMode ? '1px solid #404040' : 'none'
+             }}>
+               <h4>General</h4>
+               {general ? (
+                 <div style={{ fontSize: 12, color: darkMode ? '#ffffff' : '#000000' }}>
+                   {Object.entries(general as Record<string, any>).map(([key, value]) => (
+                     <div key={key} style={{ 
+                       marginBottom: 8, 
+                       padding: 8, 
+                       borderRadius: 4,
+                       background: darkMode ? '#404040' : '#f0fff0',
+                       borderLeft: '3px solid #38a169'
+                     }}>
+                       <strong style={{ color: '#38a169' }}>{key}:</strong>
+                       <div style={{ marginTop: 4 }}>
+                         {Array.isArray(value) ? (
+                           value.map((item, idx) => (
+                             <div key={idx} style={{ marginLeft: 8, marginBottom: 2 }}>
+                               • {String(item)}
+                             </div>
+                           ))
+                         ) : typeof value === 'object' ? (
+                           Object.entries(value).map(([subKey, subValue]) => (
+                             <div key={subKey} style={{ marginLeft: 8, marginBottom: 2 }}>
+                               <span style={{ color: darkMode ? '#9ae6b4' : '#2f855a' }}>{subKey}:</span> {String(subValue)}
+                             </div>
+                           ))
+                         ) : (
+                           <span>{String(value)}</span>
+                         )}
+                       </div>
+                     </div>
+                   ))}
+                 </div>
+               ) : (
+                 <p style={{ fontSize: 12, color: darkMode ? '#999' : '#666', margin: 0, fontStyle: 'italic' }}>No general information available</p>
+               )}
+             </div>
           </div>
           {/* Updates */}
           <div style={{
             flex: 0.7
           }}>
-            <div style={{
-              background: darkMode ? '#2d2d2d' : '#ffe',
-              padding: 12,
-              borderRadius: 8,
-              marginBottom: 12,
-              border: darkMode ? '1px solid #404040' : 'none'
-            }}>
-              <h4>Updates</h4>
-              {updates ? (
-                <pre style={{ fontSize: 12, whiteSpace: 'pre-wrap', margin: 0, color: darkMode ? '#ffffff' : '#000000' }}>{JSON.stringify(updates, null, 2)}</pre>
-              ) : (
-                <p style={{ fontSize: 12, color: darkMode ? '#999' : '#666', margin: 0, fontStyle: 'italic' }}>No updates available</p>
-              )}
-            </div>
-            <div style={{
-              background: darkMode ? '#2d2d2d' : '#fef',
-              padding: 12,
-              borderRadius: 8,
-              marginBottom: 12,
-              border: darkMode ? '1px solid #404040' : 'none'
-            }}>
-              <h4>Memory</h4>
-              {memory ? (
-                <pre style={{ fontSize: 12, whiteSpace: 'pre-wrap', margin: 0, color: darkMode ? '#ffffff' : '#000000' }}>{JSON.stringify(memory, null, 2)}</pre>
-              ) : (
-                <p style={{ fontSize: 12, color: darkMode ? '#999' : '#666', margin: 0, fontStyle: 'italic' }}>No memory available</p>
-              )}
-            </div>
+                         <div style={{
+               background: darkMode ? '#2d2d2d' : '#ffe',
+               padding: 12,
+               borderRadius: 8,
+               marginBottom: 12,
+               border: darkMode ? '1px solid #404040' : 'none'
+             }}>
+               <h4>Updates</h4>
+               {updates ? (
+                 <div style={{ fontSize: 12, color: darkMode ? '#ffffff' : '#000000' }}>
+                   {Array.isArray(updates) ? (
+                     updates.map((update, idx) => (
+                       <div key={idx} style={{ 
+                         marginBottom: 8, 
+                         padding: 8, 
+                         borderRadius: 4,
+                         background: darkMode ? '#404040' : '#fffbf0',
+                         borderLeft: '3px solid #d69e2e'
+                       }}>
+                         {update.datetime && (
+                           <div style={{ fontSize: 10, color: darkMode ? '#999' : '#666', marginBottom: 4 }}>
+                             {update.datetime}
+                           </div>
+                         )}
+                         <div style={{ wordBreak: 'break-word' }}>
+                           {update.text || String(update)}
+                         </div>
+                       </div>
+                     ))
+                   ) : (
+                     <pre style={{ fontSize: 12, whiteSpace: 'pre-wrap', margin: 0 }}>{JSON.stringify(updates, null, 2)}</pre>
+                   )}
+                 </div>
+               ) : (
+                 <p style={{ fontSize: 12, color: darkMode ? '#999' : '#666', margin: 0, fontStyle: 'italic' }}>No updates available</p>
+               )}
+             </div>
+                         <div style={{
+               background: darkMode ? '#2d2d2d' : '#fef',
+               padding: 12,
+               borderRadius: 8,
+               marginBottom: 12,
+               border: darkMode ? '1px solid #404040' : 'none'
+             }}>
+               <h4>Memory</h4>
+               {memory ? (
+                 <div style={{ fontSize: 12, color: darkMode ? '#ffffff' : '#000000' }}>
+                   {Array.isArray(memory) ? (
+                     memory.map((item, idx) => (
+                       <div key={idx} style={{ 
+                         marginBottom: 8, 
+                         padding: 8, 
+                         borderRadius: 4,
+                         background: darkMode ? '#404040' : '#f0f0ff',
+                         borderLeft: '3px solid #805ad5'
+                       }}>
+                         {item.datetime && (
+                           <div style={{ fontSize: 10, color: darkMode ? '#999' : '#666', marginBottom: 4 }}>
+                             {item.datetime}
+                           </div>
+                         )}
+                         <div style={{ wordBreak: 'break-word' }}>
+                           {item.text || String(item)}
+                         </div>
+                       </div>
+                     ))
+                   ) : (
+                     <pre style={{ fontSize: 12, whiteSpace: 'pre-wrap', margin: 0 }}>{JSON.stringify(memory, null, 2)}</pre>
+                   )}
+                 </div>
+               ) : (
+                 <p style={{ fontSize: 12, color: darkMode ? '#999' : '#666', margin: 0, fontStyle: 'italic' }}>No memory available</p>
+               )}
+             </div>
           </div>
           {/* Patient Profile */}
           <div style={{
             flex: 1
           }}>
-            {profile && (
-              <div style={{
-                background: darkMode ? '#2d2d2d' : '#eef',
-                padding: 12,
-                borderRadius: 8,
-                marginBottom: 12,
-                border: darkMode ? '1px solid #404040' : 'none'
-              }}>
-                <h4>Patient Profile</h4>
-                <pre style={{ fontSize: 12, whiteSpace: 'pre-wrap', margin: 0, color: darkMode ? '#ffffff' : '#000000' }}>
-                  {JSON.stringify(profile, null, 2)}
-                </pre>
-              </div>
-            )}
+                         {profile && (
+               <div style={{
+                 background: darkMode ? '#2d2d2d' : '#eef',
+                 padding: 12,
+                 borderRadius: 8,
+                 marginBottom: 12,
+                 border: darkMode ? '1px solid #404040' : 'none'
+               }}>
+                 <h4>Patient Profile</h4>
+                 <div style={{ fontSize: 12, color: darkMode ? '#ffffff' : '#000000' }}>
+                   <div style={{ 
+                     marginBottom: 8, 
+                     padding: 8, 
+                     borderRadius: 4,
+                     background: darkMode ? '#404040' : '#f0f8ff',
+                     borderLeft: '3px solid #3182ce'
+                   }}>
+                     <strong style={{ color: '#3182ce' }}>Basic Info:</strong>
+                     <div style={{ marginTop: 4, marginLeft: 8 }}>
+                       <div><span style={{ color: darkMode ? '#90cdf4' : '#2b6cb0' }}>Name:</span> {profile.name}</div>
+                       <div><span style={{ color: darkMode ? '#90cdf4' : '#2b6cb0' }}>Age:</span> {profile.age}</div>
+                       <div><span style={{ color: darkMode ? '#90cdf4' : '#2b6cb0' }}>Blood Type:</span> {profile.bloodType}</div>
+                       {profile.allergies && profile.allergies.length > 0 && (
+                         <div>
+                           <span style={{ color: darkMode ? '#90cdf4' : '#2b6cb0' }}>Allergies:</span> {profile.allergies.join(', ')}
+                         </div>
+                       )}
+                     </div>
+                   </div>
+                   
+                   {profile.treatment && profile.treatment.length > 0 && (
+                     <div style={{ 
+                       marginBottom: 8, 
+                       padding: 8, 
+                       borderRadius: 4,
+                       background: darkMode ? '#404040' : '#f0fff0',
+                       borderLeft: '3px solid #38a169'
+                     }}>
+                       <strong style={{ color: '#38a169' }}>Treatments:</strong>
+                       {profile.treatment.map((treatment, idx) => (
+                         <div key={idx} style={{ marginTop: 8, marginLeft: 8 }}>
+                           <div style={{ fontWeight: 'bold', marginBottom: 4 }}>{treatment.name}</div>
+                           {treatment.medicationList && treatment.medicationList.length > 0 && (
+                             <div style={{ marginBottom: 4 }}>
+                               <span style={{ color: darkMode ? '#9ae6b4' : '#2f855a' }}>Medications:</span> {treatment.medicationList.join(', ')}
+                             </div>
+                           )}
+                           {treatment.appointment && (
+                             <div style={{ marginBottom: 4 }}>
+                               <span style={{ color: darkMode ? '#9ae6b4' : '#2f855a' }}>Appointment:</span> {treatment.appointment}
+                             </div>
+                           )}
+                           {treatment.dailyChecklist && treatment.dailyChecklist.length > 0 && (
+                             <div style={{ marginBottom: 4 }}>
+                               <span style={{ color: darkMode ? '#9ae6b4' : '#2f855a' }}>Daily Checklist:</span>
+                               {treatment.dailyChecklist.map((item, itemIdx) => (
+                                 <div key={itemIdx} style={{ marginLeft: 8 }}>• {item}</div>
+                               ))}
+                             </div>
+                           )}
+                           {treatment.recommendations && treatment.recommendations.length > 0 && (
+                             <div style={{ marginBottom: 4 }}>
+                               <span style={{ color: darkMode ? '#9ae6b4' : '#2f855a' }}>Recommendations:</span>
+                               {treatment.recommendations.map((rec, recIdx) => (
+                                 <div key={recIdx} style={{ marginLeft: 8 }}>• {rec}</div>
+                               ))}
+                             </div>
+                           )}
+                           {treatment.sleepHours && (
+                              <div style={{ marginBottom: 4 }}>
+                               <span style={{ color: darkMode ? '#9ae6b4' : '#2f855a' }}>Sleep Hours:</span> {treatment.sleepHours}
+                              </div>
+                           )}
+                           {treatment.sleepQuality && (
+                              <div style={{ marginBottom: 4 }}>
+                               <span style={{ color: darkMode ? '#9ae6b4' : '#2f855a' }}>Sleep Quality:</span> {treatment.sleepQuality}
+                              </div>
+                           )}
+                           {treatment.dailyCals && (
+                              <div style={{ marginBottom: 4 }}>
+                               <span style={{ color: darkMode ? '#9ae6b4' : '#2f855a' }}>Daily Calories:</span> {treatment.dailyCals}
+                              </div>
+                           )}
+                           {treatment.dailyProtein && (
+                              <div style={{ marginBottom: 4 }}>
+                               <span style={{ color: darkMode ? '#9ae6b4' : '#2f855a' }}>Daily Protein:</span> {treatment.dailyProtein}
+                              </div>
+                           )}
+                         </div>
+                       ))}
+                     </div>
+                   )}
+                 </div>
+               </div>
+             )}
+          </div>
+          {/* Last 10 Conversations */}
+          <div style={{
+            flex: 0.5
+          }}>
+            <div style={{
+              background: darkMode ? '#2d2d2d' : '#fdf',
+              padding: 12,
+              borderRadius: 8,
+              marginBottom: 12,
+              border: darkMode ? '1px solid #404040' : 'none'
+            }}>
+               <h4>Last 3 Conversations</h4>
+               {conversation?.conversation?.slice(-3) ? (
+                 <div style={{ fontSize: 12, color: darkMode ? '#ffffff' : '#000000' }}>
+                   {conversation.conversation.slice(-3).map((msg, idx) => (
+                    <div key={idx} style={{ 
+                      marginBottom: 8, 
+                      padding: 4, 
+                      borderRadius: 4,
+                      background: msg.sender === 'user' ? (darkMode ? '#404040' : '#e6f3ff') : (darkMode ? '#333333' : '#f0f0f0'),
+                      borderLeft: `3px solid ${msg.sender === 'user' ? '#3182ce' : '#38a169'}`
+                    }}>
+                      <strong style={{ color: msg.sender === 'user' ? '#3182ce' : '#38a169' }}>
+                        {msg.sender === 'user' ? 'User' : 'AI'}:
+                      </strong>
+                      <div style={{ marginTop: 2, wordBreak: 'break-word' }}>
+                        {msg.text}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p style={{ fontSize: 12, color: darkMode ? '#999' : '#666', margin: 0, fontStyle: 'italic' }}>No conversations available</p>
+              )}
+            </div>
           </div>
         </div>
       </div>

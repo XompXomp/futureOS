@@ -6,6 +6,7 @@ from langchain_ollama import ChatOllama
 from langchain_core.prompts import ChatPromptTemplate
 import re
 import ast
+import copy
 
 class PatientOperations:
     @staticmethod
@@ -20,9 +21,9 @@ class PatientOperations:
         current_profile = state.get('patientProfile', {})
         
         # Remove recommendations from profile before passing to LLM
-        profile_without_recommendations = current_profile.copy()
-        if 'recommendations' in profile_without_recommendations:
-            del profile_without_recommendations['recommendations']
+        profile_without_recommendations = copy.deepcopy(current_profile)
+        for t in profile_without_recommendations['treatment']:
+            t.pop('recommendations', None)  # safer than del
             
         # Use LLM to extract and update patient information
         if getattr(settings, "USE_OLLAMA", False):
@@ -81,8 +82,15 @@ class PatientOperations:
             updated_profile = current_profile  # fallback
 
         # Add back recommendations to the updated profile
-        if 'recommendations' in current_profile:
-            updated_profile['recommendations'] = current_profile['recommendations']
+
+        i = 0
+        for t in current_profile['treatment']:
+            if 'recommendations' in t:
+                updated_profile['treatment'][i]['recommendations'] = current_profile['treatment'][i]['recommendations']
+                i += 1
+
+        # if 'recommendations' in current_profile:
+        #     updated_profile['recommendations'] = current_profile['recommendations']
             
         state['patientProfile'] = updated_profile
         return state 
