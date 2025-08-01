@@ -11,8 +11,8 @@ declare module 'msgpack-lite' {
   export function encode(data: any): Uint8Array;
 }
 
-const LLAMA_ENDPOINT = 'http://localhost:5100/api/agent'; // Local backend endpoint
-const LLAMA_STREAM_ENDPOINT = 'http://localhost:5100/api/agent/stream'; // New streaming endpoint
+const LLAMA_ENDPOINT = 'http://172.22.225.47:5100/api/agent'; // Local backend endpoint
+const LLAMA_STREAM_ENDPOINT = 'http://172.22.225.47:5100/api/agent/stream'; // New streaming endpoint
 const UNMUTE_STT_ENDPOINT = 'ws://172.22.225.138:11004/api/asr-streaming'; // Direct STT endpoint
 
 // === STT ADD-ON: Proxy endpoint for STT ===
@@ -342,9 +342,10 @@ const App: React.FC = () => {
   // --- Add state for links, general, updates, and memory ---
   const [links, setLinks] = useState<Record<string, any> | null>(null);
   const [general, setGeneral] = useState<any | null>(null);
-  const [updates, setUpdates] = useState<Updates | null>(null);
-  const [memory, setMemory] = useState<Memory | null>(null);
+  const [updates, setUpdates] = useState<any | null>(null);
+  const [memory, setMemory] = useState<any | null>(null);
   const [audioMode, setAudioMode] = useState(false);
+  const [showProactiveSleepPrompt, setShowProactiveSleepPrompt] = useState(false);
   
   // --- Add streaming state variables ---
   const [streamingText, setStreamingText] = useState('');
@@ -402,10 +403,14 @@ const App: React.FC = () => {
   }, [general]);
 
   useEffect(() => {
+    console.log('[DEBUG] Links state changed:', links);
+  }, [links]);
+
+  useEffect(() => {
     console.log('[DEBUG] Memory state changed:', memory);
   }, [memory]);
 
-  useEffect(() => {
+  useEffect(() => {     
     // Initialize database with sample data first
     import('./db').then(({ initializeSampleData }) => {
       initializeSampleData().then(() => {
@@ -441,6 +446,91 @@ const App: React.FC = () => {
 
   // Loading timeout reference for streaming
   const loadingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Polling mechanism for local backend updates
+  useEffect(() => {
+    const pollForUpdates = async () => {
+      try {
+        // First, check for explicit updates
+        const response = await fetch('http://localhost:8002/api/latest-update');
+        if (response.ok) {
+          const update = await response.json();
+          if (update.type && update.data) {
+            console.log('[DEBUG] Received update from local backend:', update);
+            
+            switch (update.type) {
+              case 'patientProfile':
+                console.log('[DEBUG] Updating patient profile from local backend:', update.data);
+                setProfile(update.data);
+                updatePatientProfile(update.data);
+                break;
+              case 'links':
+                console.log('[DEBUG] Updating links from local backend:', update.data);
+                console.log('[DEBUG] Current links state before update:', links);
+                setLinks(update.data);
+                updateLinks({ id: 'links', links: update.data });
+                console.log('[DEBUG] Links state should now be:', update.data);
+                break;
+              case 'general':
+                console.log('[DEBUG] Updating general insights from local backend:', update.data);
+                setGeneral(update.data);
+                updateGeneral({ id: 'general', general: update.data });
+                break;
+              case 'function':
+                console.log('[DEBUG] Received function call from local backend:', update.data);
+                processUICommand(update.data);
+                break;
+              default:
+                console.log('[DEBUG] Unknown update type from local backend:', update.type);
+            }
+          }
+        }
+
+        // Also check current backend state to catch any missed updates
+        try {
+          const memoryLinksResponse = await fetch('http://localhost:8002/memory-links');
+          if (memoryLinksResponse.ok) {
+            const backendData = await memoryLinksResponse.json();
+            console.log('[DEBUG] Current backend links state:', backendData.links);
+            console.log('[DEBUG] Current frontend links state:', links);
+            
+            // Only update if frontend has data (don't overwrite intentionally cleared data)
+            if (links !== null && backendData.links && Object.keys(backendData.links).length > 0) {
+              const frontendLinksKeys = Object.keys(links);
+              const backendLinksKeys = Object.keys(backendData.links);
+              
+              // Check if backend has more data than frontend
+              const hasNewData = backendLinksKeys.some(key => {
+                const backendValue = backendData.links[key];
+                const frontendValue = links[key];
+                return JSON.stringify(backendValue) !== JSON.stringify(frontendValue);
+              });
+              
+              if (hasNewData) {
+                console.log('[DEBUG] Backend has newer links data, updating frontend');
+                setLinks(backendData.links);
+                updateLinks({ id: 'links', links: backendData.links });
+              }
+            }
+          }
+        } catch (error) {
+          console.log('[DEBUG] Failed to check backend state (this is normal if local backend is not running):', error);
+        }
+      } catch (error) {
+        console.log('[DEBUG] Polling for updates failed (this is normal if local backend is not running):', error);
+      }
+    };
+
+    // Poll every 2 seconds for updates from local backend
+    const pollInterval = setInterval(pollForUpdates, 2000);
+    
+    // Initial poll
+    pollForUpdates();
+
+    return () => {
+      clearInterval(pollInterval);
+    };
+  }, [links]);
 
   // === STT ADD-ON: STT WebSocket connection management ===
   // Remove the automatic WebSocket connection - we'll create it on demand
@@ -774,46 +864,58 @@ const App: React.FC = () => {
 
   // Function to send prompt to Llama
   // Function to process UI commands from Llama
-  const processUICommand = (command: string) => {
+  const processUICommand = (command: string | any) => {
     console.log('[DEBUG] Processing UI command:', command);
     
-    if (command.startsWith('setMode(') && command.endsWith(')')) {
-      const mode = command.slice(8, -1); // Extract value between parentheses
-      if (mode === 'dark') {
-        if (darkMode) {
-          console.log('[DEBUG] Dark mode already set, skipping');
-        } else {
-          setDarkMode(true);
-          console.log('[DEBUG] Set dark mode: true');
-        }
-      } else if (mode === 'light') {
-        if (!darkMode) {
-          console.log('[DEBUG] Light mode already set, skipping');
-        } else {
-          setDarkMode(false);
-          console.log('[DEBUG] Set dark mode: false');
-        }
+    // Handle Function objects (e.g., {"ProactiveAdd":"Sleep"})
+    if (typeof command === 'object' && command !== null) {
+      if (command.ProactiveAdd === "Sleep") {
+        console.log('[DEBUG] ProactiveAdd Sleep detected, showing prompt');
+        setShowProactiveSleepPrompt(true);
+        return;
       }
     }
     
-    if (command.startsWith('addFitness(') && command.endsWith(')')) {
-      console.log('[DEBUG] Adding fitness treatment');
-      addFitnessTreatment();
-    }
-    
-    if (command.startsWith('removeFitness(') && command.endsWith(')')) {
-      console.log('[DEBUG] Removing fitness treatment');
-      removeFitnessTreatment();
-    }
-    
-    if (command.startsWith('addSleep(') && command.endsWith(')')) {
-      console.log('[DEBUG] Adding sleep treatment');
-      addSleepTreatment();
-    }
-    
-    if (command.startsWith('removeSleep(') && command.endsWith(')')) {
-      console.log('[DEBUG] Removing sleep treatment');
-      removeSleepTreatment();
+    // Handle string commands
+    if (typeof command === 'string') {
+      if (command.startsWith('setMode(') && command.endsWith(')')) {
+        const mode = command.slice(8, -1); // Extract value between parentheses
+        if (mode === 'dark') {
+          if (darkMode) {
+            console.log('[DEBUG] Dark mode already set, skipping');
+          } else {
+            setDarkMode(true);
+            console.log('[DEBUG] Set dark mode: true');
+          }
+        } else if (mode === 'light') {
+          if (!darkMode) {
+            console.log('[DEBUG] Light mode already set, skipping');
+          } else {
+            setDarkMode(false);
+            console.log('[DEBUG] Set dark mode: false');
+          }
+        }
+      }
+      
+      if (command.startsWith('addFitness(') && command.endsWith(')')) {
+        console.log('[DEBUG] Adding fitness treatment');
+        addFitnessTreatment();
+      }
+      
+      if (command.startsWith('removeFitness(') && command.endsWith(')')) {
+        console.log('[DEBUG] Removing fitness treatment');
+        removeFitnessTreatment();
+      }
+      
+      if (command.startsWith('addSleep(') && command.endsWith(')')) {
+        console.log('[DEBUG] Adding sleep treatment');
+        addSleepTreatment();
+      }
+      
+      if (command.startsWith('removeSleep(') && command.endsWith(')')) {
+        console.log('[DEBUG] Removing sleep treatment');
+        removeSleepTreatment();
+      }
     }
   };
 
@@ -849,6 +951,9 @@ const App: React.FC = () => {
     setProfile(updatedProfile);
     updatePatientProfile(updatedProfile);
     console.log('[DEBUG] Added fitness treatment:', fitnessTreatment);
+    
+    // Automatically sync to local backend after adding treatment
+    await syncToLocalBackend();
   };
 
   // Function to remove fitness treatment
@@ -873,6 +978,9 @@ const App: React.FC = () => {
     setProfile(updatedProfile);
     updatePatientProfile(updatedProfile);
     console.log('[DEBUG] Removed fitness treatment');
+    
+    // Automatically sync to local backend after removing treatment
+    await syncToLocalBackend();
   };
 
   // Function to add sleep treatment
@@ -907,6 +1015,9 @@ const App: React.FC = () => {
     setProfile(updatedProfile);
     updatePatientProfile(updatedProfile);
     console.log('[DEBUG] Added sleep treatment:', sleepTreatment);
+    
+    // Automatically sync to local backend after adding treatment
+    await syncToLocalBackend();
   };
 
   // Function to remove sleep treatment
@@ -931,10 +1042,220 @@ const App: React.FC = () => {
     setProfile(updatedProfile);
     updatePatientProfile(updatedProfile);
     console.log('[DEBUG] Removed sleep treatment');
+    
+    // Automatically sync to local backend after removing treatment
+    await syncToLocalBackend();
   };
 
   // Make function globally accessible for testing
   (window as any).processUICommand = processUICommand;
+
+  // Test function to manually trigger local backend updates
+  const testLocalBackendUpdate = async () => {
+    try {
+      console.log('[DEBUG] Testing local backend update...');
+      
+      // Test updating patient profile recommendations
+      const response = await fetch('http://localhost:8002/api/healthcare-updates', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'recommendations',
+          data: ['New recommendation 1', 'New recommendation 2', 'Stay active']
+        })
+      });
+      
+      if (response.ok) {
+        console.log('[DEBUG] Successfully sent test update to local backend');
+      } else {
+        console.error('[DEBUG] Failed to send test update to local backend');
+      }
+    } catch (error) {
+      console.error('[DEBUG] Error testing local backend update:', error);
+    }
+  };
+
+  // Make test function globally accessible
+  (window as any).testLocalBackendUpdate = testLocalBackendUpdate;
+
+  // Function to check current patient profile from local backend
+  const checkLocalBackendProfile = async () => {
+    try {
+      console.log('[DEBUG] Checking local backend patient profile...');
+      
+      const response = await fetch('http://localhost:8002/api/patient-profile');
+      
+      if (response.ok) {
+        const profile = await response.json();
+        console.log('[DEBUG] Current local backend patient profile:', profile);
+        return profile;
+      } else {
+        console.error('[DEBUG] Failed to get patient profile from local backend');
+        return null;
+      }
+    } catch (error) {
+      console.error('[DEBUG] Error checking local backend profile:', error);
+      return null;
+    }
+  };
+
+  // Make check function globally accessible
+  (window as any).checkLocalBackendProfile = checkLocalBackendProfile;
+
+  // Function to refresh data from shared-data.js
+  const refreshDataFromShared = async () => {
+    try {
+      console.log('[DEBUG] Refreshing data from shared-data.js...');
+      
+      // Re-initialize the database with fresh data from shared-data.js
+      const { initializeSampleData } = await import('./db');
+      await initializeSampleData();
+      
+      // Reload all data from the refreshed database
+      const newProfile = await getPatientProfile();
+      const newConversation = await getConversation();
+      const newLinks = await getLinks();
+      const newGeneral = await getGeneral();
+      const newUpdates = await getUpdates();
+      const newMemory = await getMemory(); // Fetches memory from IndexedDB
+      
+      // Update all state variables
+      setProfile(newProfile ?? null);
+      setConversation(newConversation ?? null);
+      setLinks(newLinks?.links ?? null);
+      setGeneral(newGeneral?.general ?? null);
+      setUpdates(newUpdates?.updates ?? null);
+      setMemory(newMemory?.memory ?? null); // Now properly updating memory state
+      
+      console.log('[DEBUG] Data refreshed successfully');
+      console.log('[DEBUG] New memory entries:', newMemory?.memory?.length || 0);
+      
+      return { newProfile, newConversation, newLinks, newGeneral, newUpdates, newMemory };
+    } catch (error) {
+      console.error('[DEBUG] Error refreshing data:', error);
+      throw error;
+    }
+  };
+
+  // Make refresh function globally accessible
+  (window as any).refreshDataFromShared = refreshDataFromShared;
+  
+  // Make processUICommand globally accessible
+  (window as any).processUICommand = processUICommand;
+
+  // Function to sync data to local backend
+  const syncToLocalBackend = async () => {
+    try {
+      const currentProfile = await getPatientProfile();
+      const currentMemory = await getMemory();
+      const currentLinks = await getLinks();
+      const currentGeneral = await getGeneral();
+      const currentUpdates = await getUpdates();
+      
+      const response = await fetch('http://localhost:8002/api/sync-from-frontend', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          patientProfile: currentProfile,
+          memory: currentMemory,
+          links: currentLinks,
+          general: currentGeneral,
+          updates: currentUpdates
+        })
+      });
+      
+      if (response.ok) {
+        console.log('[DEBUG] Successfully synced data to local backend');
+      } else {
+        console.error('[DEBUG] Failed to sync data to local backend');
+      }
+    } catch (error) {
+      console.error('[DEBUG] Error syncing to local backend:', error);
+    }
+  };
+
+  // Make sync function globally accessible
+  (window as any).syncToLocalBackend = syncToLocalBackend;
+  
+  // Global function to clear links (for console use)
+  (window as any).clearLinks = async () => {
+    console.log('[DEBUG] Clearing links via global function');
+    setLinks(null);
+    const { updateLinks } = await import('./db');
+    await updateLinks({ id: 'links', links: {} });
+    console.log('[DEBUG] Links cleared from frontend and IndexedDB');
+    
+    // Also clear from backend
+    try {
+      const response = await fetch('http://localhost:8002/api/sync-from-frontend', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          links: { links: {} }
+        })
+      });
+      if (response.ok) {
+        console.log('[DEBUG] Successfully cleared links from backend');
+      } else {
+        console.error('[DEBUG] Failed to clear links from backend');
+      }
+    } catch (error) {
+      console.error('[DEBUG] Error clearing links from backend:', error);
+    }
+  };
+  
+  // Global function to set links to any value (for console use)
+  (window as any).setLinksValue = async (newLinks: Record<string, any>) => {
+    console.log('[DEBUG] Setting links via global function:', newLinks);
+    setLinks(newLinks);
+    const { updateLinks } = await import('./db');
+    await updateLinks({ id: 'links', links: newLinks });
+    console.log('[DEBUG] Links set in frontend and IndexedDB');
+  };
+  
+  // Global function to completely reset everything (for when IndexedDB is cleared)
+  (window as any).resetEverything = async () => {
+    console.log('[DEBUG] Resetting everything - clearing all data');
+    
+    // Clear frontend state
+    setLinks(null);
+    setGeneral(null);
+    setUpdates(null);
+    setMemory(null);
+    
+    // Clear backend
+    try {
+      const response = await fetch('http://localhost:8002/api/sync-from-frontend', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          links: { links: {} },
+          general: { general: {} },
+          updates: { updates: {} },
+          memory: { memory: {} }
+        })
+      });
+      if (response.ok) {
+        console.log('[DEBUG] Successfully reset backend data');
+      } else {
+        console.error('[DEBUG] Failed to reset backend data');
+      }
+    } catch (error) {
+      console.error('[DEBUG] Error resetting backend data:', error);
+    }
+    
+    console.log('[DEBUG] Everything reset - refresh the page to reload from shared-data.js');
+  };
+
+  // Auto-sync effect: whenever links state changes, sync to backend
+  useEffect(() => {
+    if (links !== null) { // Only sync if links has been initialized
+      console.log('[DEBUG] Links state changed, auto-syncing to backend:', links);
+      syncToLocalBackend();
+    } else {
+      console.log('[DEBUG] Links state is null (cleared), not syncing to backend');
+    }
+  }, [links]);
 
   async function sendPromptToLlama(prompt: string, options: { updates?: any, links?: any[], general?: any } = {}) {
     console.log('[DEBUG] sendPromptToLlama called, profileRef.current:', profileRef.current, 'profile:', profile);
@@ -1197,6 +1518,88 @@ const App: React.FC = () => {
               ➤
             </button>
           </div>
+          
+          {/* Proactive Sleep Prompt */}
+          {showProactiveSleepPrompt && (
+            <div style={{
+              background: darkMode ? '#2d2d2d' : '#fff3cd',
+              border: '1px solid #ffeaa7',
+              borderRadius: 8,
+              padding: 16,
+              marginTop: 12,
+              textAlign: 'center'
+            }}>
+              <h4 style={{ margin: '0 0 12px 0', color: darkMode ? '#ffffff' : '#856404' }}>
+                Sleep Treatment Recommendation
+              </h4>
+              <p style={{ margin: '0 0 16px 0', color: darkMode ? '#ffffff' : '#856404' }}>
+                Based on your sleep patterns, would you like to add a sleep treatment plan?
+              </p>
+              <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
+                <button
+                  onClick={async () => {
+                    console.log('[DEBUG] Yes button clicked, current links:', links);
+                    addSleepTreatment();
+                    // Clear the Sleep section in links since they've been used
+                    const updatedLinks = { ...links };
+                    console.log('[DEBUG] Updated links before deletion:', updatedLinks);
+                    if (updatedLinks && updatedLinks.Sleep) {
+                      delete updatedLinks.Sleep;
+                      console.log('[DEBUG] Updated links after deletion:', updatedLinks);
+                      setLinks(updatedLinks);
+                      // Update IndexedDB
+                      const { updateLinks } = await import('./db');
+                      await updateLinks({ id: 'links', links: updatedLinks });
+                      console.log('[DEBUG] IndexedDB updated with new links');
+                      
+                      // Automatically sync to local backend after clearing links
+                      await syncToLocalBackend();
+                    } else {
+                      console.log('[DEBUG] No Sleep section found in links or links is null');
+                    }
+                    setShowProactiveSleepPrompt(false);
+                  }}
+                  style={{
+                    background: '#28a745',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: 6,
+                    padding: '8px 16px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Yes, Add Sleep Treatment
+                </button>
+                <button
+                  onClick={async () => {
+                    // Clear the Sleep section in links
+                    const updatedLinks = { ...links };
+                    if (updatedLinks && updatedLinks.Sleep) {
+                      delete updatedLinks.Sleep;
+                      setLinks(updatedLinks);
+                      // Update IndexedDB
+                      const { updateLinks } = await import('./db');
+                      await updateLinks({ id: 'links', links: updatedLinks });
+                      
+                      // Automatically sync to local backend after clearing links
+                      await syncToLocalBackend();
+                    }
+                    setShowProactiveSleepPrompt(false);
+                  }}
+                  style={{
+                    background: '#dc3545',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: 6,
+                    padding: '8px 16px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  No, Dismiss
+                </button>
+              </div>
+            </div>
+          )}
         </div>
         {/* Right side - Patient Profile and other info */}
         <div style={{

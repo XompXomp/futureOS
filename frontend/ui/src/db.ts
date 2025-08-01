@@ -151,9 +151,12 @@ export async function updateUpdates(updates: Updates | any) {
 
 // Sample data initialization
 export async function initializeSampleData() {
+  // Import shared data if available
+  const sharedData = (window as any).sharedData;
+  
   const existingProfile = await db.patientProfile.toCollection().first();
   if (!existingProfile) {
-    await db.patientProfile.add({
+    const profileData = sharedData?.sharedPatientProfile || {
       uid: 'user-001',
       name: 'Jane Smith',
       age: 29,
@@ -170,7 +173,8 @@ export async function initializeSampleData() {
           sleepQuality: 'Excellent',
         }
       ],
-    });
+    };
+    await db.patientProfile.add(profileData);
   }
   const existingConversation = await db.conversation.toCollection().first();
   if (!existingConversation) {
@@ -183,25 +187,25 @@ export async function initializeSampleData() {
       ],
     });
   }
-  const existingMemory = await db.memory.get('memory');
-  if (!existingMemory) {
-    await db.memory.add({
-      id: 'memory',
-      memory: [
-        {
-          datetime: '01_07_25_09_00',
-          text: "Patient said they can't sleep"
-        },
-        {
-          datetime: '02_07_25_22_15',
-          text: 'Wakes up multiple times'
-        }
-      ],
-    });
-  }
+  // Always update memory with latest data from shared-data.js
+  const memoryData = sharedData?.sharedMemory || {
+    id: 'memory',
+    memory: [
+      {
+        datetime: '01_07_25_09_00',
+        text: "Patient said they can't sleep"
+      },
+      {
+        datetime: '02_07_25_22_15',
+        text: 'Wakes up multiple times'
+      }
+    ],
+  };
+  await db.memory.put(memoryData);
+  // Only initialize links if they don't exist (don't overwrite server updates)
   const existingLinks = await db.links.get('links');
   if (!existingLinks) {
-    await db.links.add({
+    const linksData = sharedData?.sharedLinks || {
       id: 'links',
       links: {
         Sleep: {
@@ -209,37 +213,96 @@ export async function initializeSampleData() {
           'tired in morning': 0.3
         }
       },
-    });
+    };
+    await db.links.put(linksData);
   }
+  // Only initialize general if it doesn't exist (don't overwrite server updates)
   const existingGeneral = await db.general.get('general');
   if (!existingGeneral) {
-    await db.general.add({
+    const generalData = sharedData?.sharedGeneral || {
       id: 'general',
       general: {
         EmotionalCues: ["anxious", "tired"],
         Tone: "reflective",
         Engagement: "high",
         Hesitation: "minimal",
-        NuancedFindings: ["User shows progress in managing stress"]
+        NuancedFindings: ["User shows progress in managing stress"],
+        trend_analysis: ""
       },
-    });
+    };
+    await db.general.put(generalData);
   }
-  const existingUpdates = await db.updates.get('updates');
-  if (!existingUpdates) {
-    await db.updates.add({
-      id: 'updates',
-      updates: [
-        {
-          datetime: '03_07_25_10_30',
-          text: 'Panadol removed from medications'
-        },
-        {
-          datetime: '03_07_25_11_45',
-          text: 'Ibuprofen added to medications'
-        }
-      ],
-    });
-  }
+  // Always update updates with latest data from shared-data.js
+  const updatesData = sharedData?.sharedUpdates || {
+    id: 'updates',
+    updates: [
+      {
+        datetime: '01_07_25_09_00',
+        text: 'Initial consultation - Patient reports sleep disturbances'
+      },
+      {
+        datetime: '01_07_25_14_30',
+        text: 'Sleep hours changed from 7 to 9 hours'
+      },
+      {
+        datetime: '01_07_25_15_45',
+        text: 'Sleep quality changed from Poor to Excellent'
+      },
+      {
+        datetime: '02_07_25_10_15',
+        text: 'Melatonin added to prescriptions'
+      },
+      {
+        datetime: '02_07_25_11_20',
+        text: 'Appointment scheduled for 2025-08-15T09:00:00'
+      },
+      {
+        datetime: '02_07_25_16_30',
+        text: 'Daily checklist updated: Added "Take melatonin 30 min before bed"'
+      },
+      {
+        datetime: '03_07_25_08_45',
+        text: 'Patient reported improved sleep quality - reduced wake-ups from 5 to 2 times per night'
+      },
+      {
+        datetime: '03_07_25_12_00',
+        text: 'New recommendation added: "Avoid caffeine after 2 PM"'
+      },
+      {
+        datetime: '03_07_25_14_20',
+        text: 'Sleep tracking enabled - monitoring sleep patterns'
+      },
+      {
+        datetime: '04_07_25_09_30',
+        text: 'Follow-up appointment scheduled for 2025-08-22T10:00:00'
+      },
+      {
+        datetime: '04_07_25_16_45',
+        text: 'Sleep hygiene recommendations updated: Added "Keep bedroom temperature at 65-67°F"'
+      },
+      {
+        datetime: '05_07_25_10_00',
+        text: 'Melatonin dosage adjusted from 3mg to 5mg'
+      },
+      {
+        datetime: '05_07_25_13_30',
+        text: 'New medication added: Magnesium supplement for muscle relaxation'
+      },
+      {
+        datetime: '05_07_25_15_20',
+        text: 'Patient achieved 8 hours of continuous sleep for first time in 3 months'
+      },
+      {
+        datetime: '06_07_25_08_15',
+        text: 'Sleep quality rating improved from Good to Excellent'
+      },
+      {
+        datetime: '06_07_25_12_30',
+        text: 'Daily exercise routine added to treatment plan: 30 min walk before dinner'
+      },
+    ],
+  };
+  await db.updates.put(updatesData);
 }
 
 export async function getPatientProfile() {
