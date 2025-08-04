@@ -1,5 +1,5 @@
 # This is the Kyutai-internal version.
-FROM nvidia/cuda:12.1.0-devel-ubuntu22.04 AS base
+FROM nvidia/cuda:12.0.0-devel-ubuntu22.04 AS base
 
 # Set environment variables to avoid interactive prompts during package installation
 ENV DEBIAN_FRONTEND=noninteractive

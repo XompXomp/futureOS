@@ -10,6 +10,7 @@ STT_SERVER = http_to_ws(os.environ.get("KYUTAI_STT_URL", "ws://localhost:11004")
 TTS_SERVER = http_to_ws(os.environ.get("KYUTAI_TTS_URL", "ws://localhost:11003"))
 LLM_SERVER = os.environ.get("KYUTAI_LLM_URL", "http://localhost:11005")
 KYUTAI_LLM_MODEL = os.environ.get("KYUTAI_LLM_MODEL")
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
 VOICE_CLONING_SERVER = os.environ.get(
     "KYUTAI_VOICE_CLONING_URL", "http://localhost:11006"
 )

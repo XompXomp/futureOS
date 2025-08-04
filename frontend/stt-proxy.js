@@ -10,7 +10,7 @@ wss.on('connection', (ws) => {
   console.log('Client connected to proxy');
   
   // Connect to STT server with authentication headers
-  const sttWs = new WebSocket('ws://172.22.225.138:11004/api/asr-streaming', {
+  const sttWs = new WebSocket('ws://localhost:11004/api/asr-streaming', {
     headers: {
       'kyutai-api-key': 'public_token'
     }

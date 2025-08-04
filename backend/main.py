@@ -36,7 +36,7 @@ def send_message_to_unmute(text: str, patient_profile: dict) -> bool:
     """
     try:
         # Get Unmute websocket URL from settings or use default
-        unmute_url = getattr(settings, "UNMUTE_WEBSOCKET_URL", "ws://172.22.225.138:11000/v1/realtime")
+        unmute_url = getattr(settings, "UNMUTE_WEBSOCKET_URL", "ws://localhost:11002/v1/realtime")
         
         import asyncio
         
@@ -873,7 +873,7 @@ def unmute_node(state: AgentState) -> AgentState:
         import websockets
         
         async def direct_unmute_connection():
-            unmute_url = getattr(settings, "UNMUTE_WEBSOCKET_URL", "ws://172.22.225.138:11000/v1/realtime")
+            unmute_url = getattr(settings, "UNMUTE_WEBSOCKET_URL", "ws://localhost:11000/v1/realtime")
             
             async with websockets.connect(unmute_url, subprotocols=['realtime']) as websocket:
                 print("✓ Connected to Unmute (direct)")
