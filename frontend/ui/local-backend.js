@@ -236,25 +236,27 @@ app.get('/api/patient-profile', (req, res) => {
 app.post('/api/sync-from-frontend', (req, res) => {
   const { patientProfile: newProfile, memory: newMemory, links: newLinks, general: newGeneral, updates: newUpdates } = req.body;
   
+  console.log('[DEBUG] Received sync from frontend:', req.body);
+  
   if (newProfile) {
     patientProfile = newProfile;
-    console.log('Synced patient profile from frontend:', patientProfile);
+    console.log('[DEBUG] Synced patient profile from frontend:', patientProfile);
   }
   if (newMemory) {
     memory = newMemory;
-    console.log('Synced memory from frontend');
+    console.log('[DEBUG] Synced memory from frontend:', memory);
   }
   if (newLinks) {
     links = newLinks;
-    console.log('Synced links from frontend');
+    console.log('[DEBUG] Synced links from frontend:', links);
   }
   if (newGeneral) {
     general = newGeneral;
-    console.log('Synced general from frontend');
+    console.log('[DEBUG] Synced general from frontend:', general);
   }
   if (newUpdates) {
     updates = newUpdates;
-    console.log('Synced updates from frontend');
+    console.log('[DEBUG] Synced updates from frontend:', updates);
   }
   
   res.json({ status: 'ok', message: 'Data synced from frontend' });

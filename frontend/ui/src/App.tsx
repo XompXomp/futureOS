@@ -494,20 +494,21 @@ const App: React.FC = () => {
             console.log('[DEBUG] Current backend links state:', backendData.links);
             console.log('[DEBUG] Current frontend links state:', links);
             
-            // Only update if frontend has data (don't overwrite intentionally cleared data)
-            if (links !== null && backendData.links && Object.keys(backendData.links).length > 0) {
-              const frontendLinksKeys = Object.keys(links);
+            // Update if backend has data and frontend is either empty or has different data
+            // This ensures external updates are reflected, even if frontend was cleared or has existing data
+            if (backendData.links) { // Check if backend has any links data
+              const frontendLinksKeys = Object.keys(links || {}); // Use empty object if links is null
               const backendLinksKeys = Object.keys(backendData.links);
               
-              // Check if backend has more data than frontend
-              const hasNewData = backendLinksKeys.some(key => {
+              // Check if backend has different data than frontend
+              const hasDifferentData = backendLinksKeys.some(key => {
                 const backendValue = backendData.links[key];
-                const frontendValue = links[key];
+                const frontendValue = (links || {})[key]; // Use empty object if links is null
                 return JSON.stringify(backendValue) !== JSON.stringify(frontendValue);
-              });
+              }) || frontendLinksKeys.length !== backendLinksKeys.length; // Also check if number of keys differs
               
-              if (hasNewData) {
-                console.log('[DEBUG] Backend has newer links data, updating frontend');
+              if (hasDifferentData) {
+                console.log('[DEBUG] Backend has different links data, updating frontend');
                 setLinks(backendData.links);
                 updateLinks({ id: 'links', links: backendData.links });
               }
@@ -530,7 +531,7 @@ const App: React.FC = () => {
     return () => {
       clearInterval(pollInterval);
     };
-  }, [links]);
+  }, []); // Removed [links] dependency to prevent race conditions
 
   // === STT ADD-ON: STT WebSocket connection management ===
   // Remove the automatic WebSocket connection - we'll create it on demand
@@ -1152,13 +1153,15 @@ const App: React.FC = () => {
       const currentGeneral = await getGeneral();
       const currentUpdates = await getUpdates();
       
+      console.log('[DEBUG] Syncing to backend - currentLinks:', currentLinks);
+      
       const response = await fetch('http://localhost:8002/api/sync-from-frontend', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           patientProfile: currentProfile,
           memory: currentMemory,
-          links: currentLinks,
+          links: currentLinks, // This is already the correct structure { id: 'links', links: {...} }
           general: currentGeneral,
           updates: currentUpdates
         })
@@ -1191,7 +1194,7 @@ const App: React.FC = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          links: { links: {} }
+          links: { id: 'links', links: {} }
         })
       });
       if (response.ok) {
@@ -1229,10 +1232,10 @@ const App: React.FC = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          links: { links: {} },
-          general: { general: {} },
-          updates: { updates: {} },
-          memory: { memory: {} }
+          links: { id: 'links', links: {} },
+          general: { id: 'general', general: {} },
+          updates: { id: 'updates', updates: {} },
+          memory: { id: 'memory', memory: {} }
         })
       });
       if (response.ok) {
@@ -1245,6 +1248,14 @@ const App: React.FC = () => {
     }
     
     console.log('[DEBUG] Everything reset - refresh the page to reload from shared-data.js');
+  };
+
+  // Global function to force reload from shared data (for testing)
+  (window as any).reloadFromSharedData = async () => {
+    console.log('[DEBUG] Force reloading from shared data');
+    const { initializeSampleData } = await import('./db');
+    await initializeSampleData();
+    console.log('[DEBUG] Shared data reloaded - refresh the page to see changes');
   };
 
   // Auto-sync effect: whenever links state changes, sync to backend
@@ -1552,8 +1563,23 @@ const App: React.FC = () => {
                       await updateLinks({ id: 'links', links: updatedLinks });
                       console.log('[DEBUG] IndexedDB updated with new links');
                       
-                      // Automatically sync to local backend after clearing links
-                      await syncToLocalBackend();
+                      // Explicitly sync the cleared links to backend
+                      try {
+                        const response = await fetch('http://localhost:8002/api/sync-from-frontend', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            links: { id: 'links', links: updatedLinks }
+                          })
+                        });
+                        if (response.ok) {
+                          console.log('[DEBUG] Successfully cleared links from backend');
+                        } else {
+                          console.error('[DEBUG] Failed to clear links from backend');
+                        }
+                      } catch (error) {
+                        console.error('[DEBUG] Error clearing links from backend:', error);
+                      }
                     } else {
                       console.log('[DEBUG] No Sleep section found in links or links is null');
                     }
@@ -1572,17 +1598,37 @@ const App: React.FC = () => {
                 </button>
                 <button
                   onClick={async () => {
+                    console.log('[DEBUG] No button clicked, clearing Sleep links');
                     // Clear the Sleep section in links
                     const updatedLinks = { ...links };
                     if (updatedLinks && updatedLinks.Sleep) {
                       delete updatedLinks.Sleep;
+                      console.log('[DEBUG] Updated links after Sleep deletion:', updatedLinks);
                       setLinks(updatedLinks);
                       // Update IndexedDB
                       const { updateLinks } = await import('./db');
                       await updateLinks({ id: 'links', links: updatedLinks });
+                      console.log('[DEBUG] IndexedDB updated with cleared links');
                       
-                      // Automatically sync to local backend after clearing links
-                      await syncToLocalBackend();
+                      // Explicitly sync the cleared links to backend
+                      try {
+                        const response = await fetch('http://localhost:8002/api/sync-from-frontend', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            links: { id: 'links', links: updatedLinks }
+                          })
+                        });
+                        if (response.ok) {
+                          console.log('[DEBUG] Successfully cleared links from backend');
+                        } else {
+                          console.error('[DEBUG] Failed to clear links from backend');
+                        }
+                      } catch (error) {
+                        console.error('[DEBUG] Error clearing links from backend:', error);
+                      }
+                    } else {
+                      console.log('[DEBUG] No Sleep section found in links or links is null');
                     }
                     setShowProactiveSleepPrompt(false);
                   }}
